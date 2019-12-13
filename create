@@ -8,11 +8,10 @@
 #
 #! /bin/sh
 
-
 usage()
 {
-	echo "Usage: $0 commands"
-	echo "commands:"
+	echo "Usage: $0 options"
+	echo "options:"
 	echo "    pytorch project   create Pytorch project"
 	echo "    busybox bash      create busybox for bash"
 	echo "    busybox c         create busybox for C language"
@@ -20,13 +19,40 @@ usage()
 	exit 1
 }
 
+get_project_name()
+{
+	read -p "Project Name: " project_name
+	if [ "$project_name" == "" ] ; then
+		project_name=`basename $PWD`
+	fi
+	echo $project_name
+}
+
+
 pytorch()
 {
-	read -p "Project name:" project_name
+	project_name=`get_project_name`
 	echo "Creating pytorch project '${project_name}' ..."
 }
 
+busybox()
+{
+	if [ "$1" == "bash" ] ;
+	then
+		create_from_template -f template/bash/busybox
+	else
+		echo "Create busybox for C language."
+	fi	
+}
+
+golang()
+{
+	project_name=`get_project_name`
+	echo "Create golang project '${project_name}' ..."
+}
+
+
 [ "$1" == "" ] && usage
 
-eval "$1"
+eval "$*"
 
