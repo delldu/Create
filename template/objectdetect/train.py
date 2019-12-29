@@ -6,17 +6,23 @@ http://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
 
 import pdb
 import math
+import os
 import sys
 import argparse
+import random
 import torch
 import torchvision.transforms as T
 
 from dataset import PennFudanDataset
-from model import get_model_instance_segmentation, get_iou_type
+from model import get_model_instance_segmentation, get_iou_type, model_load
 from coco_eval import create_coco_dataset_from_ourdataset, CocoEvaluator
 
 from tqdm import tqdm
-# import utils
+
+
+def model_save(model, path):
+    """Save model."""
+    torch.save(model.state_dict(), path)
 
 
 class Average(object):
@@ -41,12 +47,20 @@ class Average(object):
         self.avg = self.sum / self.count
 
 
-# def cuda_memory_used():
-#     MB = 1024.0 * 1024.0
-#     return torch.cuda.max_memory_allocated() / MB
+def update_lr(optimizer, epoch):
+    """Update learning rate."""
+    start_learning_rate = 1e-4
+    learning_gamma = 0.01
+    learning_steps = 100
+
+    current_lr = start_learning_rate * (learning_gamma ** ((epoch + 1) // learning_steps))
+    for pg in optimizer.param_groups:
+        pg['lr'] = current_lr
+    return current_lr
 
 
 def collate_fn(batch):
+    """Collate fn."""
     return tuple(zip(*batch))
 
 
@@ -60,7 +74,7 @@ def get_transform(train):
     return T.Compose(ts)
 
 
-def train_once(loader, model, optimizer, device, tag=''):
+def train_one_epoch(loader, model, optimizer, device, tag=''):
     """Trainning model ..."""
     loss_box_reg = Average()
     loss_rpn_box = Average()
@@ -109,8 +123,7 @@ def train_once(loader, model, optimizer, device, tag=''):
             total_loss.update(loss_value, count)
 
             t.set_postfix(
-                loss=
-                '{:.4f},box_reg:{:.4f},rpn_box:{:.4f},class:{:.4f},mask:{:.4f},object:{:.4f}'
+                loss='{:.4f},box_reg:{:.4f},rpn_box:{:.4f},class:{:.4f},mask:{:.4f},object:{:.4f}'
                 .format(total_loss.avg, loss_box_reg.avg, loss_rpn_box.avg,
                         loss_classifier.avg, loss_mask.avg, loss_objectness.avg))
             t.update(count)
@@ -123,7 +136,7 @@ def train_once(loader, model, optimizer, device, tag=''):
         return total_loss.avg
 
 
-def valid_once(loader, model, device, tag=''):
+def valid_one_epoch(loader, model, device, tag=''):
     """Validating model  ..."""
     # Set the model to evaluation mode
     model.eval()
@@ -148,6 +161,13 @@ def valid_once(loader, model, device, tag=''):
             with torch.no_grad():
                 outputs = model(images)
 
+            # pdb.set_trace()
+            # (Pdb) pp type(outputs), len(outputs), type(outputs[0]), outputs[0].keys()
+            # (<class 'list'>,
+            #  1,
+            #  <class 'dict'>,
+            #  dict_keys(['boxes', 'labels', 'scores', 'masks']))
+
             outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
             res = {
                 target["image_id"].item(): output
@@ -164,13 +184,21 @@ def valid_once(loader, model, device, tag=''):
         coco_evaluator.summarize()
 
 
-def main():
+if __name__ == "__main__":
     """Trainning model."""
+    random.seed(42)
+    torch.manual_seed(42)
+
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--checkpoint-file', type=str, required=True)
+    parser.add_argument('--output-dir', type=str, default="output")
+    parser.add_argument('--checkpoint', type=str, default="maskrcnn.pth")
     parser.add_argument('--batch-size', type=int, default=2)
     parser.add_argument('--epochs', type=int, default=10)
     args = parser.parse_args()
+
+    # Create a directory to store weights
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
 
     # train on the GPU if a GPU is available
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -197,6 +225,7 @@ def main():
 
     # get the model using our helper function
     model = get_model_instance_segmentation(num_classes)
+    model_load(model, os.path.join(args.output_dir, args.checkpoint))
 
     # move model to the right device
     model.to(device)
@@ -212,17 +241,18 @@ def main():
                                                    step_size=3,
                                                    gamma=0.1)
     for epoch in range(args.epochs):
-        train_once(data_loader,
-                   model,
-                   optimizer,
-                   device,
-                   tag='[epoch {}/{}]'.format(epoch + 1, args.epochs))
+        train_one_epoch(data_loader,
+                        model,
+                        optimizer,
+                        device,
+                        tag='[train {}/{}]'.format(epoch + 1, args.epochs))
 
         # update the learning rate
         lr_scheduler.step()
+
         # evaluate on the test dataset
-        valid_once(data_loader_test, model, device, tag='valid')
+        if epoch % 2 == 0:
+            valid_one_epoch(data_loader_test, model, device, tag='valid')
 
-
-if __name__ == "__main__":
-    main()
+        if epoch == (args.epochs // 2) or (epoch == args.epochs - 1):
+            model_save(model, os.path.join(args.output_dir, args.checkpoint))

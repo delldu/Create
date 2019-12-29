@@ -8,6 +8,7 @@ import os
 import numpy as np
 import torch
 from PIL import Image
+
 import pdb
 
 
@@ -18,8 +19,7 @@ class PennFudanDataset(object):
         """Init dataset."""
         self.root = root
         self.transforms = transforms
-        # load all image files, sorting them to
-        # ensure that they are aligned
+        # load all image files, sorting them to ensure that they are aligned
         self.imgs = list(sorted(os.listdir(os.path.join(root, "PNGImages"))))
         self.masks = list(sorted(os.listdir(os.path.join(root, "PedMasks"))))
 
@@ -39,8 +39,7 @@ class PennFudanDataset(object):
         # first id is the background, so remove it
         obj_ids = obj_ids[1:]
 
-        # split the color-encoded mask into a set
-        # of binary masks
+        # split the color-encoded mask into a set of binary masks
         masks = mask == obj_ids[:, None, None]
 
         # get bounding box coordinates for each mask
@@ -82,3 +81,4 @@ class PennFudanDataset(object):
     def __len__(self):
         """Return total numbers of images."""
         return len(self.imgs)
+

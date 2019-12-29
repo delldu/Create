@@ -3,10 +3,24 @@ Sample code from the TorchVision Object Detection Finetuning Tutorial.
 
 http://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
 """
+import os
 import torch
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
+
+
+def model_load(model, path):
+    """Load model."""
+    if not os.path.exists(path):
+        return
+    state_dict = torch.load(path, map_location=lambda storage, loc: storage)
+    target_state_dict = model.state_dict()
+    for n, p in state_dict.items():
+        if n in target_state_dict.keys():
+            target_state_dict[n].copy_(p)
+        else:
+            raise KeyError(n)
 
 
 def get_model_instance_segmentation(num_classes):
