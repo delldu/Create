@@ -46,16 +46,13 @@ if __name__ == "__main__":
     #  1,
     #  <class 'dict'>,
     #  dict_keys(['boxes', 'labels', 'scores', 'masks']))
-    scores = outputs[0]['scores'].cpu().tolist()
+    scores = outputs[0]['scores'].tolist()
     scores = [s for s in scores if s > 0.60]
     count = len(scores)
     if count > 0:
-        boxes = outputs[0]['boxes'].cpu()
-        labels = outputs[0]['labels'].cpu()
-        masks = outputs[0]['masks'].cpu()
-        boxes = boxes[0:count]
-        labels = labels[0:count]
-        masks = masks[0:count]
+        boxes = outputs[0]['boxes'][0:count]
+        labels = outputs[0]['labels'][0:count]
+        masks = outputs[0]['masks'][0:count]
         result = blend_image(image, labels, boxes, masks, scores)
         result.show()
     else:
