@@ -14,16 +14,21 @@ GLOBAL_PRG=`basename $0`
 
 usage()
 {
-	echo "Usage: $GLOBAL_PRG [options]"
-	echo "Semi-Auto-Programming: create programs files with commands"
-	echo ""
-	echo "options:"
-	echo "    --c [busybox | sandbox | cudabox | mpibox | opencv | hfile]   create project or files for C language"
-	echo "    --bash [busybox | forever | ccbs | while]                     create program for bash"
-	echo "    --golang                                                      create project or files for golang"
-	echo "    --python [pytorch]                                            create project or files for python"
-	echo "    --makefile [app | lib | dir]                                  create makefile for C/C++ program"
-	exit 1
+    echo "Usage: $GLOBAL_PRG [options]"
+    echo "Semi-Auto-Programming: Create programs files with commands"
+    echo ""
+    echo "options:"
+    echo "    --c [busybox | sandbox | cudabox | mpibox | opencv | hfile | cfile]"
+    echo "                                      Create C files"
+    echo "    --bash [busybox | forever | ccbs | while]"
+    echo "                                      Create bash script"
+    echo "    --golang"
+    echo "                                      Create golang files"
+    echo "    --python [pytorch]"
+    echo "                                      Create python files"
+    echo "    --makefile [app | lib | dir]"
+    echo "                                      Create makefile for C/C++ program"
+    exit 1
 }
 
 get_project_name()
@@ -46,26 +51,87 @@ check_empty_dir()
 
 create_c_files()
 {
-	echo "Creating C files ..."
+	case $args in
+	# busybox
+	busy*)
+		c_busybox
+		;;
+	# sandbox
+	sand*)
+		echo "NOT implement"
+		;;
+	# cudabox
+	cuda*)
+		echo "NOT implement"
+		;;
+	# mpibox
+	mpi*)
+		echo "NOT implement"
+		;;
+	# opencv
+	open*)
+		echo "NOT implement"
+		;;
+	# hfile
+	hfile)
+		echo "NOT implement"
+		;;
+	# cfile
+	cfile)
+		echo "NOT implement"
+		;;
+	*)
+		usage
+		;;
+	esac
 }
 
 create_bash_files()
 {
-	echo "Create bash files ..."	
+	case $args in
+	# busybox
+	busy*)
+		create_view -f ${GLOBAL_DIR}/template/bash/busybox
+		;;
+	# forever
+	for*)
+		create_view -f ${GLOBAL_DIR}/template/bash/forever
+		;;
+	ccbs*)
+		create_view -f ${GLOBAL_DIR}/template/bash/ccbs
+		;;
+	while*)
+		create_view -f ${GLOBAL_DIR}/template/bash/while
+		;;
+	*)
+		usage
+		;;
+	esac
 }
 
 create_go_files()
 {
-	echo "Create golang files ..."	
+	args="$*"
+
+	case $args in 
+	*)
+		usage
+		;;
+	esac
 }
 
 create_py_files()
 {
 	args="$*"
 
-	case $args in 
+	case $args in
+	# pytorch
 	*torch)
-		pytorch
+		pytorch_project
+		;;
+	# keras
+	*keras)
+		echo "NOT implement"
 		;;
 	*)
 		usage
@@ -75,17 +141,32 @@ create_py_files()
 
 create_make_files()
 {
-	echo "Create makefile  ..."	
+	args="$*"
+
+	case $args in 
+	*app)
+		echo "NOT implement"
+		;;
+	*lib)
+		echo "NOT implement"
+		;;
+	*dir)
+		echo "NOT implement"
+		;;
+	*)
+		usage
+		;;
+	esac
 }
 
 
-pytorch()
+pytorch_project()
 {
 	TEMPLATE_DIR=${GLOBAL_DIR}/template/pytorch_project
 
 	check_empty_dir
 	project_name=`get_project_name`
-	echo "Creating pytorch project '${project_name}' ..."
+	echo "Creating pytorch_project project '${project_name}' ..."
 
 	create_view -f $TEMPLATE_DIR/data.py -v $project_name > data.py
 	create_view -f $TEMPLATE_DIR/model.py -v $project_name > model.py
@@ -95,15 +176,10 @@ pytorch()
 	create_view -f $TEMPLATE_DIR/readme.md -v $project_name > readme.md
 }
 
-busybox()
+c_busybox()
 {
-	if [ "$1" == "bash" ] ;
-	then
-		create_view -f ${GLOBAL_DIR}/template/bash/busybox
-	else
-		check_empty_dir
-		echo "Create busybox for C language."
-	fi	
+	check_empty_dir
+	echo "Create busybox for C language."
 }
 
 golang()
@@ -120,19 +196,24 @@ shift
 args="$*"
 
 case $language in
---c)
+# --c
+*-c)
     create_c_files "$args"
     ;;
---bash)
+# --bash
+*-bash)
     create_bash_files "$args"
     ;;
---go*)
+# --golang
+*-go*)
     create_go_files "$args"
     ;;
---py*)
+# --python
+*-py*)
     create_py_files "$args"
     ;;
---make*)
+# --makefile
+*-make*)
     create_make_files "$args"
     ;;
 *)
