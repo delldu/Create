@@ -6,14 +6,12 @@
 #***
 #************************************************************************************/
 #
+INSTALL_DIR ?= "/usr/local/bin"
 
 XSUBDIRS :=  \
 	source
 
-
-BSUBDIRS :=
-
-all: premake
+all:
 	@for d in $(XSUBDIRS)  ; do \
 		if [ -d $$d ] ; then \
 			$(MAKE) -C $$d || exit 1; \
@@ -26,6 +24,10 @@ install:
 			$(MAKE) -C $$d install || exit 1; \
 		fi \
 	done	
+	@echo "Install create to "$(INSTALL_DIR) "...... "
+	@cp create $(INSTALL_DIR)
+	@chmod +x $(INSTALL_DIR)/create
+	@cp template $(INSTALL_DIR) -R
 
 clean:
 	@for d in $(XSUBDIRS) ; do \

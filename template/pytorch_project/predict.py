@@ -1,8 +1,10 @@
-"""Predict."""
+"""Model predict."""
 
 # coding=utf-8
 #
 # /************************************************************************************
+# ***
+# ***    Copyright {{create "author"}} {{create "date +%Y"}}, All Rights Reserved.
 # ***
 # ***    File Author: {{ create "author"}}, {{bash "date" }}
 # ***
@@ -39,4 +41,5 @@ if __name__ == "__main__":
     with torch.no_grad():
         output = model(input)
 
+    # xxxx--modify here
     print(output)

@@ -16,7 +16,6 @@ import (
 	"strings"
 	"os"
 	"os/exec"
-    "os/user"
 	"path/filepath"
 	"text/template"
 )
@@ -38,8 +37,8 @@ func init() {
 func usage() {
 	const version = "1.0"
 
-	fmt.Println("create_from_template version:", version)
-	fmt.Println("Usage: create_from_template [-f file] [-v value] [-h]")
+	fmt.Println("create_view version:", version)
+	fmt.Println("Usage: create_view [-f file] [-v value] [-h]")
 	fmt.Println("Options:")
 
 	// flag.PrintDefaults() format is not good enough !
@@ -62,14 +61,8 @@ func runcmd(cmdline string) string {
 	return strings.Trim(string(out), "\n")
 }
 
-func whoami() string {
-	u, err := user.Current()
-	checkerror(err)
-	b := []rune(u.Username)
-	if b[0] >= 97 && b[0] <= 122 {
-		b[0] -= 32
-	} 
-	return string(b)
+func create(cmdline string) string {
+	return runcmd("create_help " + cmdline)
 }
 
 func main() {
@@ -80,7 +73,7 @@ func main() {
 		checkerror(e)
 		text := string(b)
 
-		funcMap := template.FuncMap{"sh": runcmd, "bash": runcmd, "who": whoami}
+		funcMap := template.FuncMap{"bash": runcmd, "create": create}
 
 		// Template name
 		tname := filepath.Base(fname)

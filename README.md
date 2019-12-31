@@ -1,2 +1,6 @@
 # Create
-Create programs
+## Install
+`make && sudo make install`
+
+## Use
+`create`

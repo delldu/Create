@@ -8,14 +8,21 @@
 #
 #! /bin/sh
 
+GLOBAL_DIR=`dirname $0`
+GLOBAL_PRG=`basename $0`
+
+
 usage()
 {
-	echo "Usage: $0 options"
+	echo "Usage: $GLOBAL_PRG [options]"
+	echo "Semi-Auto-Programming: create programs files with commands"
+	echo ""
 	echo "options:"
-	echo "    pytorch project   create Pytorch project"
-	echo "    busybox bash      create busybox for bash"
-	echo "    busybox c         create busybox for C language"
-	echo "    golang project    create golang project"
+	echo "    --c [busybox | sandbox | cudabox | mpibox | opencv | hfile]   create project or files for C language"
+	echo "    --bash [busybox | forever | ccbs | while]                     create program for bash"
+	echo "    --golang                                                      create project or files for golang"
+	echo "    --python [pytorch]                                            create project or files for python"
+	echo "    --makefile [app | lib | dir]                                  create makefile for C/C++ program"
 	exit 1
 }
 
@@ -37,19 +44,62 @@ check_empty_dir()
 	fi
 }
 
+create_c_files()
+{
+	echo "Creating C files ..."
+}
+
+create_bash_files()
+{
+	echo "Create bash files ..."	
+}
+
+create_go_files()
+{
+	echo "Create golang files ..."	
+}
+
+create_py_files()
+{
+	args="$*"
+
+	case $args in 
+	*torch)
+		pytorch
+		;;
+	*)
+		usage
+		;;
+	esac
+}
+
+create_make_files()
+{
+	echo "Create makefile  ..."	
+}
+
 
 pytorch()
 {
+	TEMPLATE_DIR=${GLOBAL_DIR}/template/pytorch_project
+
 	check_empty_dir
 	project_name=`get_project_name`
 	echo "Creating pytorch project '${project_name}' ..."
+
+	create_view -f $TEMPLATE_DIR/data.py -v $project_name > data.py
+	create_view -f $TEMPLATE_DIR/model.py -v $project_name > model.py
+	create_view -f $TEMPLATE_DIR/train.py -v $project_name > train.py
+	create_view -f $TEMPLATE_DIR/test.py -v $project_name > test.py
+	create_view -f $TEMPLATE_DIR/predict.py -v $project_name > predict.py
+	create_view -f $TEMPLATE_DIR/readme.md -v $project_name > readme.md
 }
 
 busybox()
 {
 	if [ "$1" == "bash" ] ;
 	then
-		create_from_template -f template/bash/busybox
+		create_view -f ${GLOBAL_DIR}/template/bash/busybox
 	else
 		check_empty_dir
 		echo "Create busybox for C language."
@@ -63,7 +113,32 @@ golang()
 	echo "Create golang project '${project_name}' ..."
 }
 
-[ "$1" == "" -o "$1" == "-h" -o "$1" == "-help" -o "$1" == "--help" ] && usage
+[ "$*" == "" -o "$1" == "-h" -o "$1" == "-help" -o "$1" == "--help" ] && usage
 
-eval "$*"
+language=$1
+shift
+args="$*"
+
+case $language in
+--c)
+    create_c_files "$args"
+    ;;
+--bash)
+    create_bash_files "$args"
+    ;;
+--go*)
+    create_go_files "$args"
+    ;;
+--py*)
+    create_py_files "$args"
+    ;;
+--make*)
+    create_make_files "$args"
+    ;;
+*)
+    usage
+    ;;
+esac
+
+
 

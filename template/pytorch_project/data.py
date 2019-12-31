@@ -1,8 +1,10 @@
-"""Data."""
+"""Data loader."""
 
 # coding=utf-8
 #
 # /************************************************************************************
+# ***
+# ***    Copyright {{create "author"}} {{create "date +%Y"}}, All Rights Reserved.
 # ***
 # ***    File Author: {{ create "author" }}, {{ bash "date" }}
 # ***
@@ -28,6 +30,7 @@ class {{ . }}Dataset(data.Dataset):
         self.transforms = transforms
 
         # load all images, sorting for alignment
+        # xxxx--modify here
         self.images = list(sorted(os.listdir(os.path.join(root, "Images"))))
 
     def __getitem__(self, idx):
@@ -57,10 +60,13 @@ def get_transform(train):
 
 def get_data(bs):
     """Get data loader for trainning & validating, bs means batch_size."""
+
+    # xxxx--modify here
     train_ds = {{ . }}Dataset('images_root', get_transform(train=True))
     valid_ds = {{ . }}Dataset('images_root', get_transform(train=False))
 
     # Split train_ds in train and valid set
+    # xxxx--modify here
     indices = torch.randperm(len(train_ds)).tolist()
     train_ds = data.Subset(train_ds, indices[:-50])
     valid_ds = data.Subset(valid_ds, indices[-50:])

@@ -1,13 +1,12 @@
 #/************************************************************************************
 #***
-#***	Copyright {{who}} {{sh "date +%Y"}}, All Rights Reserved.
+#***	Copyright {{create "author"}} {{create "date +%Y"}}, All Rights Reserved.
 #***
-#***	File Author: {{who}}, {{sh "date"}}
+#***	File Author: {{create "author"}}, {{create "date"}}
 #***
 #************************************************************************************/
 #
 #! /bin/sh
-
 
 help()
 {
@@ -18,7 +17,6 @@ test1()
 {
 	echo "Test1 ... $1 $2 $3"
 }
-
 
 test2()
 {

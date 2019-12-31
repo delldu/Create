@@ -1,0 +1,25 @@
+#/************************************************************************************
+#***
+#***	Copyright 2019 Dell(18588220928@163.com), All Rights Reserved.
+#***
+#***	File Author: Dell, 2019-12-13 21:53:28
+#***
+#***    This is a extend package for create_view, for an example,
+#***	you can use {{ create "hello" }} in template
+#************************************************************************************/
+#
+#! /bin/sh
+
+
+hello()
+{
+	echo "Hello Creator !"
+}
+
+author()
+{
+	echo -n ${USER:0:1} | tr 'a-z' 'A-Z' && echo ${USER:1}
+}
+
+eval "$*"
+
