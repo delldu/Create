@@ -1,31 +1,41 @@
-"""
-Sample code from the TorchVision Object Detection Finetuning Tutorial.
+"""Data."""
 
-http://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
-"""
+# coding=utf-8
+#
+# /************************************************************************************
+# ***
+# ***    File Author: Dell, Tue Dec 31 17:08:42 CST 2019
+# ***
+# ************************************************************************************/
+#
 
 import os
 import numpy as np
 import torch
 from PIL import Image
+import torch.utils.data as data
 
-import pdb
+import torchvision.transforms as T
 
 
-class PennFudanDataset(object):
-    """Define dataset."""
+class PennFudanDataset(data.Dataset):
+    """Define train_ds."""
 
     def __init__(self, root, transforms):
-        """Init dataset."""
+        """Init train_ds."""
+        super(PennFudanDataset, self).__init__()
+
         self.root = root
         self.transforms = transforms
+
         # load all image files, sorting them to ensure that they are aligned
-        self.imgs = list(sorted(os.listdir(os.path.join(root, "PNGImages"))))
+        self.images = list(sorted(os.listdir(os.path.join(root, "PNGImages"))))
         self.masks = list(sorted(os.listdir(os.path.join(root, "PedMasks"))))
+        assert len(self.images) == len(self.masks)
 
     def __getitem__(self, idx):
         """Load images ad masks."""
-        img_path = os.path.join(self.root, "PNGImages", self.imgs[idx])
+        img_path = os.path.join(self.root, "PNGImages", self.images[idx])
         mask_path = os.path.join(self.root, "PedMasks", self.masks[idx])
         img = Image.open(img_path).convert("RGB")
         # note that we haven't converted the mask to RGB,
@@ -80,5 +90,45 @@ class PennFudanDataset(object):
 
     def __len__(self):
         """Return total numbers of images."""
-        return len(self.imgs)
+        return len(self.images)
 
+
+def collate_fn(batch):
+    """Collate fn."""
+    return tuple(zip(*batch))
+
+
+def get_transform(train):
+    """Transform images."""
+    ts = []
+    if train:
+        ts.append(T.RandomHorizontalFlip(0.5))
+
+    ts.append(T.ToTensor())
+    return T.Compose(ts)
+
+
+def get_data(bs):
+    """Get data loader for trainning and validating, bs -- batch_size ."""
+    train_ds = PennFudanDataset('PennFudanPed', get_transform(train=True))
+    valid_ds = PennFudanDataset('PennFudanPed', get_transform(train=False))
+
+    # split the train_ds in train and test set
+    indices = torch.randperm(len(train_ds)).tolist()
+    train_ds = data.Subset(train_ds, indices[:-50])
+    valid_ds = data.Subset(valid_ds, indices[-50:])
+
+    # define training and validation data loaders
+    train_dl = data.DataLoader(train_ds,
+                               batch_size=bs,
+                               shuffle=True,
+                               num_workers=4,
+                               collate_fn=collate_fn)
+
+    valid_dl = data.DataLoader(valid_ds,
+                               batch_size=bs * 2,
+                               shuffle=False,
+                               num_workers=4,
+                               collate_fn=collate_fn)
+
+    return train_dl, valid_dl

@@ -1,13 +1,16 @@
-"""
-Sample code from the TorchVision Object Detection Finetuning Tutorial.
+"""Model."""
 
-http://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
-"""
+# coding=utf-8
+#
+# /************************************************************************************
+# ***
+# ***    File Author: Dell, Tue Dec 31 17:08:42 CST 2019
+# ***
+# ************************************************************************************/
+#
+
 import os
 import torch
-import torchvision
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 
 
 def model_load(model, path):
@@ -23,8 +26,20 @@ def model_load(model, path):
             raise KeyError(n)
 
 
-def get_model_instance_segmentation(num_classes):
+def model_save(model, path):
+    """Save model."""
+    torch.save(model.state_dict(), path)
+
+
+def get_model():
     """Create instance segmentation model."""
+    import torchvision
+    from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+    from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
+
+    # our dataset has two classes only - background and person
+    num_classes = 2
+
     # load an instance segmentation model pre-trained pre-trained on COCO
     model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 
@@ -41,16 +56,3 @@ def get_model_instance_segmentation(num_classes):
                                                        hidden_layer, num_classes)
 
     return model
-
-
-def get_iou_type(model):
-    """Got IOU type."""
-    model_without_ddp = model
-    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
-        model_without_ddp = model.module
-    iou_types = ["bbox"]
-    if isinstance(model_without_ddp, torchvision.models.detection.MaskRCNN):
-        iou_types.append("segm")
-    if isinstance(model_without_ddp, torchvision.models.detection.KeypointRCNN):
-        iou_types.append("keypoints")
-    return iou_types

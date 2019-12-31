@@ -1,8 +1,20 @@
+"""Utils."""
+
+# coding=utf-8
+#
+# /************************************************************************************
+# ***
+# ***    File Author: Dell, Tue Dec 31 17:08:42 CST 2019
+# ***
+# ************************************************************************************/
+#
+
+
 import random
 import colorsys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
-import pdb
+
 
 class Box(object):
     """Box Interpreter, (c,r) format, [[x1, y1] --> [x2, y2])."""

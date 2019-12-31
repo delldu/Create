@@ -1,14 +1,19 @@
-# import copy
-# import os
-# from PIL import Image
+"""Coco eval."""
+
+# coding=utf-8
+#
+# /************************************************************************************
+# ***
+# ***    File Author: Dell, Tue Dec 31 17:08:42 CST 2019
+# ***
+# ************************************************************************************/
+#
+
 
 import numpy as np
 import copy
 import torch
-# import torch._six
-
-# import torch
-import torch.utils.data
+import torch.utils.data as data
 import torchvision
 
 from pycocotools import mask as coco_mask
@@ -21,7 +26,6 @@ import pycocotools.mask as mask_util
 from collections import defaultdict
 
 maskUtils = mask_util
-import pdb
 
 
 def convert_to_coco_api(ds):
@@ -75,19 +79,17 @@ def convert_to_coco_api(ds):
     return coco_ds
 
 
-# xxxx9999
-def create_coco_dataset_from_ourdataset(dataset):
+def create_coco_dataset(dataset):
     for _ in range(10):
         if isinstance(dataset, torchvision.datasets.CocoDetection):
             break
-        if isinstance(dataset, torch.utils.data.Subset):
+        if isinstance(dataset, data.Subset):
             dataset = dataset.dataset
     if isinstance(dataset, torchvision.datasets.CocoDetection):
         return dataset.coco
     return convert_to_coco_api(dataset)
 
 
-# xxxx9999
 class CocoEvaluator(object):
     def __init__(self, coco_gt, iou_types):
         assert isinstance(iou_types, (list, tuple))
