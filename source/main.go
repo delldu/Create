@@ -9,9 +9,11 @@
 package main
 
 import (
+	"bytes"
+	"bufio"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	// "io/ioutil"
 	"log"
 	"strings"
 	"os"
@@ -37,8 +39,8 @@ func init() {
 func usage() {
 	const version = "1.0"
 
-	fmt.Println("create_view version:", version)
-	fmt.Println("Usage: create_view [-f file] [-v value] [-h]")
+	fmt.Println("create_temp version:", version)
+	fmt.Println("Usage: create_temp [-f file] [-v value] [-h]")
 	fmt.Println("Options:")
 
 	// flag.PrintDefaults() format is not good enough !
@@ -53,7 +55,23 @@ func checkerror(err error) {
 	}
 }
 
-func runcmd(cmdline string) string {
+func input(prompt string) string {
+	if len(prompt) < 1 {
+		fmt.Fprintf(os.Stderr, "Input: ")
+	} else {
+		fmt.Fprintf(os.Stderr, prompt)
+	}
+	input := bufio.NewScanner(os.Stdin)
+	input.Scan()
+	return input.Text()
+}
+
+// no transform ...
+func bash_no(cmdline string) string {
+	return "{{bash \"" + cmdline + "\"}}"
+}
+
+func bash(cmdline string) string {
 	cmd := exec.Command("/bin/bash", "-c", cmdline)
 	out, err := cmd.Output()
 	checkerror(err)
@@ -61,19 +79,50 @@ func runcmd(cmdline string) string {
 	return strings.Trim(string(out), "\n")
 }
 
+// no transform ...
+func create_no(cmdline string) string {
+	return "{{create \"" + cmdline + "\"}}"
+}
+
 func create(cmdline string) string {
-	return runcmd("create_help " + cmdline)
+	cmd := exec.Command("/bin/bash", "-c", "create_help " + cmdline)
+	out, err := cmd.Output()
+	checkerror(err)
+
+	return strings.Trim(string(out), "\n")
+}
+
+func prepare(fname string) string {
+	// Prepare input ...
+	fmt.Fprintf(os.Stderr, "Input for template file '" + fname + "':\n")
+	fmt.Fprintf(os.Stderr, "-------------------------------------\n")
+
+	funcMap := template.FuncMap{"input": input, "bash" : bash_no, "create": create_no}
+
+	// Template name
+	tname := filepath.Base(fname)
+
+	t, e := template.New(tname).Funcs(funcMap).ParseFiles(fname)
+	checkerror(e)
+
+	output := new(bytes.Buffer) 	// output is io.Writer
+
+	e = t.Execute(output, value)
+	checkerror(e)		
+
+	return output.String()
 }
 
 func main() {
 	flag.Parse()
 
 	if len(fname) > 0 {
-		b, e := ioutil.ReadFile(fname)
-		checkerror(e)
-		text := string(b)
+		text := prepare(fname)
 
-		funcMap := template.FuncMap{"bash": runcmd, "create": create}
+		// Delete first blank line for help line, {{/*#help#: This is help.*/}}
+		text = strings.Replace(text, "\n", "", 1)
+
+		funcMap := template.FuncMap{"bash": bash, "create": create}
 
 		// Template name
 		tname := filepath.Base(fname)
@@ -81,7 +130,8 @@ func main() {
 		t, e := template.New(tname).Funcs(funcMap).Parse(text)
 		checkerror(e)
 
-		e = t.Execute(os.Stdout, value)
+		e = t.Execute(os.Stdout, nil)
+		checkerror(e)		
 	} else {
 		usage()
 	}
