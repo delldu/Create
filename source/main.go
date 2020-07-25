@@ -94,8 +94,8 @@ func create(cmdline string) string {
 
 func prepare(fname string) string {
 	// Prepare input ...
-	fmt.Fprintf(os.Stderr, "Input for template file '" + fname + "':\n")
-	fmt.Fprintf(os.Stderr, "-------------------------------------\n")
+	// fmt.Fprintf(os.Stderr, "Input for template file '" + fname + "':\n")
+	// fmt.Fprintf(os.Stderr, "-------------------------------------\n")
 
 	funcMap := template.FuncMap{"input": input, "bash" : bash_no, "create": create_no}
 

@@ -2,15 +2,15 @@ INSTALL_DIR ?= "/usr/local/bin"
 
 all:
 	go build main.go
-	@mv main create_temp
-	@strip create_temp
+	@mv main create_view
+	@strip create_view
 
 
 install:
-	@echo "Install create_temp to "$(INSTALL_DIR) "...... "
-	@cp create_temp $(INSTALL_DIR)
+	@echo "Install create_view to "$(INSTALL_DIR) "...... "
+	@cp create_view $(INSTALL_DIR)
 	@cp create_help $(INSTALL_DIR)
-	@chmod +x $(INSTALL_DIR)/create_temp
+	@chmod +x $(INSTALL_DIR)/create_view
 
 clean:
-	rm create_temp
+	rm create_view
