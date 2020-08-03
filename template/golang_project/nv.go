@@ -54,7 +54,7 @@ func usage() {
 	fmt.Println("    -h                           Display this help")
 	fmt.Println("    -clean video                 Clean video")
 	fmt.Println("    -color video                 Color video")
-	fmt.Println("    -zoom video -scale ratio     Zoom in/out video with scale, default: 4.0")
+	fmt.Println("    -zoom video -scale ratio     Zoom in/out with scale, default: 4.0")
 	fmt.Println("    -slow video -scale ratio     Slow video with ratio, default: 4.0")
 	fmt.Println("    -output directory            Output directory, default: output")
 }
