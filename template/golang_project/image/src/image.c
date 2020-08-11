@@ -52,6 +52,7 @@ int load_model(std::string filename, torch::jit::script::Module &module)
 
 	// to GPU
 	module.to(at::kCUDA);
+	std::cout << "Load model " << filename << " OK." << std::endl;
 
 	return IMAGE_OK;
 }
@@ -69,7 +70,7 @@ static torch::jit::script::Module clean_model;
 int ni_clean_init()
 {
 	if (! clean_flag) {
-		load_model("clean.pt", clean_model);
+		load_model("model/clean.pt", clean_model);
 		clean_flag = 1;
 	}
 	return IMAGE_OK;
@@ -116,7 +117,7 @@ static torch::jit::script::Module sharp_model;
 int ni_sharp_init()
 {
 	if (! sharp_flag) {
-		load_model("sharp.pt", sharp_model);
+		load_model("model/sharp.pt", sharp_model);
 		sharp_flag = 1;
 	}
 	return IMAGE_OK;
@@ -143,7 +144,7 @@ static torch::jit::script::Module color_model;
 int ni_color_init()
 {
 	if (! color_flag) {
-		load_model("color.pt", sharp_model);
+		load_model("model/color.pt", sharp_model);
 		color_flag = 1;
 	}
 	return IMAGE_OK;
@@ -170,7 +171,7 @@ static torch::jit::script::Module zoom_model;
 int ni_zoom_init()
 {
 	if (! zoom_flag) {
-		load_model("zoom.pt", sharp_model);
+		load_model("model/zoom.pt", sharp_model);
 		zoom_flag = 1;
 	}
 	return IMAGE_OK;
@@ -197,7 +198,7 @@ static torch::jit::script::Module patch_model;
 int ni_patch_init()
 {
 	if (! patch_flag) {
-		load_model("patch.pt", patch_model);
+		load_model("model/patch.pt", patch_model);
 		patch_flag = 1;
 	}
 	return IMAGE_OK;

@@ -23,6 +23,11 @@ extern "C" {
 
 // MS_BEGIN
 void image_init();
+int	ni_clean_init();
+int	ni_sharp_init();
+int	ni_color_init();
+int	ni_zoom_init();
+int	ni_patch_init();
 
 // Clean
 int ni_clean_file(char *infile, int sigma, char *outfile);
@@ -39,8 +44,12 @@ int ni_zoom_file(char *infile, int scale, char *outfile);
 // Patch
 int ni_patch_file(char *infile, char *mask, char *outfile);
 
+void ni_clean_exit();
+void ni_sharp_exit();
+void ni_color_exit();
+void ni_zoom_exit();
+void ni_patch_exit();
 void image_exit();
-
 
 // Funny Applications ...
 

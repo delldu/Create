@@ -133,19 +133,27 @@ func main() {
 	}
 
 	if len(clean) > 0 {
+		C.ni_clean_init()
 		image_clean(clean, output)
+		C.ni_clean_exit()
 	}
 
 	if len(color) > 0 {
+		C.ni_color_init()
 		image_color(color, output)
+		C.ni_color_exit()
 	}
 
 	if len(zoom) > 0 {
 		// make sure zoom_scale >= 0.1 && zoom_scale <= 16.0
+		C.ni_zoom_init()
 		image_zoom(zoom, zoom_scale, output)
+		C.ni_zoom_exit()
 	}
 
 	if len(patch) > 0 {
+		C.ni_patch_init()
 		image_patch(patch, patch_mask, output)
+		C.ni_patch_exit()
 	}
 }
