@@ -8,11 +8,24 @@
 
 package main
 
+/*
+#cgo CFLAGS: -Iimage/include
+#cgo LDFLAGS: -Wl,--no-as-needed -Limage/lib -limage -L/usr/local/libtorch/lib -lc10 -lc10_cuda -ltorch -ltorch_cuda -ltorch_cpu -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lstdc++
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include "image.h"
+*/
+import "C"
+
 import (
 	"flag"
 	"fmt"
 	"os"
 	"strings"
+	"unsafe"
 )
 
 var (
@@ -66,12 +79,32 @@ func usage() {
 func image_clean(image_file string, output_dir string) int {
 	output_file := strings.Join([]string{output_dir, image_file}, "/")
 	fmt.Printf("Clean %s, output to %s\n", image_file, output_file)
+
+	// c_image_file := C.CString(image_file)
+	// defer C.free(unsafe.Pointer(c_image_file))
+	// c_output_file := C.CString(output_file)
+	// defer C.free(unsafe.Pointer(c_output_file))
+
+	// C.ni_clean_file(c_image_file, 30, c_output_file)
+
 	return 0
 }
 
 func image_color(image_file string, output_dir string) int {
 	output_file := strings.Join([]string{output_dir, image_file}, "/")
 	fmt.Printf("Color %s, output to %s\n", image_file, output_file)
+
+	c_image_file := C.CString(image_file)
+	defer C.free(unsafe.Pointer(c_image_file))
+
+	c_mask_file := C.CString("mask.png")
+	defer C.free(unsafe.Pointer(c_mask_file))
+
+	c_output_file := C.CString(output_file)
+	defer C.free(unsafe.Pointer(c_output_file))
+
+	C.ni_color_file(c_image_file, c_mask_file, c_output_file)
+
 	return 0
 }
 

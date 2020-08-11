@@ -25,19 +25,19 @@ extern "C" {
 void image_init();
 
 // Clean
-int clean_file(char *infile, int sigma, char *outfile);
+int ni_clean_file(char *infile, int sigma, char *outfile);
 
 // Sharp
-int sharp_file(char *infile, int sigma, char *outfile);
+int ni_sharp_file(char *infile, int sigma, char *outfile);
 
 // Color
-int color_file(char *infile, char *json, char *outfile);
+int ni_color_file(char *infile, char *json, char *outfile);
 
 // Zoom
-int zoom_file(char *infile, int scale, char *outfile);
+int ni_zoom_file(char *infile, int scale, char *outfile);
 
 // Patch
-int patch_file(char *infile, char *mask, char *outfile);
+int ni_patch_file(char *infile, char *mask, char *outfile);
 
 void image_exit();
 
