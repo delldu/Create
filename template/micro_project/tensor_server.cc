@@ -14,18 +14,17 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
 
-// using tensor::HelloRequest;
-// using tensor::HelloReply;
+using tensor::HelloRequest;
+using tensor::HelloReply;
 using tensor::TensorService;
 
 // Logic and data behind the server's behavior.
 class TensorServiceImpl final : public TensorService::Service {
-  // Status SayHello(ServerContext* context, const HelloRequest* request,
-  //                 HelloReply* reply) override {
-  //   std::string prefix("Hello ");
-  //   reply->set_message(prefix + request->name());
-  //   return Status::OK;
-  // }
+  Status Hello(ServerContext* context, const HelloRequest* request, HelloReply* reply) override {
+    std::string prefix("Hello ");
+    reply->set_message(prefix + request->name());
+    return Status::OK;
+  }
 };
 
 void RunServer() {

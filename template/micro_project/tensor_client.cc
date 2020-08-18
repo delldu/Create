@@ -9,8 +9,8 @@
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
-// using tensor::HelloRequest;
-// using tensor::HelloReply;
+using tensor::HelloRequest;
+using tensor::HelloReply;
 using tensor::TensorService;
 
 class TensorServiceClient {
@@ -20,30 +20,30 @@ class TensorServiceClient {
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
-  // std::string SayHello(const std::string& user) {
-  //   // Data we are sending to the server.
-  //   HelloRequest request;
-  //   request.set_name(user);
+  std::string Hello(const std::string& user) {
+    // Data we are sending to the server.
+    HelloRequest request;
+    request.set_name(user);
 
-  //   // Container for the data we expect from the server.
-  //   HelloReply reply;
+    // Container for the data we expect from the server.
+    HelloReply reply;
 
-  //   // Context for the client. It could be used to convey extra information to
-  //   // the server and/or tweak certain RPC behaviors.
-  //   ClientContext context;
+    // Context for the client. It could be used to convey extra information to
+    // the server and/or tweak certain RPC behaviors.
+    ClientContext context;
 
-  //   // The actual RPC.
-  //   Status status = stub_->SayHello(&context, request, &reply);
+    // The actual RPC.
+    Status status = stub_->Hello(&context, request, &reply);
 
-  //   // Act upon its status.
-  //   if (status.ok()) {
-  //     return reply.message();
-  //   } else {
-  //     std::cout << status.error_code() << ": " << status.error_message()
-  //               << std::endl;
-  //     return "RPC failed";
-  //   }
-  // }
+    // Act upon its status.
+    if (status.ok()) {
+      return reply.message();
+    } else {
+      std::cout << status.error_code() << ": " << status.error_message()
+                << std::endl;
+      return "RPC failed";
+    }
+  }
 
  private:
   std::unique_ptr<TensorService::Stub> stub_;
@@ -54,18 +54,19 @@ int main(int argc, char** argv) {
   // are created. This channel models a connection to an endpoint (in this case,
   // localhost at port 50051). We indicate that the channel isn't authenticated
   // (use of InsecureChannelCredentials()).
-  // TensorServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
-  // std::string user("world");
-  // std::string reply = connect.SayHello(user);
-  // std::cout << "TensorService received: " << reply << std::endl;
 
-  tensor::TensorSize size;
-  size.set_n(10);
-  size.set_c(20);
-  size.set_h(30);
-  size.set_w(40);
+  TensorServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
+  std::string user("world");
+  std::string reply = connect.Hello(user);
+  std::cout << "TensorService received: " << reply << std::endl;
 
-  std::cout << "size: " << size.n() << "x" << size.c() << "x" << size.h() << "x" << size.w() << std::endl;
+  // tensor::TensorSize size;
+  // size.set_n(10);
+  // size.set_c(20);
+  // size.set_h(30);
+  // size.set_w(40);
+
+  // std::cout << "size: " << size.n() << "x" << size.c() << "x" << size.h() << "x" << size.w() << std::endl;
 
   return 0;
 }

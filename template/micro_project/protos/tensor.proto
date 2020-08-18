@@ -2,6 +2,14 @@ syntax = "proto3";
 
 package tensor;
 
+message HelloRequest {
+	string name = 1;
+}
+
+message HelloReply {
+	string message = 1;
+}
+
 // Tensor Size NxCxHxW
 message TensorSize {
 	int32 N = 1;
@@ -165,8 +173,8 @@ message VideoSlowReply {
 
 // Tensor Service
 service TensorService {
-	// Ping
-	// rpc Ping(PingRequest) returns (PingReply);
+	// Ping, Say Hello
+	rpc Hello(HelloRequest) returns (HelloReply);
 
 	// Get tensor size
 	rpc GetSize(GetSizeRequest) returns (GetSizeReply);
