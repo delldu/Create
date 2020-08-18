@@ -72,22 +72,102 @@ message PopReply {
 	string message = 1;
 }
 
-// Image Clean
+// Image clean
 message ImageCleanRequest {
-	string method = 1;
-	string id = 2;
+	string method = 1;	// deepc | bm3d: auto/sigma | guide: auto/sigma | gauss: auto/sigma | sharp: auto/sigma
+	string id = 2;		// input tensor id
 }
 
 message ImageCleanReply {
-	string id = 1;
-	string message = 2;
+	string oid = 1;		// output tensor id
+	string message = 2;	// OK or Error message: method=deepc, noise level=30 ...
 }
 
+// Image color
+message ImageColorRequest {
+	string method = 1;	// GAN ...
+	string id = 2;		// input tensor id
+	string rid = 3;		// reference color id, reference is 2d tensor with column (row, col, r, g, b)
+}
 
+message ImageColorReply {
+	string oid = 1;		// output tensor id
+	string message = 2;	// OK or Error message, method=...
+}
 
+// Image zoom
+message ImageZoomRequest {
+	string method = 1;	// esgan 2x, 4x ...
+	string id = 2;		// input tensor id
+}
+
+message ImageZoomReply {
+	string oid = 1;		// output tensor id
+	string message = 2;	// OK or Error message, method=...
+}
+
+// Image patch
+message ImagePatchRequest {
+	string method = 1;	// PConv ...
+	string id = 2;		// input tensor id
+	string mid = 3;		// mask tensor id
+}
+
+message ImagePatchReply {
+	string input = 1;	// oid tensor id
+	string message = 2;	// OK or Error message, method=...
+}
+
+// Video clean
+message VideoCleanRequest {
+	string method = 1;	// fastdvd
+	string id = 2;		// input tensor id
+}
+
+message VideoCleanReply {
+	string oid = 1;		// output tensor id
+	string message = 2;	// OK or Error message, method=..., noise level = 30 ...
+}
+
+// Video color
+message VideoColorRequest {
+	string method = 1;	// ...
+	string id = 2;		// input tensor id
+	string rid = 3;		// reference color tensors id, Nx3xHxW format
+}
+
+message VideoColorReply {
+	string oid = 1;			// output tensor id
+	string message = 2;		// OK or Error message, method=...
+}
+
+// Video zoom
+message VideoZoomRequest {
+	string method = 1;		// Zoom 2x, 4x ...
+	string id = 2;			// input tensor id
+}
+
+message VideoZoomReply {
+	string oid = 1;			// output tensor id
+	string message = 2;		// OK or Error message, method=..., scale = 4x
+}
+
+// Video slow
+message VideoSlowRequest {
+	string method = 1;	// Super Slomo ...
+	string id = 2;		// input tensor id
+}
+
+message VideoSlowReply {
+	string oid = 1;		// output tensor id
+	string message = 2;	// OK or Error message, method=..., scale = 2x
+}
 
 // Tensor Service
 service TensorService {
+	// Ping
+	// rpc Ping(PingRequest) returns (PingReply);
+
 	// Get tensor size
 	rpc GetSize(GetSizeRequest) returns (GetSizeReply);
 
@@ -105,22 +185,15 @@ service TensorService {
 	rpc RPop(PopRequest) returns (PopReply);
 
 	// Image applications
-	rpc ImageClean(TensorTransformRequest) returns (TensorTransformReply)
-	// ImageColorRequest, ImageColorReply
-	rpc ImageColor(TensorTransformRequest) returns (TensorTransformReply)
-	// ImageZoomRequest, ImageZoomReply
-	rpc ImageZoom(TensorTransformRequest) returns (TensorTransformReply)
-	// ImagePatchRequest, ImagePatchReply
-	rpc ImagePatch(TensorTransformRequest) returns (TensorTransformReply)
+	rpc ImageClean(ImageCleanRequest) returns (ImageCleanReply);
+	rpc ImageColor(ImageColorRequest) returns (ImageColorReply);
+	rpc ImageZoom(ImageZoomRequest) returns (ImageZoomReply);
+	rpc ImagePatch(ImagePatchRequest) returns (ImagePatchReply);
 
 	// Video applications
-	// VideoCleanRequest, VideoCleanReply
-	rpc VideoClean(TensorTransformRequest) returns (TensorTransformReply)
-	// VideoColorRequest, VideoColorReply
-	rpc VideoColor(TensorTransformRequest) returns (TensorTransformReply)
-	// VideoZoomRequest, VideoZoomReply
-	rpc VideoZoom(TensorTransformRequest) returns (TensorTransformReply)
-	// VideoSlowRequest, VideoSlowReply
-	rpc VideoSlow(TensorTransformRequest) returns (TensorTransformReply)
+	rpc VideoClean(VideoCleanRequest) returns (VideoCleanReply);
+	rpc VideoColor(VideoColorRequest) returns (VideoColorReply);
+	rpc VideoZoom(VideoZoomRequest) returns (VideoZoomReply);
+	rpc VideoSlow(VideoSlowRequest) returns (VideoSlowReply);
 }
 
