@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package tensor;
 
-// Get Tensor Size NxCxHxW
+// Tensor Size NxCxHxW
 message TensorSize {
 	int32 N = 1;
 	int32 C = 2;
@@ -10,11 +10,12 @@ message TensorSize {
 	int32 w = 4;
 }
 
-message GetTensorSizeRequest {
+// Get Tensor Size
+message GetSizeRequest {
 	string id = 1;
 }
 
-message GetTensorSizeReply {
+message GetSizeReply {
 	TensorSize size = 1;
 }
 
@@ -24,87 +25,69 @@ message Tensor {
 	bytes data = 2;
 }
 
-// SetTensor message
-message SetTensorRequest {
+// Set Tensor
+message SetRequest {
 	string id = 1;
 	Tensor tensor = 2;
 }
 
-message SetTensorReply {
+message SetReply {
 	string message = 1;	
 }
 
-// GetTensor message
-message GetTensorRequest {
+// Get Tensor
+message GetRequest {
 	string id = 1;
 }
 
-message GetTensorReply {
+message GetReply {
 	Tensor tensor = 1;
 }
 
-
 // Delete Tensor message
-message DelTensorRequest {
+message DelRequest {
 	string id = 1;
 }
 
-message DelTensorReply {
+message DelReply {
 	string message = 1;	
 }
 
-// Add tensor to head
-message LPushTensorRequest {
+// Add tensor
+message PushRequest {
 	string id = 1;
 	Tensor tensor = 2;
 }
 
-message LPushTensorReply {
+message PushReply {
 	string message = 1;
 }
 
-// Add tensor to tail
-message RPushTensorRequest {
-	string id = 1;
-	Tensor tensor = 2;
-}
-
-message RPushTensorReply {
-	string message = 1;
-}
-
-// Delete tensor slice from head
-message LPopTensorRequest {
+// Delete tensor slice
+message PopRequest {
 	string id = 1;
 }
 
-message LPopTensorReply {
+message PopReply {
 	string message = 1;
 }
 
-// Delete tensor slice from tail
-message RPopTensorRequest {
-	string id = 1;
-}
-
-message RPopTensorReply {
-	string message = 1;
-}
-
-// service
+// Tensor Service
 service TensorService {
-	rpc GetSize(GetTensorSizeRequest) returns (GetTensorSizeReply);
+	// Get tensor size
+	rpc GetSize(GetSizeRequest) returns (GetSizeReply);
 
-	rpc Get(GetTensorRequest) returns (GetTensorReply);
-	rpc Set(SetTensorRequest) returns (SetTensorReply);
-	rpc Del(DelTensorRequest) returns (DelTensorReply);
+	// Get/Set/Del tensor
+	rpc Get(GetRequest) returns (GetReply);
+	rpc Set(SetRequest) returns (SetReply);
+	rpc Del(DelRequest) returns (DelReply);
 
 	// Add tensor
-	rpc LPush(LPushTensorRequest) returns (LPushTensorReply);
-	rpc RPush(RPushTensorRequest) returns (RPushTensorReply);
+	rpc LPush(PushRequest) returns (PushReply);
+	rpc RPush(PushRequest) returns (PushReply);
 
 	// Delete tensor slice
-	rpc LPop(LPopTensorRequest) returns (LPopTensorReply);
-	rpc RPop(RPopTensorRequest) returns (RPopTensorReply);
+	rpc LPop(PopRequest) returns (PopReply);
+	rpc RPop(PopRequest) returns (PopReply);
 }
 
