@@ -4,7 +4,6 @@
 
 #include <grpc++/grpc++.h>  
 
-
 #include "tensor.grpc.pb.h"
 
 using grpc::Channel;
@@ -55,11 +54,18 @@ int main(int argc, char** argv) {
   // are created. This channel models a connection to an endpoint (in this case,
   // localhost at port 50051). We indicate that the channel isn't authenticated
   // (use of InsecureChannelCredentials()).
-  TensorServiceClient connect(grpc::CreateChannel(
-      "localhost:50051", grpc::InsecureChannelCredentials()));
-  std::string user("world");
+  // TensorServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
+  // std::string user("world");
   // std::string reply = connect.SayHello(user);
   // std::cout << "TensorService received: " << reply << std::endl;
+
+  tensor::TensorSize size;
+  size.set_n(10);
+  size.set_c(20);
+  size.set_h(30);
+  size.set_w(40);
+
+  std::cout << "size: " << size.n() << "x" << size.c() << "x" << size.h() << "x" << size.w() << std::endl;
 
   return 0;
 }

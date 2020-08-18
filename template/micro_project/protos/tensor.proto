@@ -7,7 +7,7 @@ message TensorSize {
 	int32 N = 1;
 	int32 C = 2;
 	int32 H = 3;
-	int32 w = 4;
+	int32 W = 4;
 }
 
 // Get Tensor Size
@@ -72,6 +72,20 @@ message PopReply {
 	string message = 1;
 }
 
+// Image Clean
+message ImageCleanRequest {
+	string method = 1;
+	string id = 2;
+}
+
+message ImageCleanReply {
+	string id = 1;
+	string message = 2;
+}
+
+
+
+
 // Tensor Service
 service TensorService {
 	// Get tensor size
@@ -89,5 +103,24 @@ service TensorService {
 	// Delete tensor slice
 	rpc LPop(PopRequest) returns (PopReply);
 	rpc RPop(PopRequest) returns (PopReply);
+
+	// Image applications
+	rpc ImageClean(TensorTransformRequest) returns (TensorTransformReply)
+	// ImageColorRequest, ImageColorReply
+	rpc ImageColor(TensorTransformRequest) returns (TensorTransformReply)
+	// ImageZoomRequest, ImageZoomReply
+	rpc ImageZoom(TensorTransformRequest) returns (TensorTransformReply)
+	// ImagePatchRequest, ImagePatchReply
+	rpc ImagePatch(TensorTransformRequest) returns (TensorTransformReply)
+
+	// Video applications
+	// VideoCleanRequest, VideoCleanReply
+	rpc VideoClean(TensorTransformRequest) returns (TensorTransformReply)
+	// VideoColorRequest, VideoColorReply
+	rpc VideoColor(TensorTransformRequest) returns (TensorTransformReply)
+	// VideoZoomRequest, VideoZoomReply
+	rpc VideoZoom(TensorTransformRequest) returns (TensorTransformReply)
+	// VideoSlowRequest, VideoSlowReply
+	rpc VideoSlow(TensorTransformRequest) returns (TensorTransformReply)
 }
 
