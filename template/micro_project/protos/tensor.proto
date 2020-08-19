@@ -10,74 +10,41 @@ message HelloReply {
 	string message = 1;
 }
 
-// Tensor Size NxCxHxW
-message TensorSize {
+// Tensor NxCxHxW
+message Tensor {
 	int32 N = 1;
 	int32 C = 2;
 	int32 H = 3;
 	int32 W = 4;
-}
-
-// Get Tensor Size
-message GetSizeRequest {
-	string id = 1;
-}
-
-message GetSizeReply {
-	TensorSize size = 1;
-}
-
-// Tensor NxCxHxW
-message Tensor {
-	Tensor size = 1;
-	bytes data = 2;
+	bytes data = 5;
 }
 
 // Set Tensor
-message SetRequest {
+message SetTensorRequest {
 	string id = 1;
 	Tensor tensor = 2;
 }
 
-message SetReply {
+message SetTensorReply {
 	string message = 1;	
 }
 
 // Get Tensor
-message GetRequest {
+message GetTensorRequest {
 	string id = 1;
 }
 
-message GetReply {
+message GetTensorReply {
 	Tensor tensor = 1;
 }
 
 // Delete Tensor message
-message DelRequest {
+message DelTensorRequest {
 	string id = 1;
 }
 
-message DelReply {
+message DelTensorReply {
 	string message = 1;	
-}
-
-// Add tensor
-message PushRequest {
-	string id = 1;
-	Tensor tensor = 2;
-}
-
-message PushReply {
-	string message = 1;
-}
-
-// Delete tensor slice
-message PopRequest {
-	string id = 1;
-}
-
-message PopReply {
-	string message = 1;
 }
 
 // Image clean
@@ -122,7 +89,7 @@ message ImagePatchRequest {
 }
 
 message ImagePatchReply {
-	string input = 1;	// oid tensor id
+	string oid = 1;		// output tensor id
 	string message = 2;	// OK or Error message, method=...
 }
 
@@ -133,7 +100,7 @@ message VideoCleanRequest {
 }
 
 message VideoCleanReply {
-	string oid = 1;		// output tensor id
+	string oid = 1;		// output tensor id or id list
 	string message = 2;	// OK or Error message, method=..., noise level = 30 ...
 }
 
@@ -176,32 +143,42 @@ service TensorService {
 	// Ping, Say Hello
 	rpc Hello(HelloRequest) returns (HelloReply);
 
-	// Get tensor size
-	rpc GetSize(GetSizeRequest) returns (GetSizeReply);
-
 	// Get/Set/Del tensor
-	rpc Get(GetRequest) returns (GetReply);
-	rpc Set(SetRequest) returns (SetReply);
-	rpc Del(DelRequest) returns (DelReply);
-
-	// Add tensor
-	rpc LPush(PushRequest) returns (PushReply);
-	rpc RPush(PushRequest) returns (PushReply);
-
-	// Delete tensor slice
-	rpc LPop(PopRequest) returns (PopReply);
-	rpc RPop(PopRequest) returns (PopReply);
-
-	// Image applications
-	rpc ImageClean(ImageCleanRequest) returns (ImageCleanReply);
-	rpc ImageColor(ImageColorRequest) returns (ImageColorReply);
-	rpc ImageZoom(ImageZoomRequest) returns (ImageZoomReply);
-	rpc ImagePatch(ImagePatchRequest) returns (ImagePatchReply);
-
-	// Video applications
-	rpc VideoClean(VideoCleanRequest) returns (VideoCleanReply);
-	rpc VideoColor(VideoColorRequest) returns (VideoColorReply);
-	rpc VideoZoom(VideoZoomRequest) returns (VideoZoomReply);
-	rpc VideoSlow(VideoSlowRequest) returns (VideoSlowReply);
+	rpc Get(GetTensorRequest) returns (GetTensorReply);
+	rpc Set(SetTensorRequest) returns (SetTensorReply);
+	rpc Del(DelTensorRequest) returns (DelTensorReply);
 }
 
+// Image applications
+service ImageCleanService {
+	rpc ImageClean(ImageCleanRequest) returns (ImageCleanReply);
+}
+
+service ImageColorService {
+	rpc ImageColor(ImageColorRequest) returns (ImageColorReply);
+}
+
+service ImageZoomService {
+	rpc ImageZoom(ImageZoomRequest) returns (ImageZoomReply);
+}
+
+service ImagePatchService {
+	rpc ImagePatch(ImagePatchRequest) returns (ImagePatchReply);
+}
+
+// Video applications
+service VideoCleanService {
+	rpc VideoClean(VideoCleanRequest) returns (VideoCleanReply);
+}
+
+service VideoColorService {
+	rpc VideoColor(VideoColorRequest) returns (VideoColorReply);
+}
+
+service VideoZoomService {
+	rpc VideoZoom(VideoZoomRequest) returns (VideoZoomReply);
+}
+
+service VideoSlowService {
+	rpc VideoSlow(VideoSlowRequest) returns (VideoSlowReply);
+}

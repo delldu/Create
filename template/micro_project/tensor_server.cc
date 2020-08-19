@@ -16,18 +16,12 @@ using grpc::Status;
 
 using tensor::HelloRequest;
 using tensor::HelloReply;
-using tensor::GetSizeRequest;
-using tensor::GetSizeReply;
-using tensor::GetRequest;
-using tensor::GetReply;
-using tensor::SetRequest;
-using tensor::SetReply;
-using tensor::DelRequest;
-using tensor::DelReply;
-using tensor::PushRequest;
-using tensor::PushReply;
-using tensor::PopRequest;
-using tensor::PopReply;
+using tensor::GetTensorRequest;
+using tensor::GetTensorReply;
+using tensor::SetTensorRequest;
+using tensor::SetTensorReply;
+using tensor::DelTensorRequest;
+using tensor::DelTensorReply;
 
 using tensor::TensorService;
 
@@ -36,25 +30,18 @@ typedef std::pair<std::string, tensor::Tensor> TensorPair;
 
 class TensorServiceImpl final : public TensorService::Service {
 public:
-  TensorServiceImpl(TensorBuffer *buffer) : buffer_(buffer) {}
+  // TensorServiceImpl() {}
 
   // Ping, Say Hello
   Status Hello(ServerContext* context, const HelloRequest* request, HelloReply* response) override;
-  // Get tensor size
-  Status GetSize(ServerContext* context, const GetSizeRequest* request, GetSizeReply* response) override;
+
   // Get/Set/Del tensor
-  Status Get(ServerContext* context, const GetRequest* request, GetReply* response) override;
-  Status Set(ServerContext* context, const SetRequest* request, SetReply* response) override;
-  Status Del(ServerContext* context, const DelRequest* request, DelReply* response) override;
-  // Add tensor
-  Status LPush(ServerContext* context, const PushRequest* request, PushReply* response) override;
-  Status RPush(ServerContext* context, const PushRequest* request, PushReply* response) override;
-  // Delete tensor slice
-  Status LPop(ServerContext* context, const PopRequest* request, PopReply* response) override;
-  Status RPop(ServerContext* context, const PopRequest* request, PopReply* response) override;
+  Status Get(ServerContext* context, const GetTensorRequest* request, GetTensorReply* response) override;
+  Status Set(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response) override;
+  Status Del(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response) override;
 
 private:
-  std::unique_ptr<TensorBuffer> buffer_;
+  TensorBuffer m_buffer;
 };
 
 Status TensorServiceImpl::Hello(ServerContext* context, const HelloRequest* request, HelloReply* response) {
@@ -63,46 +50,18 @@ Status TensorServiceImpl::Hello(ServerContext* context, const HelloRequest* requ
   return Status::OK;
 }
 
-Status TensorServiceImpl::GetSize(ServerContext* context, const GetSizeRequest* request, GetSizeReply* response) {
-  TensorBuffer::iterator it = buffer_->find(request->id());
-  if(it == buffer_->end()) {
-    std::cout << "NOT Found" << std::endl;
-    response->clear_size();
-    return Status::OK;
-  }
-  // Found
-  // response->set_allocated_size(it->second.size());
+Status TensorServiceImpl::Get(ServerContext* context, const GetTensorRequest* request, GetTensorReply* response) {
   return Status::OK;
 }
 
-Status TensorServiceImpl::Get(ServerContext* context, const GetRequest* request, GetReply* response) {
+Status TensorServiceImpl::Set(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response) {
+  m_buffer[request->id()] = request->tensor();
   return Status::OK;
 }
 
-Status TensorServiceImpl::Set(ServerContext* context, const SetRequest* request, SetReply* response) {
-  buffer_->insert(TensorPair(request->id(), request->tensor()));
-  return Status::OK;
-}
-
-Status TensorServiceImpl::Del(ServerContext* context, const DelRequest* request, DelReply* response) {
-  buffer_->erase(request->id());
+Status TensorServiceImpl::Del(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response) {
+  m_buffer.erase(request->id());
   response->set_message("OK");
-  return Status::OK;
-}
-
-Status TensorServiceImpl::LPush(ServerContext* context, const PushRequest* request, PushReply* response) {
-  return Status::OK;
-}
-
-Status TensorServiceImpl::RPush(ServerContext* context, const PushRequest* request, PushReply* response) {
-  return Status::OK;
-}
-
-Status TensorServiceImpl::LPop(ServerContext* context, const PopRequest* request, PopReply* response) {
-  return Status::OK;
-}
-
-Status TensorServiceImpl::RPop(ServerContext* context, const PopRequest* request, PopReply* response) {
   return Status::OK;
 }
 
@@ -116,9 +75,7 @@ Status TensorServiceImpl::RPop(ServerContext* context, const PopRequest* request
 // };
 
 void RunServer(std::string endpoint) {
-  TensorBuffer buffer;
-
-  TensorServiceImpl service(&buffer);
+  TensorServiceImpl service;
 
   ServerBuilder builder;
   // Listen on the given address without any authentication mechanism.
