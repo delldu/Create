@@ -15,7 +15,7 @@ using tensor::HelloRequest;
 using tensor::HelloReply;
 using tensor::TensorService;
 
-std::string tensor_uuid() {
+std::string UUID() {
   int i;
   std::ostringstream os;
   // cat /proc/sys/kernel/random/uuid
@@ -68,10 +68,13 @@ int main(int argc, char** argv) {
   // localhost at port 50051). We indicate that the channel isn't authenticated
   // (use of InsecureChannelCredentials()).
 
-  // TensorServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
-  // std::string user("world");
-  // std::string reply = connect.Hello(user);
-  // std::cout << "TensorService received: " << reply << std::endl;
+  std::string uuid = UUID();
+  std::cout << "uuid: " << uuid << std::endl;
+
+  TensorServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
+  std::string user("world");
+  std::string reply = connect.Hello(user);
+  std::cout << "TensorService received: " << reply << std::endl;
 
   // tensor::TensorSize size;
   // size.set_n(10);
@@ -81,8 +84,6 @@ int main(int argc, char** argv) {
 
   // std::cout << "size: " << size.n() << "x" << size.c() << "x" << size.h() << "x" << size.w() << std::endl;
 
-  std::string uuid = tensor_uuid();
-  std::cout << "uuid: " << uuid << std::endl;
 
   return 0;
 }
