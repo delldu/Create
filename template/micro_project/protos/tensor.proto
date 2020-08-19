@@ -36,6 +36,7 @@ message GetTensorRequest {
 
 message GetTensorReply {
 	Tensor tensor = 1;
+	string message = 2;	
 }
 
 // Delete Tensor message
