@@ -1,5 +1,8 @@
 #include "tensor_client.h"
 
+#include <random>
+
+
 std::string UUID()
 {
     std::ostringstream os;
@@ -9,6 +12,41 @@ std::string UUID()
     file.close();
 
     return os.str();
+}
+
+// Create random Tensor
+tensor::Tensor CreateTensor()
+{
+    std::default_random_engine e; 
+    std::uniform_int_distribution<unsigned> u(0, 255);
+    tensor::Tensor tensor;
+
+    int n = u(e) % 20 + 1;
+    int c = u(e) % 3 + 1;
+    int h = u(e) % 767 + 1;
+    int w = u(e) % 1023 + 1;
+
+    tensor.set_n(n);
+    tensor.set_c(c);
+    tensor.set_h(h);
+    tensor.set_w(w);
+
+    std::string d(n * c * h * w, ' ');
+    for (int i = 0; i < n*c*h*w; i++) {
+      d[i] = u(e);
+    }
+
+    tensor.set_data(d);
+
+    return tensor;
+}
+
+bool SameTensor(const tensor::Tensor& t1, const tensor::Tensor& t2)
+{
+    if (t1.n() != t2.n() || t1.c() != t2.c() || t1.h() != t2.h() || t1.w() != t2.w())
+        return false;
+
+    return (t1.data() == t2.data());
 }
 
 std::string ImageCleanServiceClient::Hello(const std::string& user)
@@ -41,7 +79,7 @@ std::string ImageCleanServiceClient::SetTensor(const std::string& id, tensor::Te
     // Data we are sending to the server.
     SetTensorRequest request;
     request.set_id(id);
-    request.set_allocated_tensor(&tensor);
+    request.mutable_tensor()->CopyFrom(tensor);
 
     // Container for the data we expect from the server.
     SetTensorReply reply;
@@ -58,6 +96,7 @@ std::string ImageCleanServiceClient::SetTensor(const std::string& id, tensor::Te
         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
         return "SetTensor RPC Failed.";
     }
+    std::cout << "SetTensor OK." << std::endl;
 
     return reply.message();
 }
@@ -83,6 +122,9 @@ std::string ImageCleanServiceClient::GetTensor(const std::string& id, tensor::Te
         std::cout << status.error_code() << ": " << status.error_message() << std::endl;
         return "GetTensor RPC Failed.";
     }
+
+    std::cout << "GetTensor OK." << std::endl;
+
     // Save tensor
     tensor = reply.tensor();
 
@@ -111,6 +153,9 @@ std::string ImageCleanServiceClient::DelTensor(const std::string& id)
         return "DelTensor RPC Failed.";
     }
 
+    std::cout << "DelTensor OK." << std::endl;
+
+
     return reply.message();
 }
 
@@ -128,7 +173,26 @@ int main(int argc, char** argv)
     ImageCleanServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
     std::string user("world");
     std::string reply = connect.Hello(user);
-    std::cout << "TensorService received: " << reply << std::endl;
+    std::cout << "Hello received: " << reply << std::endl;
+
+    auto tensor = CreateTensor();
+
+    reply = connect.SetTensor("12345", tensor);
+    std::cout << "--- SetTensor: -----" << reply << std::endl;
+
+    tensor::Tensor b;
+    reply = connect.GetTensor("12345", b);
+    std::cout << "--- GetTensor: -----" << reply << std::endl;
+
+    if (SameTensor(tensor, b)) {
+      std::cout << "tensor == b" << std::endl;
+    } else {
+      std::cout << "tensor != b" << std::endl;
+    }
+
+    // reply = connect.DelTensor("12345");
+    // std::cout << "--- DelTensor: -----" << reply << std::endl;
+
 
     // tensor::TensorSize size;
     // size.set_n(10);

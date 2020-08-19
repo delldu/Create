@@ -17,7 +17,7 @@ Status TensorServiceImpl::GetTensor(ServerContext* context, const GetTensorReque
         return Status(StatusCode::NOT_FOUND, "Tensor not found.");
     }
 
-    response->set_allocated_tensor(&(it->second));
+    response->mutable_tensor()->CopyFrom(it->second);
     response->set_message("OK");
     return Status::OK;
 }
