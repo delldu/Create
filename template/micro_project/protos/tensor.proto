@@ -36,6 +36,7 @@ message GetTensorRequest {
 
 message GetTensorReply {
 	Tensor tensor = 1;
+	string message = 2;
 }
 
 // Delete Tensor message
@@ -144,9 +145,9 @@ service TensorService {
 	rpc Hello(HelloRequest) returns (HelloReply);
 
 	// Get/Set/Del tensor
-	rpc Get(GetTensorRequest) returns (GetTensorReply);
-	rpc Set(SetTensorRequest) returns (SetTensorReply);
-	rpc Del(DelTensorRequest) returns (DelTensorReply);
+	rpc GetTensor(GetTensorRequest) returns (GetTensorReply);
+	rpc SetTensor(SetTensorRequest) returns (SetTensorReply);
+	rpc DelTensor(DelTensorRequest) returns (DelTensorReply);
 }
 
 // Image applications

@@ -42,9 +42,9 @@ public:
     Status Hello(ServerContext* context, const HelloRequest* request, HelloReply* response) override;
 
     // Get/Set/Del tensor
-    Status Get(ServerContext* context, const GetTensorRequest* request, GetTensorReply* response) override;
-    Status Set(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response) override;
-    Status Del(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response) override;
+    Status GetTensor(ServerContext* context, const GetTensorRequest* request, GetTensorReply* response) override;
+    Status SetTensor(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response) override;
+    Status DelTensor(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response) override;
 
     TensorBuffer* BufferAddress() { return &m_buffer; }
 

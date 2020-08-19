@@ -7,27 +7,29 @@ Status TensorServiceImpl::Hello(ServerContext* context, const HelloRequest* requ
     return Status::OK;
 }
 
-Status TensorServiceImpl::Get(ServerContext* context, const GetTensorRequest* request, GetTensorReply* response)
+Status TensorServiceImpl::GetTensor(ServerContext* context, const GetTensorRequest* request, GetTensorReply* response)
 {
     TensorBuffer::iterator it = m_buffer.find(request->id());
 
     if(it == m_buffer.end()) {
         response->clear_tensor();
+        response->set_message("NOK");
         return Status(StatusCode::NOT_FOUND, "Tensor not found.");
     }
 
     response->set_allocated_tensor(&(it->second));
+    response->set_message("OK");
     return Status::OK;
 }
 
-Status TensorServiceImpl::Set(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response)
+Status TensorServiceImpl::SetTensor(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response)
 {
     m_buffer[request->id()] = request->tensor();
     response->set_message("OK");
     return Status::OK;
 }
 
-Status TensorServiceImpl::Del(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response)
+Status TensorServiceImpl::DelTensor(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response)
 {
     m_buffer.erase(request->id());
     response->set_message("OK");

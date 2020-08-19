@@ -14,11 +14,21 @@
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
+
+using tensor::TensorService;
 using tensor::HelloReply;
 using tensor::HelloRequest;
-using tensor::TensorService;
+using tensor::SetTensorRequest;
+using tensor::SetTensorReply;
+using tensor::GetTensorRequest;
+using tensor::GetTensorReply;
+using tensor::DelTensorRequest;
+using tensor::DelTensorReply;
+
 
 using tensor::ImageCleanService;
+using tensor::ImageCleanRequest;
+using tensor::ImageCleanReply;
 
 class ImageCleanServiceClient {
 public:
@@ -29,6 +39,9 @@ public:
     }
 
     std::string Hello(const std::string& user);
+	std::string SetTensor(const std::string& id, tensor::Tensor& tensor);
+	std::string GetTensor(const std::string& id, tensor::Tensor& tensor);
+	std::string DelTensor(const std::string& id);
 
 private:
     std::unique_ptr<TensorService::Stub> tensor_service_stub_;
