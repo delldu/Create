@@ -11,28 +11,34 @@ Status TensorServiceImpl::GetTensor(ServerContext* context, const GetTensorReque
 {
     TensorBuffer::iterator it = m_buffer.find(request->id());
 
+    DumpBuffer("Before GetTensor");
+
     if(it == m_buffer.end()) {
         response->clear_tensor();
-        response->set_message("NOK");
+        response->set_message("");
         return Status(StatusCode::NOT_FOUND, "Tensor not found.");
     }
 
     response->mutable_tensor()->CopyFrom(it->second);
-    response->set_message("OK");
+    response->set_message(it->first);
     return Status::OK;
 }
 
 Status TensorServiceImpl::SetTensor(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response)
 {
     m_buffer[request->id()] = request->tensor();
-    response->set_message("OK");
+    DumpBuffer("SetTensor After.");
+    response->set_message(request->id());
     return Status::OK;
 }
 
 Status TensorServiceImpl::DelTensor(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response)
 {
+    DumpBuffer("Before DelTensor");
     m_buffer.erase(request->id());
-    response->set_message("OK");
+    
+    DumpBuffer("DelTensor After");
+    response->set_message(request->id());
     return Status::OK;
 }
 

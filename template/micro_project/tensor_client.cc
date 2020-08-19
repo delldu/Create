@@ -2,7 +2,6 @@
 
 #include <random>
 
-
 std::string UUID()
 {
     std::ostringstream os;
@@ -11,14 +10,15 @@ std::string UUID()
     os << file.rdbuf();
     file.close();
 
-    return os.str();
+    int len = os.str().size();
+    return os.str().substr(0, len - 1); // Remove 0x0a
 }
 
 // Create random Tensor
 tensor::Tensor CreateTensor()
 {
-    std::default_random_engine e; 
-    std::uniform_int_distribution<unsigned> u(0, 255);
+    std::default_random_engine e(time(0)); 
+    std::uniform_int_distribution<unsigned> u(32, 128);
     tensor::Tensor tensor;
 
     int n = u(e) % 20 + 1;
@@ -45,6 +45,9 @@ bool SameTensor(const tensor::Tensor& t1, const tensor::Tensor& t2)
 {
     if (t1.n() != t2.n() || t1.c() != t2.c() || t1.h() != t2.h() || t1.w() != t2.w())
         return false;
+
+    std::cout << "t1.data: " << t1.data().substr(0, 10) << std::endl;
+    std::cout << "t2.data: " << t2.data().substr(0, 10) << std::endl;
 
     return (t1.data() == t2.data());
 }
@@ -176,12 +179,12 @@ int main(int argc, char** argv)
     std::cout << "Hello received: " << reply << std::endl;
 
     auto tensor = CreateTensor();
-
-    reply = connect.SetTensor("12345", tensor);
+    
+    reply = connect.SetTensor(uuid, tensor);
     std::cout << "--- SetTensor: -----" << reply << std::endl;
 
     tensor::Tensor b;
-    reply = connect.GetTensor("12345", b);
+    reply = connect.GetTensor(uuid, b);
     std::cout << "--- GetTensor: -----" << reply << std::endl;
 
     if (SameTensor(tensor, b)) {
@@ -190,9 +193,11 @@ int main(int argc, char** argv)
       std::cout << "tensor != b" << std::endl;
     }
 
-    // reply = connect.DelTensor("12345");
-    // std::cout << "--- DelTensor: -----" << reply << std::endl;
+    reply = connect.DelTensor("12345");
+    std::cout << "--- DelTensor: -----" << reply << std::endl;
 
+    // reply = connect.DelTensor(uuid);
+    // std::cout << "--- DelTensor: -----" << reply << std::endl;
 
     // tensor::TensorSize size;
     // size.set_n(10);

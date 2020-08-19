@@ -48,6 +48,16 @@ public:
 
     TensorBuffer* BufferAddress() { return &m_buffer; }
 
+    void DumpBuffer(const std::string& prompt) {
+    	TensorBuffer::iterator it;
+
+    	std::cout << " ------ " << prompt << " ----------- " << std::endl;
+    	for (it = m_buffer.begin(); it != m_buffer.end(); it++) {
+    		std::cout << it->first << ": " << it->second.n() << "x" << it->second.c() << "x" << it->second.h() << "x" << it->second.w() << std::endl;
+    		std::cout << it->second.data().substr(0, 10) << std::endl;
+    	}
+    }
+
     ~TensorServiceImpl()
     {
         m_buffer.clear();

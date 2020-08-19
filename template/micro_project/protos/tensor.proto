@@ -26,7 +26,7 @@ message SetTensorRequest {
 }
 
 message SetTensorReply {
-	string message = 1;	
+	string message = 1;		// Expect message == set id
 }
 
 // Get Tensor
@@ -36,7 +36,7 @@ message GetTensorRequest {
 
 message GetTensorReply {
 	Tensor tensor = 1;
-	string message = 2;
+	string message = 2;		// Expect message == id from Tensor Buffer
 }
 
 // Delete Tensor message
@@ -45,7 +45,7 @@ message DelTensorRequest {
 }
 
 message DelTensorReply {
-	string message = 1;	
+	string message = 1;		// Exect message == Delete id
 }
 
 // Image clean
