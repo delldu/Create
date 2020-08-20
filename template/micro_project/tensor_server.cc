@@ -11,48 +11,38 @@ Status TensorServiceImpl::GetTensor(ServerContext* context, const GetTensorReque
 {
     TensorBuffer::iterator it = m_buffer.find(request->id());
 
-    DumpBuffer("Before GetTensor");
+    DebugTensorBuffer("GetTensor Before");
 
     if(it == m_buffer.end()) {
         response->clear_tensor();
-        response->set_message("");
         return Status(StatusCode::NOT_FOUND, "Tensor not found.");
     }
 
     response->mutable_tensor()->CopyFrom(it->second);
-    response->set_message(it->first);
     return Status::OK;
 }
 
 Status TensorServiceImpl::SetTensor(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response)
 {
+    DebugTensorBuffer("SetTensor Before");
     m_buffer[request->id()] = request->tensor();
-    DumpBuffer("SetTensor After.");
-    response->set_message(request->id());
+    DebugTensorBuffer("SetTensor After");
     return Status::OK;
 }
 
 Status TensorServiceImpl::DelTensor(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response)
 {
-    DumpBuffer("Before DelTensor");
+    DebugTensorBuffer("DelTensor Before");
     m_buffer.erase(request->id());
-    
-    DumpBuffer("DelTensor After");
-    response->set_message(request->id());
+    DebugTensorBuffer("DelTensor After");
     return Status::OK;
 }
 
-class ImageCleanServiceImpl final : public ImageCleanService::Service {
-public:
-    ImageCleanServiceImpl(TensorBuffer* bufferaddr)
-        : m_buffer_ptr(bufferaddr)
-    {
-    }
-    Status ImageClean(ServerContext* context, const ImageCleanRequest* request, ImageCleanReply* response) override;
-
-private:
-    TensorBuffer* m_buffer_ptr;
-};
+Status TensorServiceImpl::ChkTensor(ServerContext* context, const ChkTensorRequest* request, ChkTensorReply* response)
+{
+    TensorBuffer::iterator it = m_buffer.find(request->id());
+    return (it == m_buffer.end())? (Status(StatusCode::NOT_FOUND, "Tensor not found.")) : (Status::OK);
+}
 
 Status ImageCleanServiceImpl::ImageClean(ServerContext* context, const ImageCleanRequest* request, ImageCleanReply* response)
 {
@@ -65,6 +55,9 @@ void StartImageCleanServer(std::string endpoint)
     ImageCleanServiceImpl image_clean_service(tensor_service.BufferAddress());
 
     ServerBuilder builder;
+    builder.SetMaxReceiveMessageSize(32*1024*1024);
+    builder.SetMaxSendMessageSize(32*1024*1024);
+
     // Listen on the given address without any authentication mechanism.
     builder.AddListeningPort(endpoint, grpc::InsecureServerCredentials());
     // Register "tensor_service" as the instance through which we'll communicate with

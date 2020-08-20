@@ -2,6 +2,12 @@
 
 #include <random>
 
+#define DebugErrorMessage(tag, status) do { \
+        std::cout << tag << ": " << __FILE__ << "," << __LINE__ << std::endl; \
+        std::cout << "Error Code: " << status.error_code() << std::endl; \
+        std::cout << "Error Message: " << status.error_message() << std::endl; \
+    } while(0)
+
 std::string UUID()
 {
     std::ostringstream os;
@@ -21,10 +27,10 @@ tensor::Tensor CreateTensor()
     std::uniform_int_distribution<unsigned> u(32, 128);
     tensor::Tensor tensor;
 
-    int n = u(e) % 20 + 1;
-    int c = u(e) % 3 + 1;
-    int h = u(e) % 767 + 1;
-    int w = u(e) % 1023 + 1;
+    int n = 1; // u(e) % 20 + 10;
+    int c = 3; // u(e) % 3 + 1;
+    int h = 2048; // u(e) % 767 + 1;
+    int w = 4096; // u(e) % 1023 + 1;
 
     tensor.set_n(n);
     tensor.set_c(c);
@@ -52,116 +58,93 @@ bool SameTensor(const tensor::Tensor& t1, const tensor::Tensor& t2)
     return (t1.data() == t2.data());
 }
 
-std::string ImageCleanServiceClient::Hello(const std::string& user)
+std::string TensorServiceClient::Hello(const std::string& user)
 {
-    // Data we are sending to the server.
     HelloRequest request;
     request.set_name(user);
 
-    // Container for the data we expect from the server.
     HelloReply reply;
-
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
     ClientContext context;
 
     // The actual RPC.
-    Status status = tensor_service_stub_->Hello(&context, request, &reply);
+    Status status = m_tensor_service_stub->Hello(&context, request, &reply);
 
-    // Act upon its status.
-    if (! status.ok()) {
-        std::cout << status.error_code() << ": " << status.error_message() << std::endl;
-        return "Hello RPC Failed";
-    }
+    if (status.ok())
+        return reply.message();
 
-    return reply.message();
+    DebugErrorMessage("Hello RPC.", status);
+    return "Hello RPC Failed";
 }
 
-std::string ImageCleanServiceClient::SetTensor(const std::string& id, tensor::Tensor& tensor)
+bool TensorServiceClient::SetTensor(const std::string& id, const tensor::Tensor& tensor)
 {
-    // Data we are sending to the server.
     SetTensorRequest request;
+    SetTensorReply reply;
+    ClientContext context;
+
     request.set_id(id);
     request.mutable_tensor()->CopyFrom(tensor);
+    Status status = m_tensor_service_stub->SetTensor(&context, request, &reply);
 
-    // Container for the data we expect from the server.
-    SetTensorReply reply;
+    if (status.ok())
+        return true;
 
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
-    ClientContext context;
-
-    // The actual RPC.
-    Status status = tensor_service_stub_->SetTensor(&context, request, &reply);
-
-    // Act upon its status.
-    if (! status.ok()) {
-        std::cout << status.error_code() << ": " << status.error_message() << std::endl;
-        return "SetTensor RPC Failed.";
-    }
-    std::cout << "SetTensor OK." << std::endl;
-
-    return reply.message();
+    DebugErrorMessage("SetTensor RPC.", status);
+    return false;
 }
 
-std::string ImageCleanServiceClient::GetTensor(const std::string& id, tensor::Tensor& tensor)
+bool TensorServiceClient::GetTensor(const std::string& id, tensor::Tensor& tensor)
 {
-    // Data we are sending to the server.
     GetTensorRequest request;
-    request.set_id(id);
-
-    // Container for the data we expect from the server.
     GetTensorReply reply;
-
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
     ClientContext context;
 
-    // The actual RPC.
-    Status status = tensor_service_stub_->GetTensor(&context, request, &reply);
+    request.set_id(id);
+    Status status = m_tensor_service_stub->GetTensor(&context, request, &reply);
 
-    // Act upon its status.
-    if (! status.ok()) {
-        std::cout << status.error_code() << ": " << status.error_message() << std::endl;
-        return "GetTensor RPC Failed.";
+    if (status.ok()) {
+        // Save tensor
+        tensor = reply.tensor();
+        return true;
     }
 
-    std::cout << "GetTensor OK." << std::endl;
-
-    // Save tensor
-    tensor = reply.tensor();
-
-    return reply.message();
+    DebugErrorMessage("GetTensor RPC.", status);
+    return false;
 }
 
-std::string ImageCleanServiceClient::DelTensor(const std::string& id)
+bool TensorServiceClient::DelTensor(const std::string& id)
 {
-    // Data we are sending to the server.
     DelTensorRequest request;
+    DelTensorReply reply;
+    ClientContext context;
+
     request.set_id(id);
 
-    // Container for the data we expect from the server.
-    DelTensorReply reply;
+    Status status = m_tensor_service_stub->DelTensor(&context, request, &reply);
 
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
-    ClientContext context;
+    if (status.ok())
+        return true;
 
-    // The actual RPC.
-    Status status = tensor_service_stub_->DelTensor(&context, request, &reply);
-
-    // Act upon its status.
-    if (! status.ok()) {
-        std::cout << status.error_code() << ": " << status.error_message() << std::endl;
-        return "DelTensor RPC Failed.";
-    }
-
-    std::cout << "DelTensor OK." << std::endl;
-
-
-    return reply.message();
+    DebugErrorMessage("DelTensor RPC.", status);
+    return false;
 }
 
+bool TensorServiceClient::ChkTensor(const std::string& id)
+{
+    ChkTensorRequest request;
+    ChkTensorReply reply;
+    ClientContext context;
+
+    request.set_id(id);
+
+    Status status = m_tensor_service_stub->ChkTensor(&context, request, &reply);
+
+    if (status.ok())
+        return true;
+
+    DebugErrorMessage("ChkTensor RPC.", status);
+    return false;
+}
 
 int main(int argc, char** argv)
 {
@@ -170,31 +153,47 @@ int main(int argc, char** argv)
     // localhost at port 50051). We indicate that the channel isn't authenticated
     // (use of InsecureChannelCredentials()).
 
+    grpc::ChannelArguments channel_args;
+    channel_args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 32 * 1024 * 1024);
+    channel_args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 32 * 1024 * 1024);
+    std::shared_ptr<Channel> channel = grpc::CreateCustomChannel("localhost:50051", grpc::InsecureChannelCredentials(), channel_args);
+
+    // TensorServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
+    TensorServiceClient connect(channel);
+    auto tensor = CreateTensor();
+
+    for (int i = 0; i < 1000; i++) {
+
     std::string uuid = UUID();
     std::cout << "uuid: " << uuid << std::endl;
 
-    ImageCleanServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
+
     std::string user("world");
     std::string reply = connect.Hello(user);
     std::cout << "Hello received: " << reply << std::endl;
 
-    auto tensor = CreateTensor();
     
-    reply = connect.SetTensor(uuid, tensor);
-    std::cout << "--- SetTensor: -----" << reply << std::endl;
+    bool ok = connect.SetTensor(uuid, tensor);
+    std::cout << "--- SetTensor: -----" << ok << ", expected true" << std::endl;
 
     tensor::Tensor b;
-    reply = connect.GetTensor(uuid, b);
-    std::cout << "--- GetTensor: -----" << reply << std::endl;
+    ok = connect.GetTensor(uuid, b);
+    std::cout << "--- GetTensor: -----" << ok << ", expected true" << std::endl;
 
-    if (SameTensor(tensor, b)) {
-      std::cout << "tensor == b" << std::endl;
-    } else {
-      std::cout << "tensor != b" << std::endl;
-    }
+    // if (SameTensor(tensor, b)) {
+    //   std::cout << "tensor == b" << std::endl;
+    // } else {
+    //   std::cout << "tensor != b" << std::endl;
+    // }
 
-    reply = connect.DelTensor("12345");
-    std::cout << "--- DelTensor: -----" << reply << std::endl;
+    ok = connect.ChkTensor(uuid);
+    std::cout << "--- ChkTensor: -----" <<  ok << ", expected true" << std::endl;
+
+    ok = connect.DelTensor("12345");
+    std::cout << "--- DelTensor 12345: -----" << ok << ", expected true" << std::endl;
+
+    ok = connect.ChkTensor("12345");
+    std::cout << "--- ChkTensor 12345: -----" << ok << ", expected false" << std::endl;
 
     // reply = connect.DelTensor(uuid);
     // std::cout << "--- DelTensor: -----" << reply << std::endl;
@@ -206,6 +205,8 @@ int main(int argc, char** argv)
     // size.set_w(40);
 
     // std::cout << "size: " << size.n() << "x" << size.c() << "x" << size.h() << "x" << size.w() << std::endl;
+
+    }
 
     return 0;
 }

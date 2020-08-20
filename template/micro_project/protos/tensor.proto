@@ -26,7 +26,7 @@ message SetTensorRequest {
 }
 
 message SetTensorReply {
-	string message = 1;		// Expect message == set id
+	// string message = 1;		// Expect message == set id
 }
 
 // Get Tensor
@@ -36,7 +36,7 @@ message GetTensorRequest {
 
 message GetTensorReply {
 	Tensor tensor = 1;
-	string message = 2;		// Expect message == id from Tensor Buffer
+	// string message = 2;		// Expect message == id from Tensor Buffer
 }
 
 // Delete Tensor message
@@ -45,7 +45,28 @@ message DelTensorRequest {
 }
 
 message DelTensorReply {
-	string message = 1;		// Exect message == Delete id
+	// string message = 1;		// Exect message == Delete id
+}
+
+// Check Tensor message
+message ChkTensorRequest {
+	string id = 1;
+}
+
+message ChkTensorReply {
+	// string message = 1;		// Exect message == Delete id
+}
+
+// Tensor Service
+service TensorService {
+	// Ping, Say Hello
+	rpc Hello(HelloRequest) returns (HelloReply);
+
+	// Get/Set/Delete/Check tensor
+	rpc GetTensor(GetTensorRequest) returns (GetTensorReply);
+	rpc SetTensor(SetTensorRequest) returns (SetTensorReply);
+	rpc DelTensor(DelTensorRequest) returns (DelTensorReply);
+	rpc ChkTensor(ChkTensorRequest) returns (ChkTensorReply);
 }
 
 // Image clean
@@ -137,17 +158,6 @@ message VideoSlowRequest {
 message VideoSlowReply {
 	string oid = 1;		// output tensor id
 	string message = 2;	// OK or Error message, method=..., scale = 2x
-}
-
-// Tensor Service
-service TensorService {
-	// Ping, Say Hello
-	rpc Hello(HelloRequest) returns (HelloReply);
-
-	// Get/Set/Del tensor
-	rpc GetTensor(GetTensorRequest) returns (GetTensorReply);
-	rpc SetTensor(SetTensorRequest) returns (SetTensorReply);
-	rpc DelTensor(DelTensorRequest) returns (DelTensorReply);
 }
 
 // Image applications

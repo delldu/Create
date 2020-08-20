@@ -26,6 +26,8 @@ using tensor::HelloReply;
 using tensor::HelloRequest;
 using tensor::SetTensorReply;
 using tensor::SetTensorRequest;
+using tensor::ChkTensorReply;
+using tensor::ChkTensorRequest;
 using tensor::TensorService;
 
 // Image clean
@@ -41,19 +43,20 @@ public:
     // Ping, Say Hello
     Status Hello(ServerContext* context, const HelloRequest* request, HelloReply* response) override;
 
-    // Get/Set/Del tensor
+    // Get/Set/Delete/Check tensor
     Status GetTensor(ServerContext* context, const GetTensorRequest* request, GetTensorReply* response) override;
     Status SetTensor(ServerContext* context, const SetTensorRequest* request, SetTensorReply* response) override;
     Status DelTensor(ServerContext* context, const DelTensorRequest* request, DelTensorReply* response) override;
+    Status ChkTensor(ServerContext* context, const ChkTensorRequest* request, ChkTensorReply* response) override;
 
     TensorBuffer* BufferAddress() { return &m_buffer; }
 
-    void DumpBuffer(const std::string& prompt) {
+    void DebugTensorBuffer(const std::string& prompt) {
     	TensorBuffer::iterator it;
 
     	std::cout << " ------ " << prompt << " ----------- " << std::endl;
     	for (it = m_buffer.begin(); it != m_buffer.end(); it++) {
-    		std::cout << it->first << ": " << it->second.n() << "x" << it->second.c() << "x" << it->second.h() << "x" << it->second.w() << std::endl;
+    		std::cout << it->first << ": " << it->second.n() << "x" << it->second.c() << "x" << it->second.h() << "x" << it->second.w() << ", ";
     		std::cout << it->second.data().substr(0, 10) << std::endl;
     	}
     }
@@ -66,5 +69,24 @@ public:
 private:
     TensorBuffer m_buffer;
 };
+
+
+class ImageCleanServiceImpl final : public ImageCleanService::Service {
+public:
+    ImageCleanServiceImpl(TensorBuffer* bufferaddr)
+        : m_buffer_ptr(bufferaddr)
+    {
+        // Load model ...
+    }
+    Status ImageClean(ServerContext* context, const ImageCleanRequest* request, ImageCleanReply* response) override;
+
+    ~ImageCleanServiceImpl() {
+        // Release model ...
+    }
+
+private:
+    TensorBuffer* m_buffer_ptr;
+};
+
 
 #endif // TENSOR_SERVER_H

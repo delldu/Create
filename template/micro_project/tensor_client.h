@@ -24,28 +24,44 @@ using tensor::GetTensorRequest;
 using tensor::GetTensorReply;
 using tensor::DelTensorRequest;
 using tensor::DelTensorReply;
-
+using tensor::ChkTensorRequest;
+using tensor::ChkTensorReply;
 
 using tensor::ImageCleanService;
 using tensor::ImageCleanRequest;
 using tensor::ImageCleanReply;
 
-class ImageCleanServiceClient {
+class TensorServiceClient {
 public:
-    ImageCleanServiceClient(std::shared_ptr<Channel> channel)
-        : tensor_service_stub_(TensorService::NewStub(channel))
-        , image_clean_service_stub_(ImageCleanService::NewStub(channel))
+    TensorServiceClient(std::shared_ptr<Channel> channel)
     {
+        m_tensor_service_stub = TensorService::NewStub(channel);
     }
 
     std::string Hello(const std::string& user);
-	std::string SetTensor(const std::string& id, tensor::Tensor& tensor);
-	std::string GetTensor(const std::string& id, tensor::Tensor& tensor);
-	std::string DelTensor(const std::string& id);
+	bool SetTensor(const std::string& id, const tensor::Tensor& tensor);
+	bool GetTensor(const std::string& id, tensor::Tensor& tensor);
+	bool DelTensor(const std::string& id);
+    bool ChkTensor(const std::string& id);
+
+    ~TensorServiceClient() {
+    }
 
 private:
-    std::unique_ptr<TensorService::Stub> tensor_service_stub_;
-    std::unique_ptr<ImageCleanService::Stub> image_clean_service_stub_;
+    std::unique_ptr<TensorService::Stub> m_tensor_service_stub;
 };
+
+class ImageCleanServiceClient : public TensorServiceClient {
+public:
+    ImageCleanServiceClient(std::shared_ptr<Channel> channel) : TensorServiceClient(channel) {
+        m_image_clean_service_stub = ImageCleanService::NewStub(channel);
+    }
+
+    ~ImageCleanServiceClient() {
+    }
+private:
+    std::unique_ptr<ImageCleanService::Stub> m_image_clean_service_stub;
+};
+
 
 #endif // TENSOR_CLIENT_H

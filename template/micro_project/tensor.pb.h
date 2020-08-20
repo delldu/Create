@@ -47,7 +47,7 @@ struct TableStruct_tensor_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[25]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[27]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -55,6 +55,12 @@ struct TableStruct_tensor_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tensor_2eproto;
 namespace tensor {
+class ChkTensorReply;
+class ChkTensorReplyDefaultTypeInternal;
+extern ChkTensorReplyDefaultTypeInternal _ChkTensorReply_default_instance_;
+class ChkTensorRequest;
+class ChkTensorRequestDefaultTypeInternal;
+extern ChkTensorRequestDefaultTypeInternal _ChkTensorRequest_default_instance_;
 class DelTensorReply;
 class DelTensorReplyDefaultTypeInternal;
 extern DelTensorReplyDefaultTypeInternal _DelTensorReply_default_instance_;
@@ -132,6 +138,8 @@ class VideoZoomRequestDefaultTypeInternal;
 extern VideoZoomRequestDefaultTypeInternal _VideoZoomRequest_default_instance_;
 }  // namespace tensor
 PROTOBUF_NAMESPACE_OPEN
+template<> ::tensor::ChkTensorReply* Arena::CreateMaybeMessage<::tensor::ChkTensorReply>(Arena*);
+template<> ::tensor::ChkTensorRequest* Arena::CreateMaybeMessage<::tensor::ChkTensorRequest>(Arena*);
 template<> ::tensor::DelTensorReply* Arena::CreateMaybeMessage<::tensor::DelTensorReply>(Arena*);
 template<> ::tensor::DelTensorRequest* Arena::CreateMaybeMessage<::tensor::DelTensorRequest>(Arena*);
 template<> ::tensor::GetTensorReply* Arena::CreateMaybeMessage<::tensor::GetTensorReply>(Arena*);
@@ -950,34 +958,6 @@ class SetTensorReply PROTOBUF_FINAL :
 
   // accessors -------------------------------------------------------
 
-  enum : int {
-    kMessageFieldNumber = 1,
-  };
-  // string message = 1;
-  void clear_message();
-  const std::string& message() const;
-  void set_message(const std::string& value);
-  void set_message(std::string&& value);
-  void set_message(const char* value);
-  void set_message(const char* value, size_t size);
-  std::string* mutable_message();
-  std::string* release_message();
-  void set_allocated_message(std::string* message);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_message();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_message(
-      std::string* message);
-  private:
-  const std::string& _internal_message() const;
-  void _internal_set_message(const std::string& value);
-  std::string* _internal_mutable_message();
-  public:
-
   // @@protoc_insertion_point(class_scope:tensor.SetTensorReply)
  private:
   class _Internal;
@@ -985,7 +965,6 @@ class SetTensorReply PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr message_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tensor_2eproto;
 };
@@ -1257,34 +1236,8 @@ class GetTensorReply PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kMessageFieldNumber = 2,
     kTensorFieldNumber = 1,
   };
-  // string message = 2;
-  void clear_message();
-  const std::string& message() const;
-  void set_message(const std::string& value);
-  void set_message(std::string&& value);
-  void set_message(const char* value);
-  void set_message(const char* value, size_t size);
-  std::string* mutable_message();
-  std::string* release_message();
-  void set_allocated_message(std::string* message);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_message();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_message(
-      std::string* message);
-  private:
-  const std::string& _internal_message() const;
-  void _internal_set_message(const std::string& value);
-  std::string* _internal_mutable_message();
-  public:
-
   // .tensor.Tensor tensor = 1;
   bool has_tensor() const;
   private:
@@ -1310,7 +1263,6 @@ class GetTensorReply PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr message_;
   ::tensor::Tensor* tensor_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tensor_2eproto;
@@ -1582,34 +1534,6 @@ class DelTensorReply PROTOBUF_FINAL :
 
   // accessors -------------------------------------------------------
 
-  enum : int {
-    kMessageFieldNumber = 1,
-  };
-  // string message = 1;
-  void clear_message();
-  const std::string& message() const;
-  void set_message(const std::string& value);
-  void set_message(std::string&& value);
-  void set_message(const char* value);
-  void set_message(const char* value, size_t size);
-  std::string* mutable_message();
-  std::string* release_message();
-  void set_allocated_message(std::string* message);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_message();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_message(
-      std::string* message);
-  private:
-  const std::string& _internal_message() const;
-  void _internal_set_message(const std::string& value);
-  std::string* _internal_mutable_message();
-  public:
-
   // @@protoc_insertion_point(class_scope:tensor.DelTensorReply)
  private:
   class _Internal;
@@ -1617,7 +1541,283 @@ class DelTensorReply PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr message_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tensor_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ChkTensorRequest PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tensor.ChkTensorRequest) */ {
+ public:
+  inline ChkTensorRequest() : ChkTensorRequest(nullptr) {};
+  virtual ~ChkTensorRequest();
+
+  ChkTensorRequest(const ChkTensorRequest& from);
+  ChkTensorRequest(ChkTensorRequest&& from) noexcept
+    : ChkTensorRequest() {
+    *this = ::std::move(from);
+  }
+
+  inline ChkTensorRequest& operator=(const ChkTensorRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ChkTensorRequest& operator=(ChkTensorRequest&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ChkTensorRequest& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ChkTensorRequest* internal_default_instance() {
+    return reinterpret_cast<const ChkTensorRequest*>(
+               &_ChkTensorRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    9;
+
+  friend void swap(ChkTensorRequest& a, ChkTensorRequest& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ChkTensorRequest* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ChkTensorRequest* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ChkTensorRequest* New() const final {
+    return CreateMaybeMessage<ChkTensorRequest>(nullptr);
+  }
+
+  ChkTensorRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ChkTensorRequest>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ChkTensorRequest& from);
+  void MergeFrom(const ChkTensorRequest& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ChkTensorRequest* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tensor.ChkTensorRequest";
+  }
+  protected:
+  explicit ChkTensorRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tensor_2eproto);
+    return ::descriptor_table_tensor_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kIdFieldNumber = 1,
+  };
+  // string id = 1;
+  void clear_id();
+  const std::string& id() const;
+  void set_id(const std::string& value);
+  void set_id(std::string&& value);
+  void set_id(const char* value);
+  void set_id(const char* value, size_t size);
+  std::string* mutable_id();
+  std::string* release_id();
+  void set_allocated_id(std::string* id);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_id();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_id(
+      std::string* id);
+  private:
+  const std::string& _internal_id() const;
+  void _internal_set_id(const std::string& value);
+  std::string* _internal_mutable_id();
+  public:
+
+  // @@protoc_insertion_point(class_scope:tensor.ChkTensorRequest)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr id_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tensor_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ChkTensorReply PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tensor.ChkTensorReply) */ {
+ public:
+  inline ChkTensorReply() : ChkTensorReply(nullptr) {};
+  virtual ~ChkTensorReply();
+
+  ChkTensorReply(const ChkTensorReply& from);
+  ChkTensorReply(ChkTensorReply&& from) noexcept
+    : ChkTensorReply() {
+    *this = ::std::move(from);
+  }
+
+  inline ChkTensorReply& operator=(const ChkTensorReply& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ChkTensorReply& operator=(ChkTensorReply&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ChkTensorReply& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ChkTensorReply* internal_default_instance() {
+    return reinterpret_cast<const ChkTensorReply*>(
+               &_ChkTensorReply_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    10;
+
+  friend void swap(ChkTensorReply& a, ChkTensorReply& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ChkTensorReply* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ChkTensorReply* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ChkTensorReply* New() const final {
+    return CreateMaybeMessage<ChkTensorReply>(nullptr);
+  }
+
+  ChkTensorReply* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ChkTensorReply>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ChkTensorReply& from);
+  void MergeFrom(const ChkTensorReply& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ChkTensorReply* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tensor.ChkTensorReply";
+  }
+  protected:
+  explicit ChkTensorReply(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tensor_2eproto);
+    return ::descriptor_table_tensor_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:tensor.ChkTensorReply)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tensor_2eproto;
 };
@@ -1665,7 +1865,7 @@ class ImageCleanRequest PROTOBUF_FINAL :
                &_ImageCleanRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    11;
 
   friend void swap(ImageCleanRequest& a, ImageCleanRequest& b) {
     a.Swap(&b);
@@ -1845,7 +2045,7 @@ class ImageCleanReply PROTOBUF_FINAL :
                &_ImageCleanReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    12;
 
   friend void swap(ImageCleanReply& a, ImageCleanReply& b) {
     a.Swap(&b);
@@ -2025,7 +2225,7 @@ class ImageColorRequest PROTOBUF_FINAL :
                &_ImageColorRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    13;
 
   friend void swap(ImageColorRequest& a, ImageColorRequest& b) {
     a.Swap(&b);
@@ -2232,7 +2432,7 @@ class ImageColorReply PROTOBUF_FINAL :
                &_ImageColorReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    14;
 
   friend void swap(ImageColorReply& a, ImageColorReply& b) {
     a.Swap(&b);
@@ -2412,7 +2612,7 @@ class ImageZoomRequest PROTOBUF_FINAL :
                &_ImageZoomRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    15;
 
   friend void swap(ImageZoomRequest& a, ImageZoomRequest& b) {
     a.Swap(&b);
@@ -2592,7 +2792,7 @@ class ImageZoomReply PROTOBUF_FINAL :
                &_ImageZoomReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    16;
 
   friend void swap(ImageZoomReply& a, ImageZoomReply& b) {
     a.Swap(&b);
@@ -2772,7 +2972,7 @@ class ImagePatchRequest PROTOBUF_FINAL :
                &_ImagePatchRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    17;
 
   friend void swap(ImagePatchRequest& a, ImagePatchRequest& b) {
     a.Swap(&b);
@@ -2979,7 +3179,7 @@ class ImagePatchReply PROTOBUF_FINAL :
                &_ImagePatchReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    18;
 
   friend void swap(ImagePatchReply& a, ImagePatchReply& b) {
     a.Swap(&b);
@@ -3159,7 +3359,7 @@ class VideoCleanRequest PROTOBUF_FINAL :
                &_VideoCleanRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    19;
 
   friend void swap(VideoCleanRequest& a, VideoCleanRequest& b) {
     a.Swap(&b);
@@ -3339,7 +3539,7 @@ class VideoCleanReply PROTOBUF_FINAL :
                &_VideoCleanReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    20;
 
   friend void swap(VideoCleanReply& a, VideoCleanReply& b) {
     a.Swap(&b);
@@ -3519,7 +3719,7 @@ class VideoColorRequest PROTOBUF_FINAL :
                &_VideoColorRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    21;
 
   friend void swap(VideoColorRequest& a, VideoColorRequest& b) {
     a.Swap(&b);
@@ -3726,7 +3926,7 @@ class VideoColorReply PROTOBUF_FINAL :
                &_VideoColorReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    22;
 
   friend void swap(VideoColorReply& a, VideoColorReply& b) {
     a.Swap(&b);
@@ -3906,7 +4106,7 @@ class VideoZoomRequest PROTOBUF_FINAL :
                &_VideoZoomRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    23;
 
   friend void swap(VideoZoomRequest& a, VideoZoomRequest& b) {
     a.Swap(&b);
@@ -4086,7 +4286,7 @@ class VideoZoomReply PROTOBUF_FINAL :
                &_VideoZoomReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    24;
 
   friend void swap(VideoZoomReply& a, VideoZoomReply& b) {
     a.Swap(&b);
@@ -4266,7 +4466,7 @@ class VideoSlowRequest PROTOBUF_FINAL :
                &_VideoSlowRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    25;
 
   friend void swap(VideoSlowRequest& a, VideoSlowRequest& b) {
     a.Swap(&b);
@@ -4446,7 +4646,7 @@ class VideoSlowReply PROTOBUF_FINAL :
                &_VideoSlowReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    26;
 
   friend void swap(VideoSlowReply& a, VideoSlowReply& b) {
     a.Swap(&b);
@@ -5094,87 +5294,6 @@ inline void SetTensorRequest::set_allocated_tensor(::tensor::Tensor* tensor) {
 
 // SetTensorReply
 
-// string message = 1;
-inline void SetTensorReply::clear_message() {
-  message_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline const std::string& SetTensorReply::message() const {
-  // @@protoc_insertion_point(field_get:tensor.SetTensorReply.message)
-  return _internal_message();
-}
-inline void SetTensorReply::set_message(const std::string& value) {
-  _internal_set_message(value);
-  // @@protoc_insertion_point(field_set:tensor.SetTensorReply.message)
-}
-inline std::string* SetTensorReply::mutable_message() {
-  // @@protoc_insertion_point(field_mutable:tensor.SetTensorReply.message)
-  return _internal_mutable_message();
-}
-inline const std::string& SetTensorReply::_internal_message() const {
-  return message_.Get();
-}
-inline void SetTensorReply::_internal_set_message(const std::string& value) {
-  
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
-}
-inline void SetTensorReply::set_message(std::string&& value) {
-  
-  message_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:tensor.SetTensorReply.message)
-}
-inline void SetTensorReply::set_message(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
-  // @@protoc_insertion_point(field_set_char:tensor.SetTensorReply.message)
-}
-inline void SetTensorReply::set_message(const char* value,
-    size_t size) {
-  
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:tensor.SetTensorReply.message)
-}
-inline std::string* SetTensorReply::_internal_mutable_message() {
-  
-  return message_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline std::string* SetTensorReply::release_message() {
-  // @@protoc_insertion_point(field_release:tensor.SetTensorReply.message)
-  return message_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline void SetTensorReply::set_allocated_message(std::string* message) {
-  if (message != nullptr) {
-    
-  } else {
-    
-  }
-  message_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), message,
-      GetArena());
-  // @@protoc_insertion_point(field_set_allocated:tensor.SetTensorReply.message)
-}
-inline std::string* SetTensorReply::unsafe_arena_release_message() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:tensor.SetTensorReply.message)
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  
-  return message_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      GetArena());
-}
-inline void SetTensorReply::unsafe_arena_set_allocated_message(
-    std::string* message) {
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (message != nullptr) {
-    
-  } else {
-    
-  }
-  message_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      message, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tensor.SetTensorReply.message)
-}
-
 // -------------------------------------------------------------------
 
 // GetTensorRequest
@@ -5345,87 +5464,6 @@ inline void GetTensorReply::set_allocated_tensor(::tensor::Tensor* tensor) {
   // @@protoc_insertion_point(field_set_allocated:tensor.GetTensorReply.tensor)
 }
 
-// string message = 2;
-inline void GetTensorReply::clear_message() {
-  message_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline const std::string& GetTensorReply::message() const {
-  // @@protoc_insertion_point(field_get:tensor.GetTensorReply.message)
-  return _internal_message();
-}
-inline void GetTensorReply::set_message(const std::string& value) {
-  _internal_set_message(value);
-  // @@protoc_insertion_point(field_set:tensor.GetTensorReply.message)
-}
-inline std::string* GetTensorReply::mutable_message() {
-  // @@protoc_insertion_point(field_mutable:tensor.GetTensorReply.message)
-  return _internal_mutable_message();
-}
-inline const std::string& GetTensorReply::_internal_message() const {
-  return message_.Get();
-}
-inline void GetTensorReply::_internal_set_message(const std::string& value) {
-  
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
-}
-inline void GetTensorReply::set_message(std::string&& value) {
-  
-  message_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:tensor.GetTensorReply.message)
-}
-inline void GetTensorReply::set_message(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
-  // @@protoc_insertion_point(field_set_char:tensor.GetTensorReply.message)
-}
-inline void GetTensorReply::set_message(const char* value,
-    size_t size) {
-  
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:tensor.GetTensorReply.message)
-}
-inline std::string* GetTensorReply::_internal_mutable_message() {
-  
-  return message_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline std::string* GetTensorReply::release_message() {
-  // @@protoc_insertion_point(field_release:tensor.GetTensorReply.message)
-  return message_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline void GetTensorReply::set_allocated_message(std::string* message) {
-  if (message != nullptr) {
-    
-  } else {
-    
-  }
-  message_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), message,
-      GetArena());
-  // @@protoc_insertion_point(field_set_allocated:tensor.GetTensorReply.message)
-}
-inline std::string* GetTensorReply::unsafe_arena_release_message() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:tensor.GetTensorReply.message)
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  
-  return message_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      GetArena());
-}
-inline void GetTensorReply::unsafe_arena_set_allocated_message(
-    std::string* message) {
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (message != nullptr) {
-    
-  } else {
-    
-  }
-  message_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      message, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tensor.GetTensorReply.message)
-}
-
 // -------------------------------------------------------------------
 
 // DelTensorRequest
@@ -5515,86 +5553,94 @@ inline void DelTensorRequest::unsafe_arena_set_allocated_id(
 
 // DelTensorReply
 
-// string message = 1;
-inline void DelTensorReply::clear_message() {
-  message_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+// -------------------------------------------------------------------
+
+// ChkTensorRequest
+
+// string id = 1;
+inline void ChkTensorRequest::clear_id() {
+  id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline const std::string& DelTensorReply::message() const {
-  // @@protoc_insertion_point(field_get:tensor.DelTensorReply.message)
-  return _internal_message();
+inline const std::string& ChkTensorRequest::id() const {
+  // @@protoc_insertion_point(field_get:tensor.ChkTensorRequest.id)
+  return _internal_id();
 }
-inline void DelTensorReply::set_message(const std::string& value) {
-  _internal_set_message(value);
-  // @@protoc_insertion_point(field_set:tensor.DelTensorReply.message)
+inline void ChkTensorRequest::set_id(const std::string& value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:tensor.ChkTensorRequest.id)
 }
-inline std::string* DelTensorReply::mutable_message() {
-  // @@protoc_insertion_point(field_mutable:tensor.DelTensorReply.message)
-  return _internal_mutable_message();
+inline std::string* ChkTensorRequest::mutable_id() {
+  // @@protoc_insertion_point(field_mutable:tensor.ChkTensorRequest.id)
+  return _internal_mutable_id();
 }
-inline const std::string& DelTensorReply::_internal_message() const {
-  return message_.Get();
+inline const std::string& ChkTensorRequest::_internal_id() const {
+  return id_.Get();
 }
-inline void DelTensorReply::_internal_set_message(const std::string& value) {
+inline void ChkTensorRequest::_internal_set_id(const std::string& value) {
   
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
-inline void DelTensorReply::set_message(std::string&& value) {
+inline void ChkTensorRequest::set_id(std::string&& value) {
   
-  message_.Set(
+  id_.Set(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:tensor.DelTensorReply.message)
+  // @@protoc_insertion_point(field_set_rvalue:tensor.ChkTensorRequest.id)
 }
-inline void DelTensorReply::set_message(const char* value) {
+inline void ChkTensorRequest::set_id(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+  id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArena());
-  // @@protoc_insertion_point(field_set_char:tensor.DelTensorReply.message)
+  // @@protoc_insertion_point(field_set_char:tensor.ChkTensorRequest.id)
 }
-inline void DelTensorReply::set_message(const char* value,
+inline void ChkTensorRequest::set_id(const char* value,
     size_t size) {
   
-  message_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:tensor.DelTensorReply.message)
+  // @@protoc_insertion_point(field_set_pointer:tensor.ChkTensorRequest.id)
 }
-inline std::string* DelTensorReply::_internal_mutable_message() {
+inline std::string* ChkTensorRequest::_internal_mutable_id() {
   
-  return message_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return id_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline std::string* DelTensorReply::release_message() {
-  // @@protoc_insertion_point(field_release:tensor.DelTensorReply.message)
-  return message_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+inline std::string* ChkTensorRequest::release_id() {
+  // @@protoc_insertion_point(field_release:tensor.ChkTensorRequest.id)
+  return id_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline void DelTensorReply::set_allocated_message(std::string* message) {
-  if (message != nullptr) {
+inline void ChkTensorRequest::set_allocated_id(std::string* id) {
+  if (id != nullptr) {
     
   } else {
     
   }
-  message_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), message,
+  id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), id,
       GetArena());
-  // @@protoc_insertion_point(field_set_allocated:tensor.DelTensorReply.message)
+  // @@protoc_insertion_point(field_set_allocated:tensor.ChkTensorRequest.id)
 }
-inline std::string* DelTensorReply::unsafe_arena_release_message() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:tensor.DelTensorReply.message)
+inline std::string* ChkTensorRequest::unsafe_arena_release_id() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:tensor.ChkTensorRequest.id)
   GOOGLE_DCHECK(GetArena() != nullptr);
   
-  return message_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+  return id_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       GetArena());
 }
-inline void DelTensorReply::unsafe_arena_set_allocated_message(
-    std::string* message) {
+inline void ChkTensorRequest::unsafe_arena_set_allocated_id(
+    std::string* id) {
   GOOGLE_DCHECK(GetArena() != nullptr);
-  if (message != nullptr) {
+  if (id != nullptr) {
     
   } else {
     
   }
-  message_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      message, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tensor.DelTensorReply.message)
+  id_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      id, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tensor.ChkTensorRequest.id)
 }
+
+// -------------------------------------------------------------------
+
+// ChkTensorReply
 
 // -------------------------------------------------------------------
 
@@ -8498,6 +8544,10 @@ inline void VideoSlowReply::unsafe_arena_set_allocated_message(
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
