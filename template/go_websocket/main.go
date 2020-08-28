@@ -7,11 +7,15 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -37,6 +41,9 @@ const (
 
 	// Time to wait before force close on connection.
 	closeGracePeriod = 10 * time.Second
+
+	// Max file size
+	maxFileSize = 24
 )
 
 func pumpStdin(ws *websocket.Conn, w io.Writer) {
@@ -177,6 +184,126 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "home.html")
 }
 
+func serveUpload(w http.ResponseWriter, req *http.Request) {
+	contentType := req.Header.Get("content-type")
+	contentLen := req.ContentLength
+
+	log.Printf("upload content-type:%s,content-length:%d\n", contentType, contentLen)
+
+	if !strings.Contains(contentType, "multipart/form-data") {
+		w.Write([]byte("Content-type must be multipart/form-data"))
+		return
+	}
+	if contentLen >= maxFileSize*1024*1024 { // 24 MB
+		w.Write([]byte(fmt.Sprintf("File too large, over limit %dMB.", maxFileSize)))
+		return
+	}
+
+	err := req.ParseMultipartForm(maxFileSize * 1024 * 1024)
+	if err != nil {
+		w.Write([]byte("ParseMultipartForm error:" + err.Error()))
+		return
+	}
+
+	if len(req.MultipartForm.File) == 0 {
+		w.Write([]byte("There is not any file."))
+		return
+	}
+
+	for name, files := range req.MultipartForm.File {
+		log.Printf("req.MultipartForm.File, name=%s\n", name)
+
+		if len(files) != 1 {
+			w.Write([]byte("Too many files"))
+			return
+		}
+		if name == "" {
+			w.Write([]byte("File name is empty."))
+			return
+		}
+
+		for _, f := range files {
+			handle, err := f.Open()
+			if err != nil {
+				w.Write([]byte(fmt.Sprintf("unknown error,fileName=%s,fileSize=%d,err:%s", f.Filename, f.Size, err.Error())))
+				return
+			}
+
+			path := "./" + f.Filename
+			dst, _ := os.Create(path)
+			io.Copy(dst, handle)
+			dst.Close()
+			log.Printf("successful uploaded,fileName=%s,fileSize=%.2f MB,savePath=%s \n", f.Filename, float64(contentLen)/1024/1024, path)
+
+			w.Write([]byte("successful,url=" + url.QueryEscape(f.Filename)))
+		}
+	}
+}
+
+func getContentType(fileName string) (extension, contentType string) {
+	arr := strings.Split(fileName, ".")
+
+	if len(arr) >= 2 {
+		extension = arr[len(arr)-1]
+		switch extension {
+		case "jpeg", "jpe", "jpg":
+			contentType = "image/jpeg"
+		case "png":
+			contentType = "image/png"
+		case "gif":
+			contentType = "image/gif"
+		case "mp4":
+			contentType = "video/mpeg4"
+		case "mp3":
+			contentType = "audio/mp3"
+		case "wav":
+			contentType = "audio/wav"
+		case "pdf":
+			contentType = "application/pdf"
+		case "doc", "":
+			contentType = "application/msword"
+		}
+	}
+	// .*（ 二进制流，不知道下载文件类型）
+	contentType = "application/octet-stream"
+	return
+}
+
+func serveDownload(w http.ResponseWriter, req *http.Request) {
+	if req.RequestURI == "/favicon.ico" {
+		return
+	}
+
+	fmt.Printf("download url=%s \n", req.RequestURI)
+
+	filename := req.RequestURI[1:]
+	enEscapeUrl, err := url.QueryUnescape(filename)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	f, err := os.Open("./" + enEscapeUrl)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	info, err := f.Stat()
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	_, contentType := getContentType(filename)
+	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
+
+	f.Seek(0, 0)
+	io.Copy(w, f)
+}
+
 func main() {
 	flag.Parse()
 	if len(flag.Args()) < 1 {
@@ -188,6 +315,7 @@ func main() {
 		log.Fatal(err)
 	}
 	http.HandleFunc("/", serveHome)
+	http.HandleFunc("/file/upload", serveUpload)
 	http.HandleFunc("/ws", serveWs)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
