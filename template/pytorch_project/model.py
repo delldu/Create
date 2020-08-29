@@ -18,7 +18,6 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
-
 class {{ . }}Model(nn.Module):
     """{{ . }} Model."""
 
@@ -33,7 +32,9 @@ class {{ . }}Model(nn.Module):
 def model_load(model, path):
     """Load model."""
     if not os.path.exists(path):
+        print("Model '{}' does not exist.".format(path))
         return
+
     state_dict = torch.load(path, map_location=lambda storage, loc: storage)
     target_state_dict = model.state_dict()
     for n, p in state_dict.items():
@@ -112,7 +113,11 @@ def train_epoch(loader, model, optimizer, device, tag=''):
 
             # Optimizer
             optimizer.zero_grad()
-            loss.backward()
+            if os.environ["ENABLE_APEX"] == "YES":
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                scaled_loss.backward()
+            else:
+                loss.backward()
             optimizer.step()
 
         return total_loss.avg
@@ -121,8 +126,7 @@ def train_epoch(loader, model, optimizer, device, tag=''):
 def valid_epoch(loader, model, device, tag=''):
     """Validating model  ..."""
 
-    # xxxx--modify here
-    # valid_loss = Average()
+    valid_loss = Average()
 
     model.eval()
 
@@ -142,6 +146,44 @@ def valid_epoch(loader, model, device, tag=''):
                 predicts = model(images)
 
             # xxxx--modify here
-            # valid_loss.update(loss_value, count)
-            # t.set_postfix(loss='{:.4f}'.format(valid_loss.avg))
+            valid_loss.update(loss_value, count)
+            t.set_postfix(loss='{:.4f}'.format(valid_loss.avg))
             t.update(count)
+
+
+def model_setenv():
+    """Setup environ  ..."""
+
+    # random init ...
+    import random
+    random.seed(42)
+    torch.manual_seed(42)
+
+    # Is there GPU ?
+    if not torch.cuda.is_available():
+        os.environ["ONLY_USE_CPU"] = "YES"
+
+    # export ONLY_USE_CPU=YES ?
+    if os.environ["ONLY_USE_CPU"] == "YES":
+        os.environ["ENABLE_APEX"] = "NO"
+    else: # GPU ?
+        os.environ["ENABLE_APEX"] = "YES"
+        try:
+            from apex import amp
+        except:
+            os.environ["ENABLE_APEX"] = "NO"
+
+    # Running on GPU if available
+    if os.environ["ONLY_USE_CPU"] == "YES":
+        os.environ["DEVICE"] = 'cpu'
+    else:
+        os.environ["DEVICE"] = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    print("Environment")
+    print("----------------------------------------------")
+    # print("  HOME: ", os.environ["HOME"])
+    # print("  USER: ", os.environ["USER"])
+    # print("  PWD: ", os.environ["PWD"])
+    print("  DEVICE: ", os.environ["DEVCIE"])
+    print("  ONLY_USE_CPU: ", os.environ["ONLY_USE_CPU"])
+    print("  ENABLE_APEX: ", os.environ["ENABLE_APEX"])

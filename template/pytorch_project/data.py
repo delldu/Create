@@ -18,7 +18,6 @@ from PIL import Image
 import torch.utils.data as data
 import torchvision.transforms as T
 
-
 class {{ . }}Dataset(data.Dataset):
     """Define dataset."""
 
@@ -58,7 +57,7 @@ def get_transform(train):
     return T.Compose(ts)
 
 
-def get_data(bs):
+def train_data(bs):
     """Get data loader for trainning & validating, bs means batch_size."""
 
     # xxxx--modify here
@@ -76,3 +75,18 @@ def get_data(bs):
     valid_dl = data.DataLoader(valid_ds, batch_size=bs * 2, shuffle=False, num_workers=4)
 
     return train_dl, valid_dl
+
+def test_data(bs):
+    """Get data loader for test, bs means batch_size."""
+
+    # xxxx--modify here
+    test_ds = {{ . }}Dataset('images_root', get_transform(train=False))
+    test_dl = data.DataLoader(test_ds, batch_size=bs * 2, shuffle=False, num_workers=4)
+
+    return test_dl
+
+
+def get_data(trainning=True, bs=4):
+    """Get data loader for trainning & validating, bs means batch_size."""
+
+    return trainning? train_data(bs) : test_data(bs)

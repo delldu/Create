@@ -10,28 +10,33 @@
 # ***
 # ************************************************************************************/
 #
-
+import os
 import argparse
 import torch
 from data import get_data
-from model import get_model, model_load, valid_epoch
-
+from model import get_model, model_load, valid_epoch, model_setenv
 
 if __name__ == "__main__":
     """Test model."""
+
+    model_setenv()
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--checkpoint', type=str, default="output/{{ . }}.pth", help="checkpoint file")
+    parser.add_argument('--bs', type=int, default=2, help="batch size")
     args = parser.parse_args()
 
-    # Test on GPU if available
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    # CPU or GPU ?
+    device = torch.device(os.environ["DEVICE"])
 
     # get model
     model = get_model()
     model_load(model, args.checkpoint)
     model.to(device)
 
+    if os.environ["ENABLE_APEX"] == "YES":
+        model = amp.initialize(model, opt_level="O1")
+
     print("Start testing ...")
-    # xxxx--modify here
-    #     test_dl = None
-    #     valid_epoch(test_dl, model, device, tag='test')
+    test_dl = get_data(trainning=False, bs=args.bs)
+    valid_epoch(test_dl, model, device, tag='test')

@@ -13,17 +13,15 @@
 
 import os
 import argparse
-import random
 import torch
 import torch.optim as optim
 from data import get_data
-from model import get_model, model_load, model_save, train_epoch, valid_epoch
-
+from model import get_model, model_load, model_save, train_epoch, valid_epoch, model_setenv
 
 if __name__ == "__main__":
     """Trainning model."""
-    random.seed(42)
-    torch.manual_seed(42)
+    
+    model_setenv()    
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--outputdir', type=str, default="output", help="output directory")
@@ -37,8 +35,8 @@ if __name__ == "__main__":
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)
 
-    # train on GPU if available
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    # CPU or GPU ?
+    device = torch.device(os.environ["DEVICE"])
 
     # get model
     model = get_model()
@@ -51,8 +49,11 @@ if __name__ == "__main__":
     optimizer = optim.SGD(params, lr=args.lr, momentum=0.9, weight_decay=0.0005)
     lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
+    if os.environ["ENABLE_APEX"] == "YES":
+        model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
+
     # get data loader
-    train_dl, valid_dl = get_data(args.bs)
+    train_dl, valid_dl = get_data(trainning=True, bs=args.bs)
 
     for epoch in range(args.epochs):
         print("Epoch {}/{}, learning rate: {} ...".format(epoch + 1, args.epochs, lr_scheduler.get_lr()))
