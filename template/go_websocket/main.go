@@ -11,19 +11,11 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
-)
-
-var (
-	addr    = flag.String("addr", "127.0.0.1:8080", "http service address")
-	cmdPath string
 )
 
 const (
@@ -31,7 +23,7 @@ const (
 	writeWait = 10 * time.Second
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 8192
+	maxMessageSize = 24 * 1024 * 1024
 
 	// Time allowed to read the next pong message from the peer.
 	pongWait = 60 * time.Second
@@ -41,16 +33,16 @@ const (
 
 	// Time to wait before force close on connection.
 	closeGracePeriod = 10 * time.Second
-
-	// Max file size
-	maxFileSize = 24
 )
 
 func pumpStdin(ws *websocket.Conn, w io.Writer) {
 	defer ws.Close()
 	ws.SetReadLimit(maxMessageSize)
 	ws.SetReadDeadline(time.Now().Add(pongWait))
-	ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	ws.SetPongHandler(func(string) error {
+		ws.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
 	for {
 		_, message, err := ws.ReadMessage()
 		if err != nil {
@@ -64,8 +56,6 @@ func pumpStdin(ws *websocket.Conn, w io.Writer) {
 }
 
 func pumpStdout(ws *websocket.Conn, r io.Reader, done chan struct{}) {
-	defer func() {
-	}()
 	s := bufio.NewScanner(r)
 	for s.Scan() {
 		ws.SetWriteDeadline(time.Now().Add(writeWait))
@@ -105,9 +95,9 @@ func internalError(ws *websocket.Conn, msg string, err error) {
 	ws.WriteMessage(websocket.TextMessage, []byte("Internal server error."))
 }
 
-var upgrader = websocket.Upgrader{}
+func ServeWs(w http.ResponseWriter, r *http.Request) {
+	var upgrader = websocket.Upgrader{}
 
-func serveWs(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("upgrade:", err)
@@ -132,7 +122,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	defer inr.Close()
 	defer inw.Close()
 
-	proc, err := os.StartProcess(cmdPath, flag.Args(), &os.ProcAttr{
+	proc, err := os.StartProcess(command, flag.Args(), &os.ProcAttr{
 		Files: []*os.File{inr, outw, outw},
 	})
 	if err != nil {
@@ -172,150 +162,54 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	http.ServeFile(w, r, "home.html")
+func ServeHttp(w http.ResponseWriter, r *http.Request) {
+	handler := http.FileServer(http.Dir("."))
+	handler.ServeHTTP(w, r)
 }
 
-func serveUpload(w http.ResponseWriter, req *http.Request) {
-	contentType := req.Header.Get("content-type")
-	contentLen := req.ContentLength
+var (
+	help bool
 
-	log.Printf("upload content-type:%s,content-length:%d\n", contentType, contentLen)
+	address string
+	command string
+)
 
-	if !strings.Contains(contentType, "multipart/form-data") {
-		w.Write([]byte("Content-type must be multipart/form-data"))
-		return
-	}
-	if contentLen >= maxFileSize*1024*1024 { // 24 MB
-		w.Write([]byte(fmt.Sprintf("File too large, over limit %dMB.", maxFileSize)))
-		return
-	}
+func init() {
+	flag.BoolVar(&help, "h", false, "Display this help")
+	flag.StringVar(&address, "e", "127.0.0.1:8080", "Websocket service endpoint")
 
-	err := req.ParseMultipartForm(maxFileSize * 1024 * 1024)
-	if err != nil {
-		w.Write([]byte("ParseMultipartForm error:" + err.Error()))
-		return
-	}
-
-	if len(req.MultipartForm.File) == 0 {
-		w.Write([]byte("There is not any file."))
-		return
-	}
-
-	for name, files := range req.MultipartForm.File {
-		log.Printf("req.MultipartForm.File, name=%s\n", name)
-
-		if len(files) != 1 {
-			w.Write([]byte("Too many files"))
-			return
-		}
-		if name == "" {
-			w.Write([]byte("File name is empty."))
-			return
-		}
-
-		for _, f := range files {
-			handle, err := f.Open()
-			if err != nil {
-				w.Write([]byte(fmt.Sprintf("unknown error,fileName=%s,fileSize=%d,err:%s", f.Filename, f.Size, err.Error())))
-				return
-			}
-
-			path := "./" + f.Filename
-			dst, _ := os.Create(path)
-			io.Copy(dst, handle)
-			dst.Close()
-			log.Printf("successful uploaded,fileName=%s,fileSize=%.2f MB,savePath=%s \n", f.Filename, float64(contentLen)/1024/1024, path)
-
-			w.Write([]byte("successful,url=" + url.QueryEscape(f.Filename)))
-		}
-	}
+	// flag.PrintDefaults() is not good enough !
+	flag.Usage = usage
 }
 
-func getContentType(fileName string) (extension, contentType string) {
-	arr := strings.Split(fileName, ".")
+func usage() {
+	const version = "1.0"
 
-	if len(arr) >= 2 {
-		extension = arr[len(arr)-1]
-		switch extension {
-		case "jpeg", "jpe", "jpg":
-			contentType = "image/jpeg"
-		case "png":
-			contentType = "image/png"
-		case "gif":
-			contentType = "image/gif"
-		case "mp4":
-			contentType = "video/mpeg4"
-		case "mp3":
-			contentType = "audio/mp3"
-		case "wav":
-			contentType = "audio/wav"
-		case "pdf":
-			contentType = "application/pdf"
-		case "doc", "":
-			contentType = "application/msword"
-		}
-	}
-	// .*（ 二进制流，不知道下载文件类型）
-	contentType = "application/octet-stream"
-	return
-}
+	fmt.Println("Websocket Version:", version)
+	fmt.Println("Usage: websocket [options] command")
+	fmt.Println("Options:")
 
-func serveDownload(w http.ResponseWriter, req *http.Request) {
-	if req.RequestURI == "/favicon.ico" {
-		return
-	}
-
-	fmt.Printf("download url=%s \n", req.RequestURI)
-
-	filename := req.RequestURI[1:]
-	enEscapeUrl, err := url.QueryUnescape(filename)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	f, err := os.Open("./" + enEscapeUrl)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	info, err := f.Stat()
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	_, contentType := getContentType(filename)
-	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
-	w.Header().Set("Content-Type", contentType)
-	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
-
-	f.Seek(0, 0)
-	io.Copy(w, f)
+	fmt.Println("    -h               Display this help")
+	fmt.Println("    -e address       Websocket endpoint(default: 127.0.0.1:8080)")
 }
 
 func main() {
 	flag.Parse()
+
 	if len(flag.Args()) < 1 {
-		log.Fatal("must specify at least one argument")
+		usage()
+		return
 	}
+
 	var err error
-	cmdPath, err = exec.LookPath(flag.Args()[0])
+	command, err = exec.LookPath(flag.Args()[0])
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc("/", serveHome)
-	http.HandleFunc("/file/upload", serveUpload)
-	http.HandleFunc("/ws", serveWs)
-	log.Fatal(http.ListenAndServe(*addr, nil))
+
+	http.HandleFunc("/", ServeHttp)
+	http.HandleFunc("/ws", ServeWs)
+
+	log.Printf("Starting websocket server at %s ...\n", address)
+	log.Fatal(http.ListenAndServe(address, nil))
 }
