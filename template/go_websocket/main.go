@@ -96,14 +96,13 @@ func internalError(ws *websocket.Conn, msg string, err error) {
 }
 
 func ServeWs(w http.ResponseWriter, r *http.Request) {
-	var upgrader = websocket.Upgrader{}
+	upgrader := websocket.Upgrader{}
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("upgrade:", err)
 		return
 	}
-
 	defer ws.Close()
 
 	outr, outw, err := os.Pipe()
@@ -129,7 +128,6 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 		internalError(ws, "start:", err)
 		return
 	}
-
 	inr.Close()
 	outw.Close()
 
@@ -163,8 +161,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 }
 
 func ServeHttp(w http.ResponseWriter, r *http.Request) {
-	handler := http.FileServer(http.Dir("."))
-	handler.ServeHTTP(w, r)
+	http.FileServer(http.Dir(".")).ServeHTTP(w, r)
 }
 
 var (
@@ -176,7 +173,7 @@ var (
 
 func init() {
 	flag.BoolVar(&help, "h", false, "Display this help")
-	flag.StringVar(&address, "e", "127.0.0.1:8080", "Websocket service endpoint")
+	flag.StringVar(&address, "e", "0.0.0.0:8080", "Websocket service endpoint")
 
 	// flag.PrintDefaults() is not good enough !
 	flag.Usage = usage
@@ -190,7 +187,7 @@ func usage() {
 	fmt.Println("Options:")
 
 	fmt.Println("    -h               Display this help")
-	fmt.Println("    -e address       Websocket endpoint(default: 127.0.0.1:8080)")
+	fmt.Println("    -e address       Websocket service endpoint (default is 0.0.0.0:8080)")
 }
 
 func main() {
@@ -210,6 +207,6 @@ func main() {
 	http.HandleFunc("/", ServeHttp)
 	http.HandleFunc("/ws", ServeWs)
 
-	log.Printf("Starting websocket server at %s ...\n", address)
+	log.Printf("Starting websocket server at %s with command '%s' ...\n", address, command)
 	log.Fatal(http.ListenAndServe(address, nil))
 }
