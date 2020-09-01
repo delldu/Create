@@ -259,5 +259,7 @@ def infer_perform():
 
 
 if __name__ == '__main__':
+    """Test model ..."""
+
     model_export()
     infer_perform()
