@@ -105,6 +105,8 @@ def get_data(trainning=True, bs=4):
 
 
 if __name__ == '__main__':
+    """Test dataset ..."""
+
     ds = {{ . }}Dataset(train_dataset_rootdir)
     print(ds)
     # src = ds[10]
