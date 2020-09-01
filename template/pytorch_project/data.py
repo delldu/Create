@@ -12,11 +12,14 @@
 #
 
 import os
-import numpy as np
 import torch
 from PIL import Image
 import torch.utils.data as data
 import torchvision.transforms as T
+
+# xxxx--modify here
+train_dataset_rootdir = "dataset/train/"
+test_dataset_rootdir = "dataset/test/"
 
 class {{ . }}Dataset(data.Dataset):
     """Define dataset."""
@@ -30,11 +33,11 @@ class {{ . }}Dataset(data.Dataset):
 
         # load all images, sorting for alignment
         # xxxx--modify here
-        self.images = list(sorted(os.listdir(os.path.join(root, "Images"))))
+        self.images = list(sorted(os.listdir(root)))
 
     def __getitem__(self, idx):
         """Load images."""
-        img_path = os.path.join(self.root, "Images", self.images[idx])
+        img_path = os.path.join(self.root, self.images[idx])
         img = Image.open(img_path).convert("RGB")
 
         if self.transforms is not None:
@@ -46,12 +49,22 @@ class {{ . }}Dataset(data.Dataset):
         """Return total numbers of images."""
         return len(self.images)
 
+    def __repr__(self):
+        """
+        Return printable representation of the dataset object.
+        """
+        fmt_str = 'Dataset ' + self.__class__.__name__ + '\n'
+        fmt_str += '    Number of samples: {}\n'.format(self.__len__())
+        fmt_str += '    Root Location: {}\n'.format(self.root)
+        tmp = '    Transforms: '
+        fmt_str += '{0}{1}\n'.format(tmp, self.transforms.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
+        return fmt_str
 
 def get_transform(train):
     """Transform images."""
     ts = []
-    if train:
-        ts.append(T.RandomHorizontalFlip(0.5))
+    # if train:
+    #     ts.append(T.RandomHorizontalFlip(0.5))
 
     ts.append(T.ToTensor())
     return T.Compose(ts)
@@ -60,15 +73,15 @@ def get_transform(train):
 def train_data(bs):
     """Get data loader for trainning & validating, bs means batch_size."""
 
-    # xxxx--modify here
-    train_ds = {{ . }}Dataset('images_root', get_transform(train=True))
-    valid_ds = {{ . }}Dataset('images_root', get_transform(train=False))
+    train_ds = {{ . }}Dataset(train_dataset_rootdir, get_transform(train=True))
+    print(train_ds)
 
     # Split train_ds in train and valid set
     # xxxx--modify here
+    valid_len = int(0.2 * len(train_ds))
     indices = torch.randperm(len(train_ds)).tolist()
-    train_ds = data.Subset(train_ds, indices[:-50])
-    valid_ds = data.Subset(valid_ds, indices[-50:])
+    valid_ds = data.Subset(train_ds, indices[-valid_len:])
+    train_ds = data.Subset(train_ds, indices[:-valid_len])
 
     # Define training and validation data loaders
     train_dl = data.DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=4)
@@ -79,8 +92,7 @@ def train_data(bs):
 def test_data(bs):
     """Get data loader for test, bs means batch_size."""
 
-    # xxxx--modify here
-    test_ds = {{ . }}Dataset('images_root', get_transform(train=False))
+    test_ds = {{ . }}Dataset(test_dataset_rootdir, get_transform(train=False))
     test_dl = data.DataLoader(test_ds, batch_size=bs * 2, shuffle=False, num_workers=4)
 
     return test_dl
@@ -89,4 +101,11 @@ def test_data(bs):
 def get_data(trainning=True, bs=4):
     """Get data loader for trainning & validating, bs means batch_size."""
 
-    return trainning? train_data(bs) : test_data(bs)
+    return train_data(bs) if trainning else test_data(bs)
+
+
+if __name__ == '__main__':
+    ds = {{ . }}Dataset(train_dataset_rootdir)
+    print(ds)
+    # src = ds[10]
+    # src.show()

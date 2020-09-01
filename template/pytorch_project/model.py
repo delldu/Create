@@ -48,6 +48,49 @@ def model_save(model, path):
     """Save model."""
     torch.save(model.state_dict(), path)
 
+def model_export():
+    """Export model to onnx."""
+
+    import onnx
+    from onnx import optimizer
+
+    # xxxx--modify here
+    onnx_file = "model.onnx"
+    weight_file = "checkpoint/weight.pth"
+
+    # 1. Load model
+    print("Loading model ...")
+    model = {{ . }}Model()
+    model_load(model, weight_file)
+    model.eval()
+
+    # 2. Model export
+    print("Export model ...")
+    # xxxx--modify here
+    dummy_input = torch.randn(1, 3, 512, 512)
+    input_names = [ "input" ]
+    output_names = [ "output" ]
+    torch.onnx.export(model, dummy_input, onnx_file,
+                    input_names=input_names, 
+                    output_names=output_names,
+                    verbose=True,
+                    opset_version=11,
+                    keep_initializers_as_inputs=True,
+                    export_params=True)
+
+    # 3. Optimize model
+    print('Checking model ...')
+    model = onnx.load(onnx_file)
+    onnx.checker.check_model(model)
+
+    print("Optimizing model ...")
+    passes = ["extract_constant_to_initializer", "eliminate_unused_initializer"]
+    optimized_model = optimizer.optimize(model, passes)
+    onnx.save(optimized_model, onnx_file)
+
+    # 4. Visual model
+    # python -c "import netron; netron.start('model.onnx')"
+
 
 def get_model():
     """Create model."""
@@ -179,11 +222,42 @@ def model_setenv():
     else:
         os.environ["DEVICE"] = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+        if torch.cuda.is_available():
+            torch.backends.cudnn.enabled = True
+            torch.backends.cudnn.benchmark = True
+
     print("Environment")
     print("----------------------------------------------")
-    # print("  HOME: ", os.environ["HOME"])
-    # print("  USER: ", os.environ["USER"])
-    # print("  PWD: ", os.environ["PWD"])
+    print("  USER: ", os.environ["USER"])
+    print("  PWD: ", os.environ["PWD"])
     print("  DEVICE: ", os.environ["DEVCIE"])
     print("  ONLY_USE_CPU: ", os.environ["ONLY_USE_CPU"])
     print("  ENABLE_APEX: ", os.environ["ENABLE_APEX"])
+
+
+def infer_perform():
+    """Model infer performance ..."""
+
+    model_setenv()
+    device = os.environ["DEVICE"]
+
+    model = {{ . }}Model()
+    model.eval()
+    model = model.to(device)
+
+    with tqdm(total=len(1000)) as t:
+        t.set_description(tag)
+
+        # xxxx--modify here
+        input = torch.randn(64, 3, 512, 512)
+        input = input.to(device)
+
+        with torch.no_grad():
+            output = model(input)
+
+        t.update(1)
+
+
+if __name__ == '__main__':
+    model_export()
+    infer_perform()
