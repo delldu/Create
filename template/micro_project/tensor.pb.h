@@ -55,12 +55,12 @@ struct TableStruct_tensor_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tensor_2eproto;
 namespace tensor {
-class ChkTensorReply;
-class ChkTensorReplyDefaultTypeInternal;
-extern ChkTensorReplyDefaultTypeInternal _ChkTensorReply_default_instance_;
-class ChkTensorRequest;
-class ChkTensorRequestDefaultTypeInternal;
-extern ChkTensorRequestDefaultTypeInternal _ChkTensorRequest_default_instance_;
+class CheckIDReply;
+class CheckIDReplyDefaultTypeInternal;
+extern CheckIDReplyDefaultTypeInternal _CheckIDReply_default_instance_;
+class CheckIDRequest;
+class CheckIDRequestDefaultTypeInternal;
+extern CheckIDRequestDefaultTypeInternal _CheckIDRequest_default_instance_;
 class DelTensorReply;
 class DelTensorReplyDefaultTypeInternal;
 extern DelTensorReplyDefaultTypeInternal _DelTensorReply_default_instance_;
@@ -138,8 +138,8 @@ class VideoZoomRequestDefaultTypeInternal;
 extern VideoZoomRequestDefaultTypeInternal _VideoZoomRequest_default_instance_;
 }  // namespace tensor
 PROTOBUF_NAMESPACE_OPEN
-template<> ::tensor::ChkTensorReply* Arena::CreateMaybeMessage<::tensor::ChkTensorReply>(Arena*);
-template<> ::tensor::ChkTensorRequest* Arena::CreateMaybeMessage<::tensor::ChkTensorRequest>(Arena*);
+template<> ::tensor::CheckIDReply* Arena::CreateMaybeMessage<::tensor::CheckIDReply>(Arena*);
+template<> ::tensor::CheckIDRequest* Arena::CreateMaybeMessage<::tensor::CheckIDRequest>(Arena*);
 template<> ::tensor::DelTensorReply* Arena::CreateMaybeMessage<::tensor::DelTensorReply>(Arena*);
 template<> ::tensor::DelTensorRequest* Arena::CreateMaybeMessage<::tensor::DelTensorRequest>(Arena*);
 template<> ::tensor::GetTensorReply* Arena::CreateMaybeMessage<::tensor::GetTensorReply>(Arena*);
@@ -1546,23 +1546,23 @@ class DelTensorReply PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
-class ChkTensorRequest PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tensor.ChkTensorRequest) */ {
+class CheckIDRequest PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tensor.CheckIDRequest) */ {
  public:
-  inline ChkTensorRequest() : ChkTensorRequest(nullptr) {};
-  virtual ~ChkTensorRequest();
+  inline CheckIDRequest() : CheckIDRequest(nullptr) {};
+  virtual ~CheckIDRequest();
 
-  ChkTensorRequest(const ChkTensorRequest& from);
-  ChkTensorRequest(ChkTensorRequest&& from) noexcept
-    : ChkTensorRequest() {
+  CheckIDRequest(const CheckIDRequest& from);
+  CheckIDRequest(CheckIDRequest&& from) noexcept
+    : CheckIDRequest() {
     *this = ::std::move(from);
   }
 
-  inline ChkTensorRequest& operator=(const ChkTensorRequest& from) {
+  inline CheckIDRequest& operator=(const CheckIDRequest& from) {
     CopyFrom(from);
     return *this;
   }
-  inline ChkTensorRequest& operator=(ChkTensorRequest&& from) noexcept {
+  inline CheckIDRequest& operator=(CheckIDRequest&& from) noexcept {
     if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -1580,20 +1580,20 @@ class ChkTensorRequest PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const ChkTensorRequest& default_instance();
+  static const CheckIDRequest& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const ChkTensorRequest* internal_default_instance() {
-    return reinterpret_cast<const ChkTensorRequest*>(
-               &_ChkTensorRequest_default_instance_);
+  static inline const CheckIDRequest* internal_default_instance() {
+    return reinterpret_cast<const CheckIDRequest*>(
+               &_CheckIDRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     9;
 
-  friend void swap(ChkTensorRequest& a, ChkTensorRequest& b) {
+  friend void swap(CheckIDRequest& a, CheckIDRequest& b) {
     a.Swap(&b);
   }
-  inline void Swap(ChkTensorRequest* other) {
+  inline void Swap(CheckIDRequest* other) {
     if (other == this) return;
     if (GetArena() == other->GetArena()) {
       InternalSwap(other);
@@ -1601,7 +1601,7 @@ class ChkTensorRequest PROTOBUF_FINAL :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(ChkTensorRequest* other) {
+  void UnsafeArenaSwap(CheckIDRequest* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -1609,17 +1609,17 @@ class ChkTensorRequest PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline ChkTensorRequest* New() const final {
-    return CreateMaybeMessage<ChkTensorRequest>(nullptr);
+  inline CheckIDRequest* New() const final {
+    return CreateMaybeMessage<CheckIDRequest>(nullptr);
   }
 
-  ChkTensorRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<ChkTensorRequest>(arena);
+  CheckIDRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<CheckIDRequest>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const ChkTensorRequest& from);
-  void MergeFrom(const ChkTensorRequest& from);
+  void CopyFrom(const CheckIDRequest& from);
+  void MergeFrom(const CheckIDRequest& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -1633,13 +1633,13 @@ class ChkTensorRequest PROTOBUF_FINAL :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(ChkTensorRequest* other);
+  void InternalSwap(CheckIDRequest* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "tensor.ChkTensorRequest";
+    return "tensor.CheckIDRequest";
   }
   protected:
-  explicit ChkTensorRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit CheckIDRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -1686,7 +1686,7 @@ class ChkTensorRequest PROTOBUF_FINAL :
   std::string* _internal_mutable_id();
   public:
 
-  // @@protoc_insertion_point(class_scope:tensor.ChkTensorRequest)
+  // @@protoc_insertion_point(class_scope:tensor.CheckIDRequest)
  private:
   class _Internal;
 
@@ -1699,23 +1699,23 @@ class ChkTensorRequest PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
-class ChkTensorReply PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tensor.ChkTensorReply) */ {
+class CheckIDReply PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tensor.CheckIDReply) */ {
  public:
-  inline ChkTensorReply() : ChkTensorReply(nullptr) {};
-  virtual ~ChkTensorReply();
+  inline CheckIDReply() : CheckIDReply(nullptr) {};
+  virtual ~CheckIDReply();
 
-  ChkTensorReply(const ChkTensorReply& from);
-  ChkTensorReply(ChkTensorReply&& from) noexcept
-    : ChkTensorReply() {
+  CheckIDReply(const CheckIDReply& from);
+  CheckIDReply(CheckIDReply&& from) noexcept
+    : CheckIDReply() {
     *this = ::std::move(from);
   }
 
-  inline ChkTensorReply& operator=(const ChkTensorReply& from) {
+  inline CheckIDReply& operator=(const CheckIDReply& from) {
     CopyFrom(from);
     return *this;
   }
-  inline ChkTensorReply& operator=(ChkTensorReply&& from) noexcept {
+  inline CheckIDReply& operator=(CheckIDReply&& from) noexcept {
     if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -1733,20 +1733,20 @@ class ChkTensorReply PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const ChkTensorReply& default_instance();
+  static const CheckIDReply& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const ChkTensorReply* internal_default_instance() {
-    return reinterpret_cast<const ChkTensorReply*>(
-               &_ChkTensorReply_default_instance_);
+  static inline const CheckIDReply* internal_default_instance() {
+    return reinterpret_cast<const CheckIDReply*>(
+               &_CheckIDReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     10;
 
-  friend void swap(ChkTensorReply& a, ChkTensorReply& b) {
+  friend void swap(CheckIDReply& a, CheckIDReply& b) {
     a.Swap(&b);
   }
-  inline void Swap(ChkTensorReply* other) {
+  inline void Swap(CheckIDReply* other) {
     if (other == this) return;
     if (GetArena() == other->GetArena()) {
       InternalSwap(other);
@@ -1754,7 +1754,7 @@ class ChkTensorReply PROTOBUF_FINAL :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(ChkTensorReply* other) {
+  void UnsafeArenaSwap(CheckIDReply* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -1762,17 +1762,17 @@ class ChkTensorReply PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline ChkTensorReply* New() const final {
-    return CreateMaybeMessage<ChkTensorReply>(nullptr);
+  inline CheckIDReply* New() const final {
+    return CreateMaybeMessage<CheckIDReply>(nullptr);
   }
 
-  ChkTensorReply* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<ChkTensorReply>(arena);
+  CheckIDReply* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<CheckIDReply>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const ChkTensorReply& from);
-  void MergeFrom(const ChkTensorReply& from);
+  void CopyFrom(const CheckIDReply& from);
+  void MergeFrom(const CheckIDReply& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -1786,13 +1786,13 @@ class ChkTensorReply PROTOBUF_FINAL :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(ChkTensorReply* other);
+  void InternalSwap(CheckIDReply* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "tensor.ChkTensorReply";
+    return "tensor.CheckIDReply";
   }
   protected:
-  explicit ChkTensorReply(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit CheckIDReply(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -1811,7 +1811,7 @@ class ChkTensorReply PROTOBUF_FINAL :
 
   // accessors -------------------------------------------------------
 
-  // @@protoc_insertion_point(class_scope:tensor.ChkTensorReply)
+  // @@protoc_insertion_point(class_scope:tensor.CheckIDReply)
  private:
   class _Internal;
 
@@ -5555,60 +5555,60 @@ inline void DelTensorRequest::unsafe_arena_set_allocated_id(
 
 // -------------------------------------------------------------------
 
-// ChkTensorRequest
+// CheckIDRequest
 
 // string id = 1;
-inline void ChkTensorRequest::clear_id() {
+inline void CheckIDRequest::clear_id() {
   id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline const std::string& ChkTensorRequest::id() const {
-  // @@protoc_insertion_point(field_get:tensor.ChkTensorRequest.id)
+inline const std::string& CheckIDRequest::id() const {
+  // @@protoc_insertion_point(field_get:tensor.CheckIDRequest.id)
   return _internal_id();
 }
-inline void ChkTensorRequest::set_id(const std::string& value) {
+inline void CheckIDRequest::set_id(const std::string& value) {
   _internal_set_id(value);
-  // @@protoc_insertion_point(field_set:tensor.ChkTensorRequest.id)
+  // @@protoc_insertion_point(field_set:tensor.CheckIDRequest.id)
 }
-inline std::string* ChkTensorRequest::mutable_id() {
-  // @@protoc_insertion_point(field_mutable:tensor.ChkTensorRequest.id)
+inline std::string* CheckIDRequest::mutable_id() {
+  // @@protoc_insertion_point(field_mutable:tensor.CheckIDRequest.id)
   return _internal_mutable_id();
 }
-inline const std::string& ChkTensorRequest::_internal_id() const {
+inline const std::string& CheckIDRequest::_internal_id() const {
   return id_.Get();
 }
-inline void ChkTensorRequest::_internal_set_id(const std::string& value) {
+inline void CheckIDRequest::_internal_set_id(const std::string& value) {
   
   id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
-inline void ChkTensorRequest::set_id(std::string&& value) {
+inline void CheckIDRequest::set_id(std::string&& value) {
   
   id_.Set(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:tensor.ChkTensorRequest.id)
+  // @@protoc_insertion_point(field_set_rvalue:tensor.CheckIDRequest.id)
 }
-inline void ChkTensorRequest::set_id(const char* value) {
+inline void CheckIDRequest::set_id(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
   id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArena());
-  // @@protoc_insertion_point(field_set_char:tensor.ChkTensorRequest.id)
+  // @@protoc_insertion_point(field_set_char:tensor.CheckIDRequest.id)
 }
-inline void ChkTensorRequest::set_id(const char* value,
+inline void CheckIDRequest::set_id(const char* value,
     size_t size) {
   
   id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:tensor.ChkTensorRequest.id)
+  // @@protoc_insertion_point(field_set_pointer:tensor.CheckIDRequest.id)
 }
-inline std::string* ChkTensorRequest::_internal_mutable_id() {
+inline std::string* CheckIDRequest::_internal_mutable_id() {
   
   return id_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline std::string* ChkTensorRequest::release_id() {
-  // @@protoc_insertion_point(field_release:tensor.ChkTensorRequest.id)
+inline std::string* CheckIDRequest::release_id() {
+  // @@protoc_insertion_point(field_release:tensor.CheckIDRequest.id)
   return id_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline void ChkTensorRequest::set_allocated_id(std::string* id) {
+inline void CheckIDRequest::set_allocated_id(std::string* id) {
   if (id != nullptr) {
     
   } else {
@@ -5616,16 +5616,16 @@ inline void ChkTensorRequest::set_allocated_id(std::string* id) {
   }
   id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), id,
       GetArena());
-  // @@protoc_insertion_point(field_set_allocated:tensor.ChkTensorRequest.id)
+  // @@protoc_insertion_point(field_set_allocated:tensor.CheckIDRequest.id)
 }
-inline std::string* ChkTensorRequest::unsafe_arena_release_id() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:tensor.ChkTensorRequest.id)
+inline std::string* CheckIDRequest::unsafe_arena_release_id() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:tensor.CheckIDRequest.id)
   GOOGLE_DCHECK(GetArena() != nullptr);
   
   return id_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       GetArena());
 }
-inline void ChkTensorRequest::unsafe_arena_set_allocated_id(
+inline void CheckIDRequest::unsafe_arena_set_allocated_id(
     std::string* id) {
   GOOGLE_DCHECK(GetArena() != nullptr);
   if (id != nullptr) {
@@ -5635,12 +5635,12 @@ inline void ChkTensorRequest::unsafe_arena_set_allocated_id(
   }
   id_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       id, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tensor.ChkTensorRequest.id)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tensor.CheckIDRequest.id)
 }
 
 // -------------------------------------------------------------------
 
-// ChkTensorReply
+// CheckIDReply
 
 // -------------------------------------------------------------------
 

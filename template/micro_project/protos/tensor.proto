@@ -26,7 +26,6 @@ message SetTensorRequest {
 }
 
 message SetTensorReply {
-	// string message = 1;		// Expect message == set id
 }
 
 // Get Tensor
@@ -36,7 +35,6 @@ message GetTensorRequest {
 
 message GetTensorReply {
 	Tensor tensor = 1;
-	// string message = 2;		// Expect message == id from Tensor Buffer
 }
 
 // Delete Tensor message
@@ -45,16 +43,14 @@ message DelTensorRequest {
 }
 
 message DelTensorReply {
-	// string message = 1;		// Exect message == Delete id
 }
 
 // Check Tensor message
-message ChkTensorRequest {
+message CheckIDRequest {
 	string id = 1;
 }
 
-message ChkTensorReply {
-	// string message = 1;		// Exect message == Delete id
+message CheckIDReply {
 }
 
 // Tensor Service
@@ -66,7 +62,7 @@ service TensorService {
 	rpc GetTensor(GetTensorRequest) returns (GetTensorReply);
 	rpc SetTensor(SetTensorRequest) returns (SetTensorReply);
 	rpc DelTensor(DelTensorRequest) returns (DelTensorReply);
-	rpc ChkTensor(ChkTensorRequest) returns (ChkTensorReply);
+	rpc CheckID(CheckIDRequest) returns (CheckIDReply);
 }
 
 // Image clean

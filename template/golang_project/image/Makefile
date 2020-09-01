@@ -10,7 +10,7 @@
 LIB_NAME := lib/libimage
 
 # Setup environment
-TORCH_INSTALL_DIR :=/usr/local/libtorch
+TORCH_INSTALL_DIR :=/opt/libtorch
 
 INCS := -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++14 -std=gnu++14 -I${TORCH_INSTALL_DIR}/include -Iinclude
 LIBS := -Wl,--no-as-needed \

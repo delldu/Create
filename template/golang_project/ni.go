@@ -10,7 +10,7 @@ package main
 
 /*
 #cgo CFLAGS: -Iimage/include
-#cgo LDFLAGS: -Wl,--no-as-needed -Limage/lib -limage -L/usr/local/libtorch/lib -lc10 -lc10_cuda -ltorch -ltorch_cuda -ltorch_cpu -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lstdc++
+#cgo LDFLAGS: -Wl,--no-as-needed -Limage/lib -limage -L/opt/libtorch/lib -lc10 -lc10_cuda -ltorch -ltorch_cuda -ltorch_cpu -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lstdc++
 
 #include <stdio.h>
 #include <stdlib.h>

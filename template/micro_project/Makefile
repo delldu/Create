@@ -7,6 +7,8 @@ LDFLAGS += `pkg-config --libs protobuf grpc++`\
 PROTOC = protoc
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
+GRPC_GO_PLUGIN = protoc-gen-go
+GRPC_GO_PLUGIN_PATH ?= `which $(GRPC_GO_PLUGIN)`
 
 PROTOS_PATH = protos/
 
@@ -16,6 +18,7 @@ all: system-check tensor_client tensor_server
 
 help:
 	@echo "make          make targets"
+	@echo "make format   format source code"
 	@echo "make clean    clean all objects and targets"
 
 tensor_client: tensor.pb.o tensor.grpc.pb.o tensor_client.o
@@ -32,6 +35,9 @@ tensor_server: tensor.pb.o tensor.grpc.pb.o tensor_server.o
 .PRECIOUS: %.pb.cc
 %.pb.cc: %.proto
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
+
+format: clean
+	clang-format-6.0 -i -style=WebKit *.h *.cc
 
 clean:
 	rm -f *.o *.pb.cc *.pb.h tensor_client tensor_server

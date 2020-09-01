@@ -67,12 +67,12 @@ class TensorService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::DelTensorReply>> PrepareAsyncDelTensor(::grpc::ClientContext* context, const ::tensor::DelTensorRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::DelTensorReply>>(PrepareAsyncDelTensorRaw(context, request, cq));
     }
-    virtual ::grpc::Status ChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::tensor::ChkTensorReply* response) = 0;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::ChkTensorReply>> AsyncChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::ChkTensorReply>>(AsyncChkTensorRaw(context, request, cq));
+    virtual ::grpc::Status CheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::tensor::CheckIDReply* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::CheckIDReply>> AsyncCheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::CheckIDReply>>(AsyncCheckIDRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::ChkTensorReply>> PrepareAsyncChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::ChkTensorReply>>(PrepareAsyncChkTensorRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::CheckIDReply>> PrepareAsyncCheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::tensor::CheckIDReply>>(PrepareAsyncCheckIDRaw(context, request, cq));
     }
     class experimental_async_interface {
      public:
@@ -127,17 +127,17 @@ class TensorService final {
       #else
       virtual void DelTensor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::DelTensorReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
-      virtual void ChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest* request, ::tensor::ChkTensorReply* response, std::function<void(::grpc::Status)>) = 0;
-      virtual void ChkTensor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::ChkTensorReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void CheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest* request, ::tensor::CheckIDReply* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void CheckID(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::CheckIDReply* response, std::function<void(::grpc::Status)>) = 0;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void ChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest* request, ::tensor::ChkTensorReply* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void CheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest* request, ::tensor::CheckIDReply* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       #else
-      virtual void ChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest* request, ::tensor::ChkTensorReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void CheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest* request, ::tensor::CheckIDReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      virtual void ChkTensor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::ChkTensorReply* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void CheckID(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::CheckIDReply* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       #else
-      virtual void ChkTensor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::ChkTensorReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void CheckID(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::CheckIDReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       #endif
     };
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
@@ -156,8 +156,8 @@ class TensorService final {
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::tensor::SetTensorReply>* PrepareAsyncSetTensorRaw(::grpc::ClientContext* context, const ::tensor::SetTensorRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::tensor::DelTensorReply>* AsyncDelTensorRaw(::grpc::ClientContext* context, const ::tensor::DelTensorRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::tensor::DelTensorReply>* PrepareAsyncDelTensorRaw(::grpc::ClientContext* context, const ::tensor::DelTensorRequest& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::tensor::ChkTensorReply>* AsyncChkTensorRaw(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::grpc::CompletionQueue* cq) = 0;
-    virtual ::grpc::ClientAsyncResponseReaderInterface< ::tensor::ChkTensorReply>* PrepareAsyncChkTensorRaw(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::tensor::CheckIDReply>* AsyncCheckIDRaw(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::tensor::CheckIDReply>* PrepareAsyncCheckIDRaw(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
@@ -190,12 +190,12 @@ class TensorService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::DelTensorReply>> PrepareAsyncDelTensor(::grpc::ClientContext* context, const ::tensor::DelTensorRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::DelTensorReply>>(PrepareAsyncDelTensorRaw(context, request, cq));
     }
-    ::grpc::Status ChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::tensor::ChkTensorReply* response) override;
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::ChkTensorReply>> AsyncChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::ChkTensorReply>>(AsyncChkTensorRaw(context, request, cq));
+    ::grpc::Status CheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::tensor::CheckIDReply* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::CheckIDReply>> AsyncCheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::CheckIDReply>>(AsyncCheckIDRaw(context, request, cq));
     }
-    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::ChkTensorReply>> PrepareAsyncChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::grpc::CompletionQueue* cq) {
-      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::ChkTensorReply>>(PrepareAsyncChkTensorRaw(context, request, cq));
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::CheckIDReply>> PrepareAsyncCheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::tensor::CheckIDReply>>(PrepareAsyncCheckIDRaw(context, request, cq));
     }
     class experimental_async final :
       public StubInterface::experimental_async_interface {
@@ -248,17 +248,17 @@ class TensorService final {
       #else
       void DelTensor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::DelTensorReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
-      void ChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest* request, ::tensor::ChkTensorReply* response, std::function<void(::grpc::Status)>) override;
-      void ChkTensor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::ChkTensorReply* response, std::function<void(::grpc::Status)>) override;
+      void CheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest* request, ::tensor::CheckIDReply* response, std::function<void(::grpc::Status)>) override;
+      void CheckID(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::CheckIDReply* response, std::function<void(::grpc::Status)>) override;
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void ChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest* request, ::tensor::ChkTensorReply* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void CheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest* request, ::tensor::CheckIDReply* response, ::grpc::ClientUnaryReactor* reactor) override;
       #else
-      void ChkTensor(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest* request, ::tensor::ChkTensorReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void CheckID(::grpc::ClientContext* context, const ::tensor::CheckIDRequest* request, ::tensor::CheckIDReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
       #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      void ChkTensor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::ChkTensorReply* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void CheckID(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::CheckIDReply* response, ::grpc::ClientUnaryReactor* reactor) override;
       #else
-      void ChkTensor(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::ChkTensorReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void CheckID(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::tensor::CheckIDReply* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       #endif
      private:
       friend class Stub;
@@ -279,13 +279,13 @@ class TensorService final {
     ::grpc::ClientAsyncResponseReader< ::tensor::SetTensorReply>* PrepareAsyncSetTensorRaw(::grpc::ClientContext* context, const ::tensor::SetTensorRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::tensor::DelTensorReply>* AsyncDelTensorRaw(::grpc::ClientContext* context, const ::tensor::DelTensorRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::tensor::DelTensorReply>* PrepareAsyncDelTensorRaw(::grpc::ClientContext* context, const ::tensor::DelTensorRequest& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::tensor::ChkTensorReply>* AsyncChkTensorRaw(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::grpc::CompletionQueue* cq) override;
-    ::grpc::ClientAsyncResponseReader< ::tensor::ChkTensorReply>* PrepareAsyncChkTensorRaw(::grpc::ClientContext* context, const ::tensor::ChkTensorRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::tensor::CheckIDReply>* AsyncCheckIDRaw(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::tensor::CheckIDReply>* PrepareAsyncCheckIDRaw(::grpc::ClientContext* context, const ::tensor::CheckIDRequest& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_Hello_;
     const ::grpc::internal::RpcMethod rpcmethod_GetTensor_;
     const ::grpc::internal::RpcMethod rpcmethod_SetTensor_;
     const ::grpc::internal::RpcMethod rpcmethod_DelTensor_;
-    const ::grpc::internal::RpcMethod rpcmethod_ChkTensor_;
+    const ::grpc::internal::RpcMethod rpcmethod_CheckID_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -299,7 +299,7 @@ class TensorService final {
     virtual ::grpc::Status GetTensor(::grpc::ServerContext* context, const ::tensor::GetTensorRequest* request, ::tensor::GetTensorReply* response);
     virtual ::grpc::Status SetTensor(::grpc::ServerContext* context, const ::tensor::SetTensorRequest* request, ::tensor::SetTensorReply* response);
     virtual ::grpc::Status DelTensor(::grpc::ServerContext* context, const ::tensor::DelTensorRequest* request, ::tensor::DelTensorReply* response);
-    virtual ::grpc::Status ChkTensor(::grpc::ServerContext* context, const ::tensor::ChkTensorRequest* request, ::tensor::ChkTensorReply* response);
+    virtual ::grpc::Status CheckID(::grpc::ServerContext* context, const ::tensor::CheckIDRequest* request, ::tensor::CheckIDReply* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_Hello : public BaseClass {
@@ -382,26 +382,26 @@ class TensorService final {
     }
   };
   template <class BaseClass>
-  class WithAsyncMethod_ChkTensor : public BaseClass {
+  class WithAsyncMethod_CheckID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithAsyncMethod_ChkTensor() {
+    WithAsyncMethod_CheckID() {
       ::grpc::Service::MarkMethodAsync(4);
     }
-    ~WithAsyncMethod_ChkTensor() override {
+    ~WithAsyncMethod_CheckID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ChkTensor(::grpc::ServerContext* /*context*/, const ::tensor::ChkTensorRequest* /*request*/, ::tensor::ChkTensorReply* /*response*/) override {
+    ::grpc::Status CheckID(::grpc::ServerContext* /*context*/, const ::tensor::CheckIDRequest* /*request*/, ::tensor::CheckIDReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestChkTensor(::grpc::ServerContext* context, ::tensor::ChkTensorRequest* request, ::grpc::ServerAsyncResponseWriter< ::tensor::ChkTensorReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestCheckID(::grpc::ServerContext* context, ::tensor::CheckIDRequest* request, ::grpc::ServerAsyncResponseWriter< ::tensor::CheckIDReply>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_Hello<WithAsyncMethod_GetTensor<WithAsyncMethod_SetTensor<WithAsyncMethod_DelTensor<WithAsyncMethod_ChkTensor<Service > > > > > AsyncService;
+  typedef WithAsyncMethod_Hello<WithAsyncMethod_GetTensor<WithAsyncMethod_SetTensor<WithAsyncMethod_DelTensor<WithAsyncMethod_CheckID<Service > > > > > AsyncService;
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_Hello : public BaseClass {
    private:
@@ -591,57 +591,57 @@ class TensorService final {
       { return nullptr; }
   };
   template <class BaseClass>
-  class ExperimentalWithCallbackMethod_ChkTensor : public BaseClass {
+  class ExperimentalWithCallbackMethod_CheckID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    ExperimentalWithCallbackMethod_ChkTensor() {
+    ExperimentalWithCallbackMethod_CheckID() {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
     #else
       ::grpc::Service::experimental().
     #endif
         MarkMethodCallback(4,
-          new ::grpc_impl::internal::CallbackUnaryHandler< ::tensor::ChkTensorRequest, ::tensor::ChkTensorReply>(
+          new ::grpc_impl::internal::CallbackUnaryHandler< ::tensor::CheckIDRequest, ::tensor::CheckIDReply>(
             [this](
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
                    ::grpc::CallbackServerContext*
     #else
                    ::grpc::experimental::CallbackServerContext*
     #endif
-                     context, const ::tensor::ChkTensorRequest* request, ::tensor::ChkTensorReply* response) { return this->ChkTensor(context, request, response); }));}
-    void SetMessageAllocatorFor_ChkTensor(
-        ::grpc::experimental::MessageAllocator< ::tensor::ChkTensorRequest, ::tensor::ChkTensorReply>* allocator) {
+                     context, const ::tensor::CheckIDRequest* request, ::tensor::CheckIDReply* response) { return this->CheckID(context, request, response); }));}
+    void SetMessageAllocatorFor_CheckID(
+        ::grpc::experimental::MessageAllocator< ::tensor::CheckIDRequest, ::tensor::CheckIDReply>* allocator) {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(4);
     #else
       ::grpc::internal::MethodHandler* const handler = ::grpc::Service::experimental().GetHandler(4);
     #endif
-      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::tensor::ChkTensorRequest, ::tensor::ChkTensorReply>*>(handler)
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::tensor::CheckIDRequest, ::tensor::CheckIDReply>*>(handler)
               ->SetMessageAllocator(allocator);
     }
-    ~ExperimentalWithCallbackMethod_ChkTensor() override {
+    ~ExperimentalWithCallbackMethod_CheckID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ChkTensor(::grpc::ServerContext* /*context*/, const ::tensor::ChkTensorRequest* /*request*/, ::tensor::ChkTensorReply* /*response*/) override {
+    ::grpc::Status CheckID(::grpc::ServerContext* /*context*/, const ::tensor::CheckIDRequest* /*request*/, ::tensor::CheckIDReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-    virtual ::grpc::ServerUnaryReactor* ChkTensor(
-      ::grpc::CallbackServerContext* /*context*/, const ::tensor::ChkTensorRequest* /*request*/, ::tensor::ChkTensorReply* /*response*/)
+    virtual ::grpc::ServerUnaryReactor* CheckID(
+      ::grpc::CallbackServerContext* /*context*/, const ::tensor::CheckIDRequest* /*request*/, ::tensor::CheckIDReply* /*response*/)
     #else
-    virtual ::grpc::experimental::ServerUnaryReactor* ChkTensor(
-      ::grpc::experimental::CallbackServerContext* /*context*/, const ::tensor::ChkTensorRequest* /*request*/, ::tensor::ChkTensorReply* /*response*/)
+    virtual ::grpc::experimental::ServerUnaryReactor* CheckID(
+      ::grpc::experimental::CallbackServerContext* /*context*/, const ::tensor::CheckIDRequest* /*request*/, ::tensor::CheckIDReply* /*response*/)
     #endif
       { return nullptr; }
   };
   #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-  typedef ExperimentalWithCallbackMethod_Hello<ExperimentalWithCallbackMethod_GetTensor<ExperimentalWithCallbackMethod_SetTensor<ExperimentalWithCallbackMethod_DelTensor<ExperimentalWithCallbackMethod_ChkTensor<Service > > > > > CallbackService;
+  typedef ExperimentalWithCallbackMethod_Hello<ExperimentalWithCallbackMethod_GetTensor<ExperimentalWithCallbackMethod_SetTensor<ExperimentalWithCallbackMethod_DelTensor<ExperimentalWithCallbackMethod_CheckID<Service > > > > > CallbackService;
   #endif
 
-  typedef ExperimentalWithCallbackMethod_Hello<ExperimentalWithCallbackMethod_GetTensor<ExperimentalWithCallbackMethod_SetTensor<ExperimentalWithCallbackMethod_DelTensor<ExperimentalWithCallbackMethod_ChkTensor<Service > > > > > ExperimentalCallbackService;
+  typedef ExperimentalWithCallbackMethod_Hello<ExperimentalWithCallbackMethod_GetTensor<ExperimentalWithCallbackMethod_SetTensor<ExperimentalWithCallbackMethod_DelTensor<ExperimentalWithCallbackMethod_CheckID<Service > > > > > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_Hello : public BaseClass {
    private:
@@ -711,18 +711,18 @@ class TensorService final {
     }
   };
   template <class BaseClass>
-  class WithGenericMethod_ChkTensor : public BaseClass {
+  class WithGenericMethod_CheckID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithGenericMethod_ChkTensor() {
+    WithGenericMethod_CheckID() {
       ::grpc::Service::MarkMethodGeneric(4);
     }
-    ~WithGenericMethod_ChkTensor() override {
+    ~WithGenericMethod_CheckID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ChkTensor(::grpc::ServerContext* /*context*/, const ::tensor::ChkTensorRequest* /*request*/, ::tensor::ChkTensorReply* /*response*/) override {
+    ::grpc::Status CheckID(::grpc::ServerContext* /*context*/, const ::tensor::CheckIDRequest* /*request*/, ::tensor::CheckIDReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -808,22 +808,22 @@ class TensorService final {
     }
   };
   template <class BaseClass>
-  class WithRawMethod_ChkTensor : public BaseClass {
+  class WithRawMethod_CheckID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithRawMethod_ChkTensor() {
+    WithRawMethod_CheckID() {
       ::grpc::Service::MarkMethodRaw(4);
     }
-    ~WithRawMethod_ChkTensor() override {
+    ~WithRawMethod_CheckID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ChkTensor(::grpc::ServerContext* /*context*/, const ::tensor::ChkTensorRequest* /*request*/, ::tensor::ChkTensorReply* /*response*/) override {
+    ::grpc::Status CheckID(::grpc::ServerContext* /*context*/, const ::tensor::CheckIDRequest* /*request*/, ::tensor::CheckIDReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    void RequestChkTensor(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+    void RequestCheckID(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
       ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
@@ -980,11 +980,11 @@ class TensorService final {
       { return nullptr; }
   };
   template <class BaseClass>
-  class ExperimentalWithRawCallbackMethod_ChkTensor : public BaseClass {
+  class ExperimentalWithRawCallbackMethod_CheckID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    ExperimentalWithRawCallbackMethod_ChkTensor() {
+    ExperimentalWithRawCallbackMethod_CheckID() {
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       ::grpc::Service::
     #else
@@ -998,21 +998,21 @@ class TensorService final {
     #else
                    ::grpc::experimental::CallbackServerContext*
     #endif
-                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ChkTensor(context, request, response); }));
+                     context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->CheckID(context, request, response); }));
     }
-    ~ExperimentalWithRawCallbackMethod_ChkTensor() override {
+    ~ExperimentalWithRawCallbackMethod_CheckID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status ChkTensor(::grpc::ServerContext* /*context*/, const ::tensor::ChkTensorRequest* /*request*/, ::tensor::ChkTensorReply* /*response*/) override {
+    ::grpc::Status CheckID(::grpc::ServerContext* /*context*/, const ::tensor::CheckIDRequest* /*request*/, ::tensor::CheckIDReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-    virtual ::grpc::ServerUnaryReactor* ChkTensor(
+    virtual ::grpc::ServerUnaryReactor* CheckID(
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
     #else
-    virtual ::grpc::experimental::ServerUnaryReactor* ChkTensor(
+    virtual ::grpc::experimental::ServerUnaryReactor* CheckID(
       ::grpc::experimental::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)
     #endif
       { return nullptr; }
@@ -1126,35 +1126,35 @@ class TensorService final {
     virtual ::grpc::Status StreamedDelTensor(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::tensor::DelTensorRequest,::tensor::DelTensorReply>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
-  class WithStreamedUnaryMethod_ChkTensor : public BaseClass {
+  class WithStreamedUnaryMethod_CheckID : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    WithStreamedUnaryMethod_ChkTensor() {
+    WithStreamedUnaryMethod_CheckID() {
       ::grpc::Service::MarkMethodStreamed(4,
         new ::grpc::internal::StreamedUnaryHandler<
-          ::tensor::ChkTensorRequest, ::tensor::ChkTensorReply>(
+          ::tensor::CheckIDRequest, ::tensor::CheckIDReply>(
             [this](::grpc_impl::ServerContext* context,
                    ::grpc_impl::ServerUnaryStreamer<
-                     ::tensor::ChkTensorRequest, ::tensor::ChkTensorReply>* streamer) {
-                       return this->StreamedChkTensor(context,
+                     ::tensor::CheckIDRequest, ::tensor::CheckIDReply>* streamer) {
+                       return this->StreamedCheckID(context,
                          streamer);
                   }));
     }
-    ~WithStreamedUnaryMethod_ChkTensor() override {
+    ~WithStreamedUnaryMethod_CheckID() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status ChkTensor(::grpc::ServerContext* /*context*/, const ::tensor::ChkTensorRequest* /*request*/, ::tensor::ChkTensorReply* /*response*/) override {
+    ::grpc::Status CheckID(::grpc::ServerContext* /*context*/, const ::tensor::CheckIDRequest* /*request*/, ::tensor::CheckIDReply* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     // replace default version of method with streamed unary
-    virtual ::grpc::Status StreamedChkTensor(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::tensor::ChkTensorRequest,::tensor::ChkTensorReply>* server_unary_streamer) = 0;
+    virtual ::grpc::Status StreamedCheckID(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::tensor::CheckIDRequest,::tensor::CheckIDReply>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_Hello<WithStreamedUnaryMethod_GetTensor<WithStreamedUnaryMethod_SetTensor<WithStreamedUnaryMethod_DelTensor<WithStreamedUnaryMethod_ChkTensor<Service > > > > > StreamedUnaryService;
+  typedef WithStreamedUnaryMethod_Hello<WithStreamedUnaryMethod_GetTensor<WithStreamedUnaryMethod_SetTensor<WithStreamedUnaryMethod_DelTensor<WithStreamedUnaryMethod_CheckID<Service > > > > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_Hello<WithStreamedUnaryMethod_GetTensor<WithStreamedUnaryMethod_SetTensor<WithStreamedUnaryMethod_DelTensor<WithStreamedUnaryMethod_ChkTensor<Service > > > > > StreamedService;
+  typedef WithStreamedUnaryMethod_Hello<WithStreamedUnaryMethod_GetTensor<WithStreamedUnaryMethod_SetTensor<WithStreamedUnaryMethod_DelTensor<WithStreamedUnaryMethod_CheckID<Service > > > > > StreamedService;
 };
 
 // Image applications

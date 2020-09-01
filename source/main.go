@@ -9,16 +9,17 @@
 package main
 
 import (
-	"bytes"
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
+
 	// "io/ioutil"
 	"log"
-	"strings"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -85,7 +86,7 @@ func create_no(cmdline string) string {
 }
 
 func create(cmdline string) string {
-	cmd := exec.Command("/bin/bash", "-c", "create_help " + cmdline)
+	cmd := exec.Command("/bin/bash", "-c", "create_help "+cmdline)
 	out, err := cmd.Output()
 	checkerror(err)
 
@@ -97,7 +98,7 @@ func prepare(fname string) string {
 	// fmt.Fprintf(os.Stderr, "Input for template file '" + fname + "':\n")
 	// fmt.Fprintf(os.Stderr, "-------------------------------------\n")
 
-	funcMap := template.FuncMap{"input": input, "bash" : bash_no, "create": create_no}
+	funcMap := template.FuncMap{"input": input, "bash": bash_no, "create": create_no}
 
 	// Template name
 	tname := filepath.Base(fname)
@@ -105,10 +106,10 @@ func prepare(fname string) string {
 	t, e := template.New(tname).Funcs(funcMap).ParseFiles(fname)
 	checkerror(e)
 
-	output := new(bytes.Buffer) 	// output is io.Writer
+	output := new(bytes.Buffer) // output is io.Writer
 
 	e = t.Execute(output, value)
-	checkerror(e)		
+	checkerror(e)
 
 	return output.String()
 }
@@ -131,7 +132,7 @@ func main() {
 		checkerror(e)
 
 		e = t.Execute(os.Stdout, nil)
-		checkerror(e)		
+		checkerror(e)
 	} else {
 		usage()
 	}

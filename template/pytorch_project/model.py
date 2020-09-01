@@ -209,12 +209,13 @@ def model_setenv():
     # export ONLY_USE_CPU=YES ?
     if os.environ["ONLY_USE_CPU"] == "YES":
         os.environ["ENABLE_APEX"] = "NO"
-    else: # GPU ?
-        os.environ["ENABLE_APEX"] = "YES"
-        try:
-            from apex import amp
-        except:
-            os.environ["ENABLE_APEX"] = "NO"
+    else:
+        # export ENABLE_APEX=YES ?
+        if os.environ["ENABLE_APEX"] == "YES":
+            try:
+                from apex import amp
+            except:
+                os.environ["ENABLE_APEX"] = "NO"
 
     # Running on GPU if available
     if os.environ["ONLY_USE_CPU"] == "YES":

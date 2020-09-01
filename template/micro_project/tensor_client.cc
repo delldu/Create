@@ -2,11 +2,12 @@
 
 #include <random>
 
-#define DebugErrorMessage(tag, status) do { \
-        std::cout << tag << ": " << __FILE__ << "," << __LINE__ << std::endl; \
-        std::cout << "Error Code: " << status.error_code() << std::endl; \
+#define DebugErrorMessage(tag, status)                                         \
+    do {                                                                       \
+        std::cout << tag << ": " << __FILE__ << "," << __LINE__ << std::endl;  \
+        std::cout << "Error Code: " << status.error_code() << std::endl;       \
         std::cout << "Error Message: " << status.error_message() << std::endl; \
-    } while(0)
+    } while (0)
 
 std::string UUID()
 {
@@ -23,7 +24,7 @@ std::string UUID()
 // Create random Tensor
 tensor::Tensor CreateTensor()
 {
-    std::default_random_engine e(time(0)); 
+    std::default_random_engine e(time(0));
     std::uniform_int_distribution<unsigned> u(32, 128);
     tensor::Tensor tensor;
 
@@ -38,8 +39,8 @@ tensor::Tensor CreateTensor()
     tensor.set_w(w);
 
     std::string d(n * c * h * w, ' ');
-    for (int i = 0; i < n*c*h*w; i++) {
-      d[i] = u(e);
+    for (int i = 0; i < n * c * h * w; i++) {
+        d[i] = u(e);
     }
 
     tensor.set_data(d);
@@ -61,19 +62,13 @@ bool SameTensor(const tensor::Tensor& t1, const tensor::Tensor& t2)
 std::string TensorServiceClient::Hello(const std::string& user)
 {
     HelloRequest request;
-    request.set_name(user);
-
     HelloReply reply;
     ClientContext context;
 
-    // The actual RPC.
+    request.set_name(user);
     Status status = m_tensor_service_stub->Hello(&context, request, &reply);
 
-    if (status.ok())
-        return reply.message();
-
-    DebugErrorMessage("Hello RPC.", status);
-    return "Hello RPC Failed";
+    return (status.ok()) ? reply.message() : "Hello RPC Failed";
 }
 
 bool TensorServiceClient::SetTensor(const std::string& id, const tensor::Tensor& tensor)
@@ -86,11 +81,7 @@ bool TensorServiceClient::SetTensor(const std::string& id, const tensor::Tensor&
     request.mutable_tensor()->CopyFrom(tensor);
     Status status = m_tensor_service_stub->SetTensor(&context, request, &reply);
 
-    if (status.ok())
-        return true;
-
-    DebugErrorMessage("SetTensor RPC.", status);
-    return false;
+    return status.ok();
 }
 
 bool TensorServiceClient::GetTensor(const std::string& id, tensor::Tensor& tensor)
@@ -108,7 +99,6 @@ bool TensorServiceClient::GetTensor(const std::string& id, tensor::Tensor& tenso
         return true;
     }
 
-    DebugErrorMessage("GetTensor RPC.", status);
     return false;
 }
 
@@ -119,40 +109,25 @@ bool TensorServiceClient::DelTensor(const std::string& id)
     ClientContext context;
 
     request.set_id(id);
-
     Status status = m_tensor_service_stub->DelTensor(&context, request, &reply);
 
-    if (status.ok())
-        return true;
-
-    DebugErrorMessage("DelTensor RPC.", status);
-    return false;
+    return status.ok();
 }
 
-bool TensorServiceClient::ChkTensor(const std::string& id)
+bool TensorServiceClient::CheckID(const std::string& id)
 {
-    ChkTensorRequest request;
-    ChkTensorReply reply;
+    CheckIDRequest request;
+    CheckIDReply reply;
     ClientContext context;
 
     request.set_id(id);
+    Status status = m_tensor_service_stub->CheckID(&context, request, &reply);
 
-    Status status = m_tensor_service_stub->ChkTensor(&context, request, &reply);
-
-    if (status.ok())
-        return true;
-
-    DebugErrorMessage("ChkTensor RPC.", status);
-    return false;
+    return status.ok();
 }
 
 int main(int argc, char** argv)
 {
-    // Instantiate the client. It requires a channel, out of which the actual RPCs
-    // are created. This channel models a connection to an endpoint (in this case,
-    // localhost at port 50051). We indicate that the channel isn't authenticated
-    // (use of InsecureChannelCredentials()).
-
     grpc::ChannelArguments channel_args;
     channel_args.SetInt(GRPC_ARG_MAX_RECEIVE_MESSAGE_LENGTH, 32 * 1024 * 1024);
     channel_args.SetInt(GRPC_ARG_MAX_SEND_MESSAGE_LENGTH, 32 * 1024 * 1024);
@@ -161,51 +136,43 @@ int main(int argc, char** argv)
     // TensorServiceClient connect(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
     TensorServiceClient connect(channel);
     auto tensor = CreateTensor();
-
-    for (int i = 0; i < 1000; i++) {
-
     std::string uuid = UUID();
     std::cout << "uuid: " << uuid << std::endl;
 
+    for (int i = 0; i < 1000; i++) {
+        std::string user("world");
+        std::string reply = connect.Hello(user);
+        std::cout << "Hello received: " << reply << std::endl;
 
-    std::string user("world");
-    std::string reply = connect.Hello(user);
-    std::cout << "Hello received: " << reply << std::endl;
+        bool ok = connect.SetTensor(uuid, tensor);
+        std::cout << "--- SetTensor: -----" << ok << ", expected true" << std::endl;
 
-    
-    bool ok = connect.SetTensor(uuid, tensor);
-    std::cout << "--- SetTensor: -----" << ok << ", expected true" << std::endl;
+        tensor::Tensor b;
+        ok = connect.GetTensor(uuid, b);
+        std::cout << "--- GetTensor: -----" << ok << ", expected true" << std::endl;
 
-    tensor::Tensor b;
-    ok = connect.GetTensor(uuid, b);
-    std::cout << "--- GetTensor: -----" << ok << ", expected true" << std::endl;
+        // if (SameTensor(tensor, b)) {
+        //   std::cout << "tensor == b" << std::endl;
+        // } else {
+        //   std::cout << "tensor != b" << std::endl;
+        // }
 
-    // if (SameTensor(tensor, b)) {
-    //   std::cout << "tensor == b" << std::endl;
-    // } else {
-    //   std::cout << "tensor != b" << std::endl;
-    // }
+        ok = connect.CheckID(uuid);
+        std::cout << "--- CheckID: -----" << ok << ", expected true" << std::endl;
 
-    ok = connect.ChkTensor(uuid);
-    std::cout << "--- ChkTensor: -----" <<  ok << ", expected true" << std::endl;
+        ok = connect.DelTensor(uuid);
+        std::cout << "--- DelTensor " << uuid << ": -----" << ok << ", expected true" << std::endl;
 
-    ok = connect.DelTensor("12345");
-    std::cout << "--- DelTensor 12345: -----" << ok << ", expected true" << std::endl;
+        ok = connect.CheckID("12345");
+        std::cout << "--- CheckID 12345: -----" << ok << ", expected false" << std::endl;
 
-    ok = connect.ChkTensor("12345");
-    std::cout << "--- ChkTensor 12345: -----" << ok << ", expected false" << std::endl;
+        // tensor::TensorSize size;
+        // size.set_n(10);
+        // size.set_c(20);
+        // size.set_h(30);
+        // size.set_w(40);
 
-    // reply = connect.DelTensor(uuid);
-    // std::cout << "--- DelTensor: -----" << reply << std::endl;
-
-    // tensor::TensorSize size;
-    // size.set_n(10);
-    // size.set_c(20);
-    // size.set_h(30);
-    // size.set_w(40);
-
-    // std::cout << "size: " << size.n() << "x" << size.c() << "x" << size.h() << "x" << size.w() << std::endl;
-
+        // std::cout << "size: " << size.n() << "x" << size.c() << "x" << size.h() << "x" << size.w() << std::endl;
     }
 
     return 0;
