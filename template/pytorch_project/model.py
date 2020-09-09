@@ -98,8 +98,8 @@ def get_model():
     return model
 
 
-class Average(object):
-    """Class Average."""
+class Counter(object):
+    """Class Counter."""
 
     def __init__(self):
         """Init average."""
@@ -123,7 +123,7 @@ class Average(object):
 def train_epoch(loader, model, optimizer, device, tag=''):
     """Trainning model ..."""
 
-    total_loss = Average()
+    total_loss = Counter()
 
     model.train()
 
@@ -169,7 +169,7 @@ def train_epoch(loader, model, optimizer, device, tag=''):
 def valid_epoch(loader, model, device, tag=''):
     """Validating model  ..."""
 
-    valid_loss = Average()
+    valid_loss = Counter()
 
     model.eval()
 
