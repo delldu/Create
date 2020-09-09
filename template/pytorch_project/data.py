@@ -16,15 +16,25 @@ import torch
 from PIL import Image
 import torch.utils.data as data
 import torchvision.transforms as T
+import torchvision.utils as utils
 
 # xxxx--modify here
 train_dataset_rootdir = "dataset/train/"
 test_dataset_rootdir = "dataset/test/"
 
+def get_transform(train=True):
+    """Transform images."""
+    ts = []
+    # if train:
+    #     ts.append(T.RandomHorizontalFlip(0.5))
+
+    ts.append(T.ToTensor())
+    return T.Compose(ts)
+
 class {{ . }}Dataset(data.Dataset):
     """Define dataset."""
 
-    def __init__(self, root, transforms):
+    def __init__(self, root, transforms=get_transform()):
         """Init dataset."""
         super({{ . }}Dataset, self).__init__()
 
@@ -60,16 +70,6 @@ class {{ . }}Dataset(data.Dataset):
         fmt_str += '{0}{1}\n'.format(tmp, self.transforms.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
         return fmt_str
 
-def get_transform(train):
-    """Transform images."""
-    ts = []
-    # if train:
-    #     ts.append(T.RandomHorizontalFlip(0.5))
-
-    ts.append(T.ToTensor())
-    return T.Compose(ts)
-
-
 def train_data(bs):
     """Get data loader for trainning & validating, bs means batch_size."""
 
@@ -79,8 +79,9 @@ def train_data(bs):
     # Split train_ds in train and valid set
     # xxxx--modify here
     valid_len = int(0.2 * len(train_ds))
-    indices = torch.randperm(len(train_ds)).tolist()
-    valid_ds = data.Subset(train_ds, indices[-valid_len:])
+    indices = [i for i in range(valid_len, len(train_ds))]
+    valid_ds = data.Subset(train_ds, indices)
+    indices = [i for i in range(valid_len)]
     train_ds = data.Subset(train_ds, indices[:-valid_len])
 
     # Define training and validation data loaders
@@ -109,5 +110,7 @@ if __name__ == '__main__':
 
     ds = {{ . }}Dataset(train_dataset_rootdir)
     print(ds)
-    # src = ds[10]
-    # src.show()
+    # src, tgt = ds[10]
+    # grid = utils.make_grid(torch.cat([src.unsqueeze(0), tgt.unsqueeze(0)], dim=0), nrow=2)
+    # ndarr = grid.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
+    # image = Image.fromarray(ndarr)
