@@ -35,6 +35,7 @@ if __name__ == "__main__":
     model.to(device)
 
     if os.environ["ENABLE_APEX"] == "YES":
+        from apex import amp
         model = amp.initialize(model, opt_level="O1")
 
     print("Start testing ...")

@@ -151,14 +151,15 @@ def train_epoch(loader, model, optimizer, device, tag=''):
             # Update loss
             total_loss.update(loss_value, count)
 
-            t.set_postfix(loss='{:.4f}'.format(total_loss.avg))
+            t.set_postfix(loss='{:.6f}'.format(total_loss.avg))
             t.update(count)
 
             # Optimizer
             optimizer.zero_grad()
             if os.environ["ENABLE_APEX"] == "YES":
+                from apex import amp
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
+                    scaled_loss.backward()
             else:
                 loss.backward()
             optimizer.step()
@@ -190,7 +191,7 @@ def valid_epoch(loader, model, device, tag=''):
 
             # xxxx--modify here
             valid_loss.update(loss_value, count)
-            t.set_postfix(loss='{:.4f}'.format(valid_loss.avg))
+            t.set_postfix(loss='{:.6f}'.format(valid_loss.avg))
             t.update(count)
 
 
@@ -207,18 +208,20 @@ def model_setenv():
         os.environ["ONLY_USE_CPU"] = "YES"
 
     # export ONLY_USE_CPU=YES ?
-    if os.environ["ONLY_USE_CPU"] == "YES":
+    if os.environ.get("ONLY_USE_CPU") == "YES":
         os.environ["ENABLE_APEX"] = "NO"
     else:
+        os.environ["ONLY_USE_CPU"] = "NO"
         # export ENABLE_APEX=YES ?
-        if os.environ["ENABLE_APEX"] == "YES":
+        if not os.environ.get("ENABLE_APEX") == "NO":
             try:
                 from apex import amp
+                os.environ["ENABLE_APEX"] = "YES"
             except:
                 os.environ["ENABLE_APEX"] = "NO"
 
     # Running on GPU if available
-    if os.environ["ONLY_USE_CPU"] == "YES":
+    if os.environ.get("ONLY_USE_CPU") == "YES":
         os.environ["DEVICE"] = 'cpu'
     else:
         os.environ["DEVICE"] = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -231,7 +234,7 @@ def model_setenv():
     print("----------------------------------------------")
     print("  USER: ", os.environ["USER"])
     print("  PWD: ", os.environ["PWD"])
-    print("  DEVICE: ", os.environ["DEVCIE"])
+    print("  DEVICE: ", os.environ["DEVICE"])
     print("  ONLY_USE_CPU: ", os.environ["ONLY_USE_CPU"])
     print("  ENABLE_APEX: ", os.environ["ENABLE_APEX"])
 

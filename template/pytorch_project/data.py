@@ -79,10 +79,11 @@ def train_data(bs):
     # Split train_ds in train and valid set
     # xxxx--modify here
     valid_len = int(0.2 * len(train_ds))
-    indices = [i for i in range(valid_len, len(train_ds))]
+    indices = [i for i in range(len(train_ds) - valid_len, len(train_ds))]
+
     valid_ds = data.Subset(train_ds, indices)
-    indices = [i for i in range(valid_len)]
-    train_ds = data.Subset(train_ds, indices[:-valid_len])
+    indices = [i for i in range(len(train_ds) - valid_len)]
+    train_ds = data.Subset(train_ds, indices)
 
     # Define training and validation data loaders
     train_dl = data.DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=4)
@@ -104,8 +105,7 @@ def get_data(trainning=True, bs=4):
 
     return train_data(bs) if trainning else test_data(bs)
 
-
-if __name__ == '__main__':
+def {{ . }}DatasetTest():
     """Test dataset ..."""
 
     ds = {{ . }}Dataset(train_dataset_rootdir)
@@ -114,3 +114,7 @@ if __name__ == '__main__':
     # grid = utils.make_grid(torch.cat([src.unsqueeze(0), tgt.unsqueeze(0)], dim=0), nrow=2)
     # ndarr = grid.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
     # image = Image.fromarray(ndarr)
+    # image.show()
+
+if __name__ == '__main__':
+    {{ . }}DatasetTest()
