@@ -171,13 +171,22 @@ func uploadError(w http.ResponseWriter, message string, statusCode int) {
 }
 
 func handleUploadService(w http.ResponseWriter, r *http.Request) {
+	// Test command:
+	// curl  -F "filename=@/home/test/file.tar.gz" http://127.0.0.1:8080/upload
+
 	if r.Method == "POST" {
-		f, h, err := r.FormFile("file")
+		f, h, err := r.FormFile("filename")
 		if err != nil {
 			uploadError(w, "Invalid file id", http.StatusBadRequest)
 			return
 		}
 		defer f.Close()
+		// validate file size
+		if h.Size > 1024*1024*1024 {
+			uploadError(w, "Upload file size > 1G.", http.StatusBadRequest)
+			return
+		}
+
 		dstfilename := "/tmp/" + h.Filename
 		t, err := os.Create(dstfilename)
 		if err != nil {
