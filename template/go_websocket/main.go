@@ -90,12 +90,12 @@ func ping(ws *websocket.Conn, done chan struct{}) {
 	}
 }
 
-func internalError(ws *websocket.Conn, msg string, err error) {
+func websocketError(ws *websocket.Conn, msg string, err error) {
 	log.Println(msg, err)
-	ws.WriteMessage(websocket.TextMessage, []byte("Internal server error."))
+	ws.WriteMessage(websocket.TextMessage, []byte("WebSocket internal server error."))
 }
 
-func ServeWs(w http.ResponseWriter, r *http.Request) {
+func handleWebSocketService(w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{}
 
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -107,7 +107,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	outr, outw, err := os.Pipe()
 	if err != nil {
-		internalError(ws, "stdout:", err)
+		websocketError(ws, "stdout:", err)
 		return
 	}
 	defer outr.Close()
@@ -115,7 +115,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	inr, inw, err := os.Pipe()
 	if err != nil {
-		internalError(ws, "stdin:", err)
+		websocketError(ws, "stdin:", err)
 		return
 	}
 	defer inr.Close()
@@ -125,7 +125,7 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 		Files: []*os.File{inr, outw, outw},
 	})
 	if err != nil {
-		internalError(ws, "start:", err)
+		websocketError(ws, "start:", err)
 		return
 	}
 	inr.Close()
@@ -160,8 +160,36 @@ func ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ServeHttp(w http.ResponseWriter, r *http.Request) {
+func handleStdHttpService(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.Dir(".")).ServeHTTP(w, r)
+}
+
+func uploadError(w http.ResponseWriter, message string, statusCode int) {
+	log.Println(message)
+	w.WriteHeader(statusCode)
+	w.Write([]byte(message))
+}
+
+func handleUploadService(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		f, h, err := r.FormFile("file")
+		if err != nil {
+			uploadError(w, "Invalid file id", http.StatusBadRequest)
+			return
+		}
+		defer f.Close()
+		dstfilename := "/tmp/" + h.Filename
+		t, err := os.Create(dstfilename)
+		if err != nil {
+			uploadError(w, "Create write file error.", http.StatusInternalServerError)
+			return
+		}
+		defer t.Close()
+		_, err = io.Copy(t, f)
+		fmt.Fprintln(w, "Upload Success.")
+	} else {
+		uploadError(w, "Upload ONLY ACCEPT 'POST' request.", http.StatusBadRequest)
+	}
 }
 
 var (
@@ -204,8 +232,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/", ServeHttp)
-	http.HandleFunc("/ws", ServeWs)
+	http.HandleFunc("/", handleStdHttpService)
+	http.HandleFunc("/upload", handleUploadService)
+	http.HandleFunc("/ws", handleWebSocketService)
 
 	log.Printf("Starting websocket server at %s with command '%s' ...\n", address, command)
 	log.Fatal(http.ListenAndServe(address, nil))
