@@ -1,4 +1,11 @@
-// Author: Dell Du, 2020-09-15
+// ***********************************************************************************
+// ***
+// *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
+// ***
+// *** File Author: Dell, 2020-09-15 18:09:40
+// ***
+// ***********************************************************************************
+
 
 "use strict";
 
@@ -10,15 +17,6 @@ class Size {
         this.w = this.h = 0;
     }
 }
-
-// enum Shape {
-// 	Point,
-// 	Rect,
-// 	Circle,
-// 	Ellipse,
-// 	Polygon,
-// 	Polyline
-// }
 
 class Point {
     x: number;
