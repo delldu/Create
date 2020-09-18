@@ -161,15 +161,17 @@ textarea {
 
 
 /* progress bar, message bar ... */
-.progressbar {
-
-}
+.progressbar {}
 
 .messagebar {
-    
+    display: inline;
+    margin: auto;
+    font - size: small;
+    overflow: scroll;
+    line - height: 2 rem;
+    padding: 0.5 rem 2 rem;
+    z - index: 9999;
+    position: absolute;
+    left: 80%;
+    top: 90%;
 }
-
-
-
-
-

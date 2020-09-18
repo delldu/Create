@@ -138,10 +138,42 @@ function loadImage(ws: Workspcae, image: HTMLImageElement) {
     }
 }
 
-// Call demo:
+// Demo demo:
 // let ws = new Workspcae("image_clean_canvas");
 // let size = ws.getSize();
 // console.log(size.w, size.h);
 // let image:HTMLImageElement = new Image()
 // loadImage(ws, image)
 // image.src = "waterfall.jpg";
+
+class MessageBar {
+    timer: number;
+    element: HTMLElement; // message element
+
+    constructor(id: string) {
+        this.timer = 0;
+        this.element = document.getElementById(id);
+        this.element.addEventListener('dblclick', function() {
+            this.style.display = 'none';
+        }, false);
+    }
+
+    show(msg: string, t: number) {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+        this.element.innerHTML = msg;
+        let c = this.element; // timer has no style ...
+        this.timer = setTimeout(function() {
+            c.style.display = 'none'; 
+        }, t);
+    }
+}
+
+// Demo:
+// <div id="message_id" class="message">Message Bar</div>
+// function load() {
+//     msgbar = new MessageBar("message_id");
+//     msgbar.show("This is a message ........................", 10000); // 10 s
+// }
+
