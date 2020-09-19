@@ -6,6 +6,8 @@
 // ***
 // ***********************************************************************************
 
+"use strict";
+
 class Message {
     timer: number;
     element: HTMLElement; // message element

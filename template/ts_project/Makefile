@@ -10,7 +10,8 @@ TS_SOURCE_FILES := \
 	src/canvas.ts \
 	src/uploader.ts \
 	src/downloader.ts \
-	src/workspace.ts
+
+#	src/workspace.ts
 
 all: ${TARGET}
 

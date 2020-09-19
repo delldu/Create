@@ -27,16 +27,6 @@ class Point {
     }
 }
 
-class Rect {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-
-    constructor() {
-        this.x = this.y = this.w = this.h = 0;
-    }
-}
 
 const POINT_RADIUS = 3;
 const CONTROL_POINT_COLOR = "0xff0000";
@@ -146,34 +136,4 @@ function loadImage(ws: Workspcae, image: HTMLImageElement) {
 // loadImage(ws, image)
 // image.src = "waterfall.jpg";
 
-class MessageBar {
-    timer: number;
-    element: HTMLElement; // message element
-
-    constructor(id: string) {
-        this.timer = 0;
-        this.element = document.getElementById(id);
-        this.element.addEventListener('dblclick', function() {
-            this.style.display = 'none';
-        }, false);
-    }
-
-    show(msg: string, t: number) {
-        if (this.timer) {
-            clearTimeout(this.timer);
-        }
-        this.element.innerHTML = msg;
-        let c = this.element; // timer has no style ...
-        this.timer = setTimeout(function() {
-            c.style.display = 'none'; 
-        }, t);
-    }
-}
-
-// Demo:
-// <div id="message_id" class="message">Message Bar</div>
-// function load() {
-//     msgbar = new MessageBar("message_id");
-//     msgbar.show("This is a message ........................", 10000); // 10 s
-// }
 

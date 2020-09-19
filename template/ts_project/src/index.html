@@ -6,33 +6,66 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="index.css">
     <script src="index.js"></script>
+    <script type="text/javascript">
+    function test() {
+        test_message();
+        test_progress();
+        test_shape();
+        test_canvas();
+
+        test_uploader();
+        test_downloader();
+        test_workspace();
+    }
+
+    function test_message() {
+        msgbar = new Message("message_id");
+        msgbar.show("This is a message ........................", 10000); // 10 s
+    }
+
+    function test_progress() {
+        pb = new Progress(0);
+        pb.startDemo(0); // start 0
+    }
+
+    function test_shape() {
+        canvas = document.getElementById("shape");
+        context = canvas.getContext('2d');
+        alert(typeof context);
+    }
+
+    function test_canvas() {
+        canvas = document.getElementById("canvas");
+        context = canvas.getContext('2d');
+        alert(typeof context);
+    }
+
+    function test_uploader() {
+        console.log("Test uploader ...");
+    }
+
+    function test_downloader() {
+        console.log("Test downloader ...");
+    }
+
+    function test_workspace() {
+        console.log("Test workspace ...");
+    }
+    </script>
 </head>
 
 <body onload="test()">
-Test Message Class ...
-<div id="message_id" class="message">Message Bar</div>
-
-
-
-Test Progress Class ...
-Test Shape Class ...
-Test Uploader Class ...
-Test Downloader Class ...
-Test Canvas Class ...
-Test Workspace Class ...
-
-
-<script type="text/javascript">
-function test() {
-    test_message();
-}
-
-function test_message() {
-    msgbar = new Message("message_id");
-    msgbar.show("This is a message ........................", 10000); // 10 s
-}
-</script>
-
+    Test Message Class ...
+    <div id="message_id" class="message">Message Bar</div>
+    Test Progress Class ...
+    <progress value="0" max="100">Progress Bar>Progress Bar</progress>
+    Test Shape Class ...
+    <canvas id="shape">Your browser does not support canvas ... </canvas>
+    Test Canvas Class ...
+    <canvas id="canvas">Your browser does not support canvas ... </canvas>
+    Test Uploader Class ...
+    Test Downloader Class ...
+    Test Workspace Class ...
 </body>
 
 </html>
