@@ -194,6 +194,14 @@ class Polygon extends Shape2d {
         // brush.lineTo(this.p1.x, this.p2.y);
         // brush.closePath();
     }
+
+    push(p:Point) {
+        this.points.push(p);
+    }
+
+    pop() {
+        this.points.pop();
+    }
 }
 
 class Polyline extends Shape2d {
@@ -202,10 +210,10 @@ class Polyline extends Shape2d {
     constructor() {
         super(ShapeID.Polyline);
         this.points = new Array < Point > ();
-        // this.points.push(new Point(0, 0));
-        // this.points.push(new Point(10, 10));
-        // this.points.push(new Point(30, 30));
-        // this.points.push(new Point(80, 80));
+        this.points.push(new Point(0, 0));
+        this.points.push(new Point(10, 10));
+        this.points.push(new Point(30, 30));
+        this.points.push(new Point(80, 80));
     }
 
     inside(p: Point): boolean {
@@ -218,12 +226,14 @@ class Polyline extends Shape2d {
 
     draw(brush: any) {
         console.log("Shape ID:", this.id, ", ", this.points);
-        // brush.beginPath();
-        // brush.moveTo(this.p1.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p2.y);
-        // brush.lineTo(this.p1.x, this.p2.y);
-        // brush.closePath();
+    }
+
+    push(p:Point) {
+        this.points.push(p);
+    }
+
+    pop() {
+        this.points.pop();
     }
 }
 
@@ -242,3 +252,16 @@ e.draw("");
 let p = new Polyline();
 console.log("Polyline vertex:", p.vertex());
 p.draw("");
+
+
+let a = new Array<Shape2d>();
+a.push(e);
+a.push(rect);
+a.push(p);
+console.log("---------------------------------------------------");
+console.log(a);
+
+console.log("for all sets ---------------------------------------------------");
+for (let x of a) {
+    console.log(x.id, "---->", x);
+}
