@@ -99,13 +99,13 @@ class Rectangle extends Shape2d {
         let points: Array < Point > = new Array < Point > ();
         let x: number;
         let y: number;
-        let list = [0.0, 1.0];
+        let list = [0.0, 1.0]; // 2x2 points
 
         // Create 3x3 points
         for (let t1 of list) {
-            x = Math.round((1. - t1) * this.p1.x + t1 * this.p2.x);
+            x = (1 - t1) * this.p1.x + t1 * this.p2.x;
             for (let t2 of list) {
-                y = Math.round((1.0 - t2) * this.p1.y + t2 * this.p2.y);
+                y = (1 - t2) * this.p1.y + t2 * this.p2.y;
                 points.push(new Point(x, y));
             }
         }
@@ -113,13 +113,13 @@ class Rectangle extends Shape2d {
     }
 
     draw(brush: any) {
-        console.log("Shape ID:", this.id, ", ", this.p1, this.p2);
-        // brush.beginPath();
-        // brush.moveTo(this.p1.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p2.y);
-        // brush.lineTo(this.p1.x, this.p2.y);
-        // brush.closePath();
+        // console.log("Shape ID:", this.id, ", ", this.p1, this.p2);
+        brush.beginPath();
+        brush.moveTo(this.p1.x, this.p1.y);
+        brush.lineTo(this.p2.x, this.p1.y);
+        brush.lineTo(this.p2.x, this.p2.y);
+        brush.lineTo(this.p1.x, this.p2.y);
+        brush.closePath();
     }
 
     height(): number {
@@ -155,13 +155,10 @@ class Ellipse extends Shape2d {
     }
 
     draw(brush: any) {
-        console.log("Shape ID:", this.id, ", ", this.c, this.r);
-        // brush.beginPath();
-        // brush.moveTo(this.p1.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p2.y);
-        // brush.lineTo(this.p1.x, this.p2.y);
-        // brush.closePath();
+        // console.log("Shape ID:", this.id, ", ", this.c, this.r);
+        brush.beginPath();
+        brush.ellipse(this.c.x, this.c.y, this.r.x, this.r.y, 0, 0, 2 * Math.PI);
+        brush.closePath();
     }
 }
 
@@ -186,13 +183,15 @@ class Polygon extends Shape2d {
     }
 
     draw(brush: any) {
-        console.log("Shape ID:", this.id, ", ", this.points);
-        // brush.beginPath();
-        // brush.moveTo(this.p1.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p2.y);
-        // brush.lineTo(this.p1.x, this.p2.y);
-        // brush.closePath();
+        // console.log("Shape ID:", this.id, ", ", this.points);
+        if (this.points.length < 3)
+            return;
+        brush.beginPath();
+        brush.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 0; i < this.points.length; ++i)
+            brush.lineTo(this.points[i].x, this.points[i].y);
+        brush.lineTo(this.points[0].x, this.points[0].y); // close loop
+        brush.stroke();
     }
 
     push(p:Point) {
@@ -225,7 +224,14 @@ class Polyline extends Shape2d {
     }
 
     draw(brush: any) {
-        console.log("Shape ID:", this.id, ", ", this.points);
+        // console.log("Shape ID:", this.id, ", ", this.points);
+        if (this.points.length < 2)
+            return;
+        brush.beginPath();
+        brush.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 0; i < this.points.length; ++i)
+            brush.lineTo(this.points[i].x, this.points[i].y);
+        brush.stroke();
     }
 
     push(p:Point) {
