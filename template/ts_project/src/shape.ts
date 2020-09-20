@@ -33,6 +33,17 @@ class Point {
     manhat(p: Point): number {
         return Math.max(Math.abs(p.x - this.x), Math.abs(p.y - this.y));
     }
+
+    // p1 -- p2 line
+    distance(p1:Point, p2:Point):number {
+        // d = |Ax + By + C|/sqrt(A*2 + B*B), A=y2 - y1, B=x1-x2, C=x2*y1 - x1*y2
+        let A = p2.y - p1.y;
+        let B = p1.x - p2.x;
+        let C = p2.x * p1.y - p1.x * p2.y;
+        let d = Math.abs(A * this.x + B * this.y + C);
+        let s = Math.sqrt(A*A + B*B) + 0.000001;
+        return d/s;
+    }
 }
 
 abstract class Shape2d {
@@ -168,13 +179,12 @@ class Polygon extends Shape2d {
     constructor() {
         super(ShapeID.Polygon);
         this.points = new Array < Point > ();
-        // this.points.push(new Point(0, 0));
-        // this.points.push(new Point(10, 10));
-        // this.points.push(new Point(30, 30));
-        // this.points.push(new Point(80, 80));
     }
 
     inside(p: Point): boolean {
+        if (this.points.length < 3)
+            return false;
+
         return false;
     }
 
@@ -209,13 +219,12 @@ class Polyline extends Shape2d {
     constructor() {
         super(ShapeID.Polyline);
         this.points = new Array < Point > ();
-        this.points.push(new Point(0, 0));
-        this.points.push(new Point(10, 10));
-        this.points.push(new Point(30, 30));
-        this.points.push(new Point(80, 80));
     }
 
     inside(p: Point): boolean {
+        if (this.points.length < 2)
+            return false;
+
         return false;
     }
 
