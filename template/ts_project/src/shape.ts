@@ -8,15 +8,18 @@
 
 "use strict";
 
-// Corner point IS control point for 2d shape objects
-const CORNER_POINT_RADIUS = 3;
-const CORNER_POINT_COLOR = "0xff0000";
+const VERTEX_RADIUS = 3;
+const VERTEX_COLOR = "0xff0000";
 
 const enum ShapeID {
     Rectangle,
     Ellipse,
     Polygon,
-    Polyline
+    Polyline,
+    Cube,
+    Cone,
+    Cylinder,
+    Sphere
 }
 
 class Point {
@@ -39,15 +42,24 @@ abstract class Shape2d {
         this.id = id;
     }
 
+    abstract vertex(): Array < Point > ;
     abstract inside(p: Point): boolean; // p inside 2d shape object
-    abstract oncorner(p: Point): boolean; // p is on corner of 2d shape object
     abstract draw(brush: any);
 
-    drawCorner(brush: any, cx: number, cy: number) {
+    // Reference
+    onVertex(p: Point): boolean {
+        for (let pc of this.vertex()) {
+            if (p.manhat(pc) < VERTEX_RADIUS)
+                return true;
+        }
+        return false;
+    }
+
+    drawVertex(brush: any, p: Point) {
         brush.beginPath();
-        brush.arc(cx, cy, CORNER_POINT_RADIUS, 0, 2 * Math.PI, false);
+        brush.arc(p.x, p.y, VERTEX_RADIUS, 0, 2 * Math.PI, false);
         brush.closePath();
-        brush.fillStyle = CORNER_POINT_COLOR;
+        brush.fillStyle = VERTEX_COLOR;
         brush.globalAlpha = 1.0;
         brush.fill();
     }
@@ -79,33 +91,15 @@ class Rectangle extends Shape2d {
         }
     }
 
-    draw(brush: any) {
-        console.log("Shape ID:", this.id, ", ", this.p1, this.p2);
-        // brush.beginPath();
-        // brush.moveTo(this.p1.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p1.y);
-        // brush.lineTo(this.p2.x, this.p2.y);
-        // brush.lineTo(this.p1.x, this.p2.y);
-        // brush.closePath();
-    }
-
     inside(p: Point): boolean {
         return (p.x > this.p1.x && p.x < this.p2.x && p.y > this.p1.y && p.y < this.p2.y);
     }
 
-    oncorner(p: Point): boolean {
-        for (let pc of this.corners()) {
-            if (p.manhat(pc) < CORNER_POINT_RADIUS)
-                return true;
-        }
-        return false;
-    }
-
-    corners(): Array < Point > {
+    vertex(): Array < Point > {
         let points: Array < Point > = new Array < Point > ();
         let x: number;
         let y: number;
-        let list = [0.0, 0.5, 1.0];
+        let list = [0.0, 1.0];
 
         // Create 3x3 points
         for (let t1 of list) {
@@ -118,6 +112,16 @@ class Rectangle extends Shape2d {
         return points;
     }
 
+    draw(brush: any) {
+        console.log("Shape ID:", this.id, ", ", this.p1, this.p2);
+        // brush.beginPath();
+        // brush.moveTo(this.p1.x, this.p1.y);
+        // brush.lineTo(this.p2.x, this.p1.y);
+        // brush.lineTo(this.p2.x, this.p2.y);
+        // brush.lineTo(this.p1.x, this.p2.y);
+        // brush.closePath();
+    }
+
     height(): number {
         return Math.abs(this.p2.y - this.p1.y);
     }
@@ -127,8 +131,114 @@ class Rectangle extends Shape2d {
     }
 }
 
+class Ellipse extends Shape2d {
+    c: Point; // Center
+    r: Point; // Radius of x, y
+
+    constructor(c: Point, r: Point) {
+        super(ShapeID.Ellipse);
+        this.c = c;
+        this.r = r;
+    }
+
+    inside(p: Point): boolean {
+        return (this.c.x - p.x) * (this.c.x - p.x) / (this.r.x * this.r.x) + (this.c.y - p.y) * (this.c.y - p.y) / (this.r.y * this.r.y) < 1;
+    }
+
+    vertex(): Array < Point > {
+        let points: Array < Point > = new Array < Point > ();
+        points.push(new Point(this.c.x - this.r.x, this.c.y));
+        points.push(new Point(this.c.x + this.r.x, this.c.y));
+        points.push(new Point(this.c.x, this.c.y - this.r.y));
+        points.push(new Point(this.c.x, this.c.y + this.r.y));
+        return points;
+    }
+
+    draw(brush: any) {
+        console.log("Shape ID:", this.id, ", ", this.c, this.r);
+        // brush.beginPath();
+        // brush.moveTo(this.p1.x, this.p1.y);
+        // brush.lineTo(this.p2.x, this.p1.y);
+        // brush.lineTo(this.p2.x, this.p2.y);
+        // brush.lineTo(this.p1.x, this.p2.y);
+        // brush.closePath();
+    }
+}
+
+class Polygon extends Shape2d {
+    points: Array < Point > ;
+
+    constructor() {
+        super(ShapeID.Polygon);
+        this.points = new Array < Point > ();
+        // this.points.push(new Point(0, 0));
+        // this.points.push(new Point(10, 10));
+        // this.points.push(new Point(30, 30));
+        // this.points.push(new Point(80, 80));
+    }
+
+    inside(p: Point): boolean {
+        return false;
+    }
+
+    vertex(): Array < Point > {
+        return this.points;
+    }
+
+    draw(brush: any) {
+        console.log("Shape ID:", this.id, ", ", this.points);
+        // brush.beginPath();
+        // brush.moveTo(this.p1.x, this.p1.y);
+        // brush.lineTo(this.p2.x, this.p1.y);
+        // brush.lineTo(this.p2.x, this.p2.y);
+        // brush.lineTo(this.p1.x, this.p2.y);
+        // brush.closePath();
+    }
+}
+
+class Polyline extends Shape2d {
+    points: Array < Point > ;
+
+    constructor() {
+        super(ShapeID.Polyline);
+        this.points = new Array < Point > ();
+        // this.points.push(new Point(0, 0));
+        // this.points.push(new Point(10, 10));
+        // this.points.push(new Point(30, 30));
+        // this.points.push(new Point(80, 80));
+    }
+
+    inside(p: Point): boolean {
+        return false;
+    }
+
+    vertex(): Array < Point > {
+        return this.points;
+    }
+
+    draw(brush: any) {
+        console.log("Shape ID:", this.id, ", ", this.points);
+        // brush.beginPath();
+        // brush.moveTo(this.p1.x, this.p1.y);
+        // brush.lineTo(this.p2.x, this.p1.y);
+        // brush.lineTo(this.p2.x, this.p2.y);
+        // brush.lineTo(this.p1.x, this.p2.y);
+        // brush.closePath();
+    }
+}
+
+
 let p1 = new Point(10, 200);
 let p2 = new Point(100, 20);
 let rect = new Rectangle(p1, p2);
 rect.draw("");
-console.log("Rectangle corners: ", rect.corners());
+console.log("Rectangle vertex: ", rect.vertex());
+
+let e = new Ellipse(p1, p2);
+console.log("Ellipse vertex:", e.vertex());
+e.draw("");
+
+
+let p = new Polyline();
+console.log("Polyline vertex:", p.vertex());
+p.draw("");
