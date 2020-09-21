@@ -4,7 +4,6 @@ TARGET := \
 	dist/index.css
 
 TS_SOURCE_FILES := \
-	src/shape.ts \
 	src/message.ts \
 	src/progress.ts \
 	src/canvas.ts \

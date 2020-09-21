@@ -8,7 +8,82 @@
 
 "use strict";
 
+class Message {
+    timer: number;
+    element: HTMLElement; // message element
+
+    constructor(id: string) {
+        this.timer = 0;
+        this.element = document.getElementById(id);
+        this.element.addEventListener('dblclick', function() {
+            this.style.display = 'none';
+        }, false);
+    }
+
+    show(msg: string, t: number) {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+        this.element.innerHTML = msg;
+        this.timer = setTimeout(() => {
+            this.element.style.display = 'none';
+        }, t);
+    }
+}
+
+// Test:
+// <div id="message_id" class="message">Message Bar</div>
+// function load() {
+//     msgbar = new Message("message_id");
+//     msgbar.show("This is a message ........................", 10000); // 10 s
+// }// ***********************************************************************************
+// ***
+// *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
+// ***
+// *** File Author: Dell, 2020-09-15 18:09:40
+// ***
+// ***********************************************************************************
+
+"use strict";
+
+class Progress {
+    element: HTMLElement;
+
+    constructor(i:number) {
+        this.element = document.getElementsByTagName("progress")[0];
+    }
+
+    update(v: number) {
+        this.element.setAttribute('value', v.toString());
+    }
+
+    startDemo(value:number) {
+        value = value + 1;
+        this.update(value);
+        if (value < 100) {
+            setTimeout(()=>{this.startDemo(value);}, 20);
+        }
+    }
+}
+
+// Test:
+// <progress value="0" max="100">Progress Bar</div>
+// function load() {
+//     pb = new Progress(0);
+//     pb.startDemo(0); // start 0
+// }
+// ***********************************************************************************
+// ***
+// *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
+// ***
+// *** File Author: Dell, 2020-09-15 18:09:40
+// ***
+// ***********************************************************************************
+
+"use strict";
+
 const DISTANCE_THRESHOLD = 2;
+const EDGE_LINE_WIDTH = 0.2;
 const VERTEX_COLOR = "#ff0000";
 
 const enum ShapeID {
@@ -346,7 +421,9 @@ class Canvas {
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.shapes = new Array<Shape2d>();
 
+        // Line width and color
         this.brush.strokeStyle = VERTEX_COLOR;
+        this.brush.lineWidth = EDGE_LINE_WIDTH;
     }
 
     redraw(selected:boolean) {
@@ -369,13 +446,13 @@ class Canvas {
     test() {
         let p1 = new Point(10, 10);
         let p2 = new Point(100, 100);
-        // this.pushShape(new Rectangle(p1, p2));
-        p1.x = 320;
-        p1.y = 240;
-        p2.x = 300;
-        p2.y = 220;
+        this.pushShape(new Rectangle(p1, p2));
+        // p1.x = 320;
+        // p1.y = 240;
+        // p2.x = 300;
+        // p2.y = 220;
 
-        this.pushShape(new Ellipse(p1, p2));
+        // this.pushShape(new Ellipse(p1, p2));
         // let poly = new Polygon();
         // poly.push(new Point(320, 310));
         // poly.push(new Point(310, 325));
@@ -385,102 +462,6 @@ class Canvas {
         // this.pushShape(poly);
     }
 }
-
-// let a = new Array < Shape2d > ();
-// a.push(e);
-// a.push(rect);
-// a.push(poly);
-
-// console.log("---------------------------------------------------");
-// console.log(a);
-
-// console.log("for all sets ---------------------------------------------------");
-// for (let x of a) {
-//     console.log(x.id, "---->", x);
-// }
-
-// let x = new Point(25, 25);
-// console.log(x, "is inside ?", poly, poly.inside(x));
-
-// x = new Point(100, 25);
-// console.log(x, "is inside ?", poly, poly.inside(x));
-// poly.insert(13, new Point(110, 35));
-// console.log(x, "is inside ?", poly, poly.inside(x));
-// poly.delete(13);
-// console.log("delete index 13 ?", poly, poly.inside(x));// ***********************************************************************************
-// ***
-// *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
-// ***
-// *** File Author: Dell, 2020-09-15 18:09:40
-// ***
-// ***********************************************************************************
-
-"use strict";
-
-class Message {
-    timer: number;
-    element: HTMLElement; // message element
-
-    constructor(id: string) {
-        this.timer = 0;
-        this.element = document.getElementById(id);
-        this.element.addEventListener('dblclick', function() {
-            this.style.display = 'none';
-        }, false);
-    }
-
-    show(msg: string, t: number) {
-        if (this.timer) {
-            clearTimeout(this.timer);
-        }
-        this.element.innerHTML = msg;
-        this.timer = setTimeout(() => {
-            this.element.style.display = 'none';
-        }, t);
-    }
-}
-
-// Test:
-// <div id="message_id" class="message">Message Bar</div>
-// function load() {
-//     msgbar = new Message("message_id");
-//     msgbar.show("This is a message ........................", 10000); // 10 s
-// }// ***********************************************************************************
-// ***
-// *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
-// ***
-// *** File Author: Dell, 2020-09-15 18:09:40
-// ***
-// ***********************************************************************************
-
-"use strict";
-
-class Progress {
-    element: HTMLElement;
-
-    constructor(i:number) {
-        this.element = document.getElementsByTagName("progress")[0];
-    }
-
-    update(v: number) {
-        this.element.setAttribute('value', v.toString());
-    }
-
-    startDemo(value:number) {
-        value = value + 1;
-        this.update(value);
-        if (value < 100) {
-            setTimeout(()=>{this.startDemo(value);}, 20);
-        }
-    }
-}
-
-// Test:
-// <progress value="0" max="100">Progress Bar</div>
-// function load() {
-//     pb = new Progress(0);
-//     pb.startDemo(0); // start 0
-// }
 // ***********************************************************************************
 // ***
 // *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
