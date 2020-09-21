@@ -88,8 +88,7 @@ abstract class Shape2d {
     abstract vertex(): Array < Point > ;
     abstract inside(p: Point): boolean; // p inside 2d shape object
     abstract onEdge(p: Point): boolean; // is p on edge of 2d shape object ?
-
-    abstract draw(brush: any);
+    abstract draw(brush: CanvasRenderingContext2D, selected: boolean);
 
     // Reference
     onVertex(p: Point): boolean {
@@ -100,13 +99,17 @@ abstract class Shape2d {
         return false;
     }
 
-    drawVertex(brush: any, p: Point) {
-        brush.beginPath();
-        brush.arc(p.x, p.y, DISTANCE_THRESHOLD, 0, 2 * Math.PI, false);
-        brush.closePath();
+    drawVertex(brush: CanvasRenderingContext2D) {
+        brush.save();
         brush.fillStyle = VERTEX_COLOR;
         brush.globalAlpha = 1.0;
-        brush.fill();
+        for (let p of this.vertex()) {
+            brush.beginPath();
+            brush.arc(p.x, p.y, DISTANCE_THRESHOLD, 0, 2 * Math.PI, false);
+            brush.closePath();
+            brush.fill();
+        }
+        brush.restore();
     }
 }
 
@@ -164,14 +167,25 @@ class Rectangle extends Shape2d {
         return points;
     }
 
-    draw(brush: any) {
-        // console.log("Shape ID:", this.id, ", ", this.p1, this.p2);
+    draw(brush: CanvasRenderingContext2D, selected: boolean) {
+        brush.save();
+        if (selected) {
+            brush.fillStyle = VERTEX_COLOR;
+            brush.globalAlpha = 1.0;
+        }
         brush.beginPath();
         brush.moveTo(this.p1.x, this.p1.y);
         brush.lineTo(this.p2.x, this.p1.y);
         brush.lineTo(this.p2.x, this.p2.y);
         brush.lineTo(this.p1.x, this.p2.y);
         brush.closePath();
+        if (selected) {
+            brush.fill();
+            this.drawVertex(brush);
+        } else {
+            brush.stroke();
+        }
+        brush.restore();
     }
 
     height(): number {
@@ -214,10 +228,22 @@ class Ellipse extends Shape2d {
         return points;
     }
 
-    draw(brush: any) {
+    draw(brush: CanvasRenderingContext2D, selected: boolean) {
+        brush.save();
+        if (selected) {
+            brush.fillStyle = VERTEX_COLOR;
+            brush.globalAlpha = 1.0;
+        }
         brush.beginPath();
         brush.ellipse(this.c.x, this.c.y, this.r.x, this.r.y, 0, 0, 2 * Math.PI);
         brush.closePath();
+        if (selected) {
+            brush.fill();
+            this.drawVertex(brush);
+        } else {
+            brush.stroke();
+        }
+        brush.restore();
     }
 }
 
@@ -269,16 +295,28 @@ class Polygon extends Shape2d {
         return this.points;
     }
 
-    draw(brush: any) {
+    draw(brush: CanvasRenderingContext2D, selected:boolean) {
         // console.log("Shape ID:", this.id, ", ", this.points);
         if (this.points.length < 3)
             return;
+        brush.save();
+        if (selected) {
+            brush.fillStyle = VERTEX_COLOR;
+            brush.globalAlpha = 1.0;
+        }
         brush.beginPath();
         brush.moveTo(this.points[0].x, this.points[0].y);
         for (let i = 0; i < this.points.length; ++i)
             brush.lineTo(this.points[i].x, this.points[i].y);
         brush.lineTo(this.points[0].x, this.points[0].y); // close loop
-        brush.stroke();
+        brush.closePath();
+        if (selected) {
+            brush.fill();
+            this.drawVertex(brush);
+        } else {
+            brush.stroke();
+        }
+        brush.restore();
     }
 
     push(p: Point) {
