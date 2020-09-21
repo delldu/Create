@@ -9,7 +9,7 @@
 "use strict";
 
 const DISTANCE_THRESHOLD = 2;
-const EDGE_LINE_WIDTH = 0.2;
+const EDGE_LINE_WIDTH = 1.0;
 const VERTEX_COLOR = "#ff0000";
 
 const enum ShapeID {
@@ -120,8 +120,8 @@ class Rectangle extends Shape2d {
 
     constructor(p1: Point, p2: Point) {
         super(ShapeID.Rectangle);
-        this.p1 = p1;
-        this.p2 = p2;
+        this.p1 = new Point(p1.x, p1.y);
+        this.p2 = new Point(p2.x, p2.y);  // Deep copy
 
         this.normal();
     }
@@ -174,11 +174,12 @@ class Rectangle extends Shape2d {
             brush.fillStyle = VERTEX_COLOR;
             brush.globalAlpha = 1.0;
         }
+        let points = this.vertex();
         brush.beginPath();
-        brush.moveTo(this.p1.x, this.p1.y);
-        brush.lineTo(this.p2.x, this.p1.y);
-        brush.lineTo(this.p2.x, this.p2.y);
-        brush.lineTo(this.p1.x, this.p2.y);
+        brush.moveTo(points[0].x, points[0].y);
+        for (let i = 0; i < points.length; ++i)
+            brush.lineTo(points[i].x, points[i].y);
+        brush.lineTo(points[0].x, points[0].y); // close loop
         brush.closePath();
         if (selected) {
             brush.fill();
@@ -204,8 +205,8 @@ class Ellipse extends Shape2d {
 
     constructor(c: Point, r: Point) {
         super(ShapeID.Ellipse);
-        this.c = c;
-        this.r = r;
+        this.c = new Point(c.x, c.y);
+        this.r = new Point(r.x, r.y);   // Dot share with others !
     }
 
     inside(p: Point): boolean {
@@ -321,11 +322,11 @@ class Polygon extends Shape2d {
     }
 
     push(p: Point) {
-        this.points.push(p);
+        this.points.push(new Point(p.x, p.y));    // Dot share with others, or will be a disater !!!
     }
 
     insert(index: number, p: Point) {
-        this.points.splice(index, 0, p);
+        this.points.splice(index, 0, new Point(p.x, p.y));
     }
 
     delete(index: number) {
@@ -340,20 +341,33 @@ class Polygon extends Shape2d {
 class Canvas {
     canvas: HTMLCanvasElement; // message canvas
     brush: CanvasRenderingContext2D;
-    shapes: Array < Shape2d >;
+    shapes: Array < Shape2d > ; // shapes == regions
+    scale: number;
 
     constructor(id: string) {
-        this.canvas = <HTMLCanvasElement>document.getElementById(id);
+            this.canvas = <HTMLCanvasElement>document.getElementById(id);
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.shapes = new Array<Shape2d>();
 
         // Line width and color
         this.brush.strokeStyle = VERTEX_COLOR;
         this.brush.lineWidth = EDGE_LINE_WIDTH;
+
+        this.scale = 3;
+    }
+
+    setZoom(index:number) {
+        let ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
+        index = Math.round(index);
+        if (index < 0)
+            index = 0;
+        if (index >= ZOOM_LEVELS.length)
+            index = ZOOM_LEVELS.length - 1;
+        this.scale = index;
+        this.brush.scale(ZOOM_LEVELS[this.scale], ZOOM_LEVELS[this.scale]);
     }
 
     redraw(selected:boolean) {
-        console.log("canvas size: wxh=", this.canvas.width, this.canvas.height);
         this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         for (let s of this.shapes) {
@@ -371,20 +385,22 @@ class Canvas {
 
     test() {
         let p1 = new Point(10, 10);
-        let p2 = new Point(100, 100);
+        let p2 = new Point(320, 240);
         this.pushShape(new Rectangle(p1, p2));
-        // p1.x = 320;
-        // p1.y = 240;
-        // p2.x = 300;
-        // p2.y = 220;
+        console.log("-------------------------->", this.shapes);
 
-        // this.pushShape(new Ellipse(p1, p2));
-        // let poly = new Polygon();
-        // poly.push(new Point(320, 310));
-        // poly.push(new Point(310, 325));
-        // poly.push(new Point(330, 330));
-        // poly.push(new Point(350, 320));
-        // poly.push(new Point(340, 30));
-        // this.pushShape(poly);
+        p1.x = 320;
+        p1.y = 240;
+        p2.x = 300;
+        p2.y = 220;
+        this.pushShape(new Ellipse(p1, p2));
+
+        let polygon = new Polygon();
+        polygon.push(new Point(10, 240));
+        polygon.push(new Point(310, 470));
+        polygon.push(new Point(630, 240));
+        polygon.push(new Point(540, 160));
+        polygon.push(new Point(120, 30));
+        this.pushShape(polygon);
     }
 }
