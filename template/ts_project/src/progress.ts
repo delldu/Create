@@ -23,7 +23,7 @@ class Progress {
         value = value + 1;
         this.update(value);
         if (value < 100) {
-            setTimeout(()=>{this.startDemo(value);}, 50);
+            setTimeout(()=>{this.startDemo(value);}, 20);
         }
     }
 }

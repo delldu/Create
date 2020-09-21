@@ -29,15 +29,17 @@
     }
 
     function test_shape() {
-        canvas = document.getElementById("shape");
-        context = canvas.getContext('2d');
-        alert(typeof context);
+        var shape = document.getElementById("shape");
+        context = shape.getContext('2d');
     }
 
     function test_canvas() {
-        canvas = document.getElementById("canvas");
-        context = canvas.getContext('2d');
-        alert(typeof context);
+        var canvas = new Canvas("canvas");
+        canvas.test();
+        canvas.redraw(true);
+
+        // context = canvas.getContext('2d');
+        // alert(typeof context);
     }
 
     function test_uploader() {
@@ -55,17 +57,17 @@
 </head>
 
 <body onload="test()">
-    Test Message Class ...
+    <p>Test Message Class ...</p>
     <div id="message_id" class="message">Message Bar</div>
-    Test Progress Class ...
+    <p>Test Progress Class ...</p>
     <progress value="0" max="100">Progress Bar>Progress Bar</progress>
-    Test Shape Class ...
+    <p>Test Shape Class ...</p>
     <canvas id="shape">Your browser does not support canvas ... </canvas>
-    Test Canvas Class ...
-    <canvas id="canvas">Your browser does not support canvas ... </canvas>
-    Test Uploader Class ...
-    Test Downloader Class ...
-    Test Workspace Class ...
+    <p>Test Canvas Class ...</p>
+    <canvas id="canvas" width="640" height="480" style="border:1px solid #c3c3c3;">Your browser does not support canvas ... </canvas>
+    <p>Test Uploader Class ...</p>
+    <p>Test Downloader Class ...</p>
+    <p>Test Workspace Class ...</p>
 </body>
 
 </html>

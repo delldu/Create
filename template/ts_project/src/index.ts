@@ -9,7 +9,7 @@
 "use strict";
 
 const DISTANCE_THRESHOLD = 2;
-const VERTEX_COLOR = "0xff0000";
+const VERTEX_COLOR = "#ff0000";
 
 const enum ShapeID {
     Rectangle,
@@ -88,8 +88,7 @@ abstract class Shape2d {
     abstract vertex(): Array < Point > ;
     abstract inside(p: Point): boolean; // p inside 2d shape object
     abstract onEdge(p: Point): boolean; // is p on edge of 2d shape object ?
-
-    abstract draw(brush: any);
+    abstract draw(brush: CanvasRenderingContext2D, selected: boolean);
 
     // Reference
     onVertex(p: Point): boolean {
@@ -100,13 +99,17 @@ abstract class Shape2d {
         return false;
     }
 
-    drawVertex(brush: any, p: Point) {
-        brush.beginPath();
-        brush.arc(p.x, p.y, DISTANCE_THRESHOLD, 0, 2 * Math.PI, false);
-        brush.closePath();
+    drawVertex(brush: CanvasRenderingContext2D) {
+        brush.save();
         brush.fillStyle = VERTEX_COLOR;
         brush.globalAlpha = 1.0;
-        brush.fill();
+        for (let p of this.vertex()) {
+            brush.beginPath();
+            brush.arc(p.x, p.y, DISTANCE_THRESHOLD, 0, 2 * Math.PI, false);
+            brush.closePath();
+            brush.fill();
+        }
+        brush.restore();
     }
 }
 
@@ -164,14 +167,25 @@ class Rectangle extends Shape2d {
         return points;
     }
 
-    draw(brush: any) {
-        // console.log("Shape ID:", this.id, ", ", this.p1, this.p2);
+    draw(brush: CanvasRenderingContext2D, selected: boolean) {
+        brush.save();
+        if (selected) {
+            brush.fillStyle = VERTEX_COLOR;
+            brush.globalAlpha = 1.0;
+        }
         brush.beginPath();
         brush.moveTo(this.p1.x, this.p1.y);
         brush.lineTo(this.p2.x, this.p1.y);
         brush.lineTo(this.p2.x, this.p2.y);
         brush.lineTo(this.p1.x, this.p2.y);
         brush.closePath();
+        if (selected) {
+            brush.fill();
+            this.drawVertex(brush);
+        } else {
+            brush.stroke();
+        }
+        brush.restore();
     }
 
     height(): number {
@@ -214,10 +228,22 @@ class Ellipse extends Shape2d {
         return points;
     }
 
-    draw(brush: any) {
+    draw(brush: CanvasRenderingContext2D, selected: boolean) {
+        brush.save();
+        if (selected) {
+            brush.fillStyle = VERTEX_COLOR;
+            brush.globalAlpha = 1.0;
+        }
         brush.beginPath();
         brush.ellipse(this.c.x, this.c.y, this.r.x, this.r.y, 0, 0, 2 * Math.PI);
         brush.closePath();
+        if (selected) {
+            brush.fill();
+            this.drawVertex(brush);
+        } else {
+            brush.stroke();
+        }
+        brush.restore();
     }
 }
 
@@ -269,16 +295,28 @@ class Polygon extends Shape2d {
         return this.points;
     }
 
-    draw(brush: any) {
+    draw(brush: CanvasRenderingContext2D, selected: boolean) {
         // console.log("Shape ID:", this.id, ", ", this.points);
         if (this.points.length < 3)
             return;
+        brush.save();
+        if (selected) {
+            brush.fillStyle = VERTEX_COLOR;
+            brush.globalAlpha = 1.0;
+        }
         brush.beginPath();
         brush.moveTo(this.points[0].x, this.points[0].y);
         for (let i = 0; i < this.points.length; ++i)
             brush.lineTo(this.points[i].x, this.points[i].y);
         brush.lineTo(this.points[0].x, this.points[0].y); // close loop
-        brush.stroke();
+        brush.closePath();
+        if (selected) {
+            brush.fill();
+            this.drawVertex(brush);
+        } else {
+            brush.stroke();
+        }
+        brush.restore();
     }
 
     push(p: Point) {
@@ -298,43 +336,78 @@ class Polygon extends Shape2d {
     }
 }
 
-let p1 = new Point(10, 200);
-let p2 = new Point(100, 20);
-let rect = new Rectangle(p1, p2);
-console.log("Rectangle vertex: ", rect.vertex());
+class Canvas {
+    canvas: HTMLCanvasElement; // message canvas
+    brush: CanvasRenderingContext2D;
+    shapes: Array < Shape2d >;
 
-let e = new Ellipse(p1, p2);
-console.log("Ellipse vertex:", e.vertex());
+    constructor(id: string) {
+        this.canvas = <HTMLCanvasElement>document.getElementById(id);
+        this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+        this.shapes = new Array<Shape2d>();
 
-let poly = new Polygon();
-poly.push(new Point(20, 10));
-poly.push(new Point(10, 25));
-poly.push(new Point(30, 30));
-poly.push(new Point(50, 20));
-poly.push(new Point(40, 0));
+        this.brush.strokeStyle = VERTEX_COLOR;
+    }
 
-let a = new Array < Shape2d > ();
-a.push(e);
-a.push(rect);
-a.push(poly);
+    redraw(selected:boolean) {
+        console.log("canvas size: wxh=", this.canvas.width, this.canvas.height);
+        this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-console.log("---------------------------------------------------");
-console.log(a);
+        for (let s of this.shapes) {
+            s.draw(this.brush, selected);
+        }
+    }
 
-console.log("for all sets ---------------------------------------------------");
-for (let x of a) {
-    console.log(x.id, "---->", x);
+    pushShape(s:Shape2d) {
+        this.shapes.push(s);
+    }
+
+    popShape() {
+        this.shapes.pop();
+    }
+
+    test() {
+        let p1 = new Point(10, 10);
+        let p2 = new Point(100, 100);
+        // this.pushShape(new Rectangle(p1, p2));
+        p1.x = 320;
+        p1.y = 240;
+        p2.x = 300;
+        p2.y = 220;
+
+        this.pushShape(new Ellipse(p1, p2));
+        // let poly = new Polygon();
+        // poly.push(new Point(320, 310));
+        // poly.push(new Point(310, 325));
+        // poly.push(new Point(330, 330));
+        // poly.push(new Point(350, 320));
+        // poly.push(new Point(340, 30));
+        // this.pushShape(poly);
+    }
 }
 
-let x = new Point(25, 25);
-console.log(x, "is inside ?", poly, poly.inside(x));
+// let a = new Array < Shape2d > ();
+// a.push(e);
+// a.push(rect);
+// a.push(poly);
 
-x = new Point(100, 25);
-console.log(x, "is inside ?", poly, poly.inside(x));
-poly.insert(13, new Point(110, 35));
-console.log(x, "is inside ?", poly, poly.inside(x));
-poly.delete(13);
-console.log("delete index 13 ?", poly, poly.inside(x));// ***********************************************************************************
+// console.log("---------------------------------------------------");
+// console.log(a);
+
+// console.log("for all sets ---------------------------------------------------");
+// for (let x of a) {
+//     console.log(x.id, "---->", x);
+// }
+
+// let x = new Point(25, 25);
+// console.log(x, "is inside ?", poly, poly.inside(x));
+
+// x = new Point(100, 25);
+// console.log(x, "is inside ?", poly, poly.inside(x));
+// poly.insert(13, new Point(110, 35));
+// console.log(x, "is inside ?", poly, poly.inside(x));
+// poly.delete(13);
+// console.log("delete index 13 ?", poly, poly.inside(x));// ***********************************************************************************
 // ***
 // *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
 // ***
@@ -397,7 +470,7 @@ class Progress {
         value = value + 1;
         this.update(value);
         if (value < 100) {
-            setTimeout(()=>{this.startDemo(value);}, 50);
+            setTimeout(()=>{this.startDemo(value);}, 20);
         }
     }
 }
