@@ -89,14 +89,17 @@ const VERTEX_COLOR = "#ff0000";
 const ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
 const DEFAULT_ZOOM_LEVEL = 3; // 1.0 index
 
+const enum CanvasMode {
+    View,
+    Edit
+}
+
+// 2D shape id
 const enum ShapeID {
+    None,
     Rectangle,
     Ellipse,
-    Polygon,
-    Cube,
-    Cone,
-    Cylinder,
-    Sphere
+    Polygon
 }
 
 class Point {
@@ -376,7 +379,7 @@ class Polygon extends Shape2d {
 
     draw(brush: CanvasRenderingContext2D, selected: boolean) {
         // console.log("Shape ID:", this.id, ", ", this.points);
-        if (this.points.length < 3)
+        if (this.points.length < 1)
             return;
         brush.save();
         if (selected) {
@@ -418,15 +421,29 @@ class Polygon extends Shape2d {
 class Canvas {
     canvas: HTMLCanvasElement; // canvas element
     brush: CanvasRenderingContext2D;
+    mode: CanvasMode;
+
+    // Shape container
     regions: Array < Shape2d > ; // shape regions
     selected_index: number;
+    drawing_shape: ShapeID;
+    drawing_polygon: Polygon;   // this is temperay record
+
+    // Zoom control
     zoom_index: number;
+
+    // Handle mouse, keyboard device
     mouse: Mouse;
 
     constructor(id: string) {
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+        this.mode = CanvasMode.View;
+
         this.regions = new Array < Shape2d > ();
+        this.drawing_shape = ShapeID.None;
+        this.drawing_polygon = new Polygon();
+        this.selected_index = -1;
 
         // Line width and color
         this.brush.strokeStyle = VERTEX_COLOR;
@@ -435,7 +452,18 @@ class Canvas {
         this.zoom_index = DEFAULT_ZOOM_LEVEL;
 
         this.mouseInitialize();
-        this.selected_index = -1;
+    }
+
+    setMessage(message: string) {
+        console.log(message);
+    }
+
+    setMode(mode: CanvasMode) {
+        if (mode != CanvasMode.View || mode != CanvasMode.Edit) {
+            this.setMessage("Canvas only support view or edit mode.");
+            return;
+        }
+        this.mode = mode;
     }
 
     mouseInitialize() {
@@ -494,7 +522,7 @@ class Canvas {
     redraw() {
         this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
         for (let i in this.regions) {
-            if (parseInt(i) === this.selected_index )
+            if (parseInt(i) === this.selected_index)
                 this.regions[i].draw(this.brush, true);
             else
                 this.regions[i].draw(this.brush, false);
