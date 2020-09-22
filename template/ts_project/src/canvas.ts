@@ -31,6 +31,11 @@ class Point {
         this.y = y;
     }
 
+    move(deltaX: number, deltaY: number) {
+        this.x += deltaX;
+        this.y += deltaY;
+    }
+
     // euclid distance
     distance(p: Point): number {
         return Math.sqrt((p.x - this.x) * (p.x - this.x) + (p.y - this.y) * (p.y - this.y));
@@ -88,18 +93,22 @@ abstract class Shape2d {
     }
 
     abstract vertex(): Array < Point > ;
-    abstract inside(p: Point): boolean; // p inside 2d shape object
-    abstract onEdge(p: Point): boolean; // is p on edge of 2d shape object ?
-    abstract draw(brush: CanvasRenderingContext2D, selected: boolean);
 
-    // Reference
-    onVertex(p: Point): boolean {
-        for (let pc of this.vertex()) {
-            if (p.distance(pc) <= DISTANCE_THRESHOLD)
-                return true;
+    // Search ...
+    abstract bodyHas(p: Point): boolean; // p inside 2d shape ?
+    abstract whichEdgeHas(p: Point): number; // which edge include point p ?
+    // which vertex include point p ?
+    whichVertexHas(p: Point): number {
+        let vset = this.vertex();
+        let n = vset.length;
+        for (let i = 0; i < n; i++) {
+            if (p.distance(vset[i]) <= DISTANCE_THRESHOLD)
+                return i;
         }
-        return false;
+        return -1;
     }
+
+    abstract draw(brush: CanvasRenderingContext2D, selected: boolean);
 
     drawVertex(brush: CanvasRenderingContext2D) {
         brush.save();
@@ -113,6 +122,19 @@ abstract class Shape2d {
         }
         brush.restore();
     }
+
+    move(deltaX: number, deltaY: number) {
+        for (let p of this.vertex()) {
+            p.x += deltaX;
+            p.y += deltaY;
+        }
+    }
+
+    // Vertex add/delete
+    abstract push(p: Point);
+    abstract insert(index: number, p: Point);
+    abstract delete(index: number);
+    abstract pop();
 }
 
 class Rectangle extends Shape2d {
@@ -141,22 +163,13 @@ class Rectangle extends Shape2d {
         }
     }
 
-    inside(p: Point): boolean {
+    bodyHas(p: Point): boolean {
         return (p.x > this.p1.x && p.x < this.p2.x && p.y > this.p1.y && p.y < this.p2.y);
     }
 
-    onEdge(p: Point): boolean {
-        let i = 0;
-        let x = 0;
-        let points = this.vertex();
-        let len = points.length; // 4
-        let d = p.tolineDistance(points[len - 1], points[0]);
-        for (i = 0; i < len - 1; i++) {
-            x = p.tolineDistance(points[i], points[i + 1]);
-            if (x < d)
-                d = x;
-        }
-        return d <= DISTANCE_THRESHOLD;
+    // useless, so just return -1 to meet interface
+    whichEdgeHas(p: Point): number {
+        return -1;
     }
 
     vertex(): Array < Point > {
@@ -191,13 +204,11 @@ class Rectangle extends Shape2d {
         brush.restore();
     }
 
-    height(): number {
-        return Math.abs(this.p2.y - this.p1.y);
-    }
-
-    width(): number {
-        return Math.abs(this.p2.x - this.p1.x);
-    }
+    // Vertex add/delete
+    push(p: Point) {}
+    insert(index: number, p: Point) {}
+    delete(index: number) {}
+    pop() {}
 }
 
 class Ellipse extends Shape2d {
@@ -210,16 +221,14 @@ class Ellipse extends Shape2d {
         this.r = new Point(r.x, r.y); // Dot share with others !
     }
 
-    inside(p: Point): boolean {
+    bodyHas(p: Point): boolean {
         return (this.c.x - p.x) * (this.c.x - p.x) / (this.r.x * this.r.x) +
             (this.c.y - p.y) * (this.c.y - p.y) / (this.r.y * this.r.y) < 1;
     }
 
-    onEdge(p: Point): boolean {
-        let threshold = DISTANCE_THRESHOLD / this.r.x * this.r.y;
-        let delta = (this.c.x - p.x) * (this.c.x - p.x) / (this.r.x * this.r.x) +
-            (this.c.y - p.y) * (this.c.y - p.y) / (this.r.y * this.r.y) - 1.0;
-        return Math.abs(delta) < threshold;
+    // Useless, just return -1 to meet interface
+    whichEdgeHas(p: Point): number {
+        return -1;
     }
 
     vertex(): Array < Point > {
@@ -248,6 +257,12 @@ class Ellipse extends Shape2d {
         }
         brush.restore();
     }
+
+    // Vertex add/delete
+    push(p: Point) {}
+    insert(index: number, p: Point) {}
+    delete(index: number) {}
+    pop() {}
 }
 
 class Polygon extends Shape2d {
@@ -258,7 +273,7 @@ class Polygon extends Shape2d {
         this.points = new Array < Point > ();
     }
 
-    inside(p: Point): boolean {
+    bodyHas(p: Point): boolean {
         let n = this.points.length;
         if (n < 3)
             return false;
@@ -279,19 +294,18 @@ class Polygon extends Shape2d {
         return (wn === 0) ? false : true;
     }
 
-    onEdge(p: Point): boolean {
-        let i = 0;
-        let x = 0;
-        let len = this.points.length;
-        if (len < 2)
-            return false;
-        let d = p.tolineDistance(this.points[len - 1], this.points[0]);
-        for (i = 0; i < len - 1; i++) {
-            x = p.tolineDistance(this.points[i], this.points[i + 1]);
-            if (x < d)
-                d = x;
+    // Support add point on edge in edit mode ...
+    whichEdgeHas(p: Point): number {
+        let n = this.points.length;
+        if (n < 3)
+            return -1;
+        let vset = this.points.slice(0); // Deep copy
+        vset.push(this.points[0]); // Closed
+        for (let i = 0; i < n; i++) {
+            if (p.tolineDistance(vset[i], vset[i + 1]) <= DISTANCE_THRESHOLD)
+                return i;
         }
-        return d <= DISTANCE_THRESHOLD;
+        return -1;
     }
 
     vertex(): Array < Point > {
@@ -347,7 +361,7 @@ class Canvas {
     drawing_shape: ShapeID; // if == ShapeID.None is view mode
     private regions: Array < Shape2d > ; // shape regions
     private selected_index: number;
-    private drawing_polygon: Polygon;   // this is temperay record
+    private drawing_polygon: Polygon; // this is temperay record
 
     // Zoom control
     zoom_index: number;
@@ -389,7 +403,91 @@ class Canvas {
         this.setMessage("Canvas only support None/Rectangle/Ellipse/Polygon shape.");
     }
 
-    mouseInitialize() {
+    private viewModeMouseHandler(e: MouseEvent) {
+        if (this.drawing_shape == ShapeID.None)
+            this.canvas.style.cursor = "default";
+    }
+
+    private editModeMouseClickHandler(e: MouseEvent) {
+        e.stopPropagation();
+
+        if (this.drawing_shape == ShapeID.None)
+            return;
+        if (!this.mouse.isclick())
+            return;
+
+        // Selected or remove object
+        let [index, sub_index] = this.findInside(this.mouse.start);
+        if (index >= 0) {
+            if (index == this.selected_index)
+                this.selected_index = -1;
+            else
+                this.selected_index = index;
+            this.redraw();
+            return;
+        }
+
+        // click on vertex/edge of selected pylogon, add remove or add point 
+        if (this.selected_index >= 0 && this.drawing_shape == ShapeID.Polygon) {
+            // Remove vertex
+            [index, sub_index] = this.findVertex((this.mouse.start));
+            if (index == this.selected_index) {
+                this.regions[index].delete(sub_index);
+                return;
+            }
+            // Add new vertex
+            [index, sub_index] = this.findEdge((this.mouse.start));
+            if (index == this.selected_index) {
+                this.regions[index].insert(sub_index, this.mouse.start);
+                return;
+            }
+            return;
+        }
+
+        // is drawing polygon on blank space ?
+        if (this.selected_index < 0 && this.drawing_shape == ShapeID.Polygon) {
+            this.drawing_polygon.push(this.mouse.start);
+            this.redraw();
+            return;
+        }
+    }
+
+    private editModeMouseMovingHandler(e: MouseEvent) {
+        e.stopPropagation();
+
+        if (this.drawing_shape == ShapeID.None)
+            return;
+        if (this.mouse.isclick())
+            return;
+
+        // Please select one object by click at first
+        if (this.selected_index < 0)
+            return;
+
+        // Resize object ?
+        let [index, sub_index] = this.findVertex(this.mouse.start);
+        if (index == this.selected_index) {
+            let mx = this.mouse.stop.x - this.mouse.start.x;
+            let my = this.mouse.stop.y - this.mouse.stop.y;
+            let vpoint = this.regions[index].vertex();
+            vpoint[sub_index].move(mx, my);
+            this.redraw();
+            return;
+        }
+        [index, sub_index] = this.findInside(this.mouse.start);
+        if (index == this.selected_index) {
+            // Moving whole object
+            let mx = this.mouse.stop.x - this.mouse.start.x;
+            let my = this.mouse.stop.y - this.mouse.stop.y;
+            this.regions[index].move(mx, my);
+            return;
+        }
+
+        // Drag and drop on blank area ?
+
+    }
+
+    private mouseInitialize() {
         this.mouse = new Mouse();
 
         this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
@@ -417,6 +515,12 @@ class Canvas {
                 e.preventDefault();
             }
         }, false);
+
+        // Canvas general mouse handler
+        this.canvas.addEventListener('mouseup', (e: MouseEvent) => { this.viewModeMouseHandler(e); }, false);
+        this.canvas.addEventListener('mouseup', (e: MouseEvent) => { this.editModeMouseClickHandler(e); }, false);
+        this.canvas.addEventListener('mouseup', (e: MouseEvent) => { this.editModeMouseMovingHandler(e); }, false);
+
         // touch screen event handlers, TODO: test !!!
         // this.canvas.addEventListener('touchstart', (e) => {
         //     this.mouse.start.x = e.offsetX;
@@ -447,8 +551,8 @@ class Canvas {
         // Draw image ...
 
         // Draw regions ...
-        for (let i in this.regions) {
-            if (parseInt(i) === this.selected_index)
+        for (let i = 0; i < this.regions.length; i++) {
+            if (i === this.selected_index)
                 this.regions[i].draw(this.brush, true);
             else
                 this.regions[i].draw(this.brush, false);
@@ -472,7 +576,37 @@ class Canvas {
         this.regions.pop();
     }
 
-    test() {
+    // Find shape object
+    private findInside(p: Point): [number, number] {
+        for (let i = 0; i < this.regions.length; i++) {
+            if (this.regions[i].bodyHas(p))
+                return [i, 0];
+        }
+        return [-1, 0];
+    }
+
+    private findVertex(p: Point): [number, number] {
+        let vertex_index = -1;
+        for (let i = 0; i < this.regions.length; i++) {
+            vertex_index = this.regions[i].whichVertexHas(p);
+            if (vertex_index >= 0)
+                return [i, vertex_index];
+        }
+        return [-1, -1];
+    }
+
+    private findEdge(p: Point): [number, number] {
+        let edge_index = -1;
+        for (let i = 0; i < this.regions.length; i++) {
+            edge_index = this.regions[i].whichEdgeHas(p);
+            if (edge_index >= 0)
+                return [i, edge_index];
+        }
+        return [-1, -1];
+    }
+
+
+    private test() {
         let p1 = new Point(10, 10);
         let p2 = new Point(320, 240);
         this.pushShape(new Rectangle(p1, p2));

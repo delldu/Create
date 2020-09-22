@@ -89,11 +89,6 @@ const VERTEX_COLOR = "#ff0000";
 const ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
 const DEFAULT_ZOOM_LEVEL = 3; // 1.0 index
 
-const enum CanvasMode {
-    View,
-    Edit
-}
-
 // 2D shape id
 const enum ShapeID {
     None,
@@ -420,28 +415,26 @@ class Polygon extends Shape2d {
 
 class Canvas {
     canvas: HTMLCanvasElement; // canvas element
-    brush: CanvasRenderingContext2D;
-    mode: CanvasMode;
+    private brush: CanvasRenderingContext2D;
 
     // Shape container
-    regions: Array < Shape2d > ; // shape regions
-    selected_index: number;
-    drawing_shape: ShapeID;
-    drawing_polygon: Polygon;   // this is temperay record
+    drawing_shape: ShapeID; // if == ShapeID.None is view mode
+    private regions: Array < Shape2d > ; // shape regions
+    private selected_index: number;
+    private drawing_polygon: Polygon;   // this is temperay record
 
     // Zoom control
     zoom_index: number;
 
     // Handle mouse, keyboard device
-    mouse: Mouse;
+    private mouse: Mouse;
 
     constructor(id: string) {
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-        this.mode = CanvasMode.View;
 
-        this.regions = new Array < Shape2d > ();
         this.drawing_shape = ShapeID.None;
+        this.regions = new Array < Shape2d > ();
         this.drawing_polygon = new Polygon();
         this.selected_index = -1;
 
@@ -458,15 +451,50 @@ class Canvas {
         console.log(message);
     }
 
-    setMode(mode: CanvasMode) {
-        if (mode != CanvasMode.View || mode != CanvasMode.Edit) {
-            this.setMessage("Canvas only support view or edit mode.");
+    setShape(shape: ShapeID) {
+        if (shape == ShapeID.None || shape == ShapeID.Rectangle || shape == ShapeID.Ellipse || shape == ShapeID.Polygon) {
+            this.drawing_shape = shape;
+            // Clear Polygon for shape change
+            if (shape != ShapeID.Polygon) {
+                this.drawing_polygon = new Polygon();
+            }
             return;
         }
-        this.mode = mode;
+        this.setMessage("Canvas only support None/Rectangle/Ellipse/Polygon shape.");
     }
 
-    mouseInitialize() {
+    private viewModeMouseClickHandler(e: MouseEvent) {
+        if (this.drawing_shape != ShapeID.None)
+            return;
+        if (! this.mouse.isclick())
+            return;
+
+    }
+
+    private viewModeMouseMovingHandler(e: MouseEvent) {
+        if (this.drawing_shape != ShapeID.None)
+            return;
+        if (this.mouse.isclick())
+            return;
+        
+    }
+
+    private editModeMouseClickHandler(e: MouseEvent) {
+        if (this.drawing_shape == ShapeID.None)
+            return;
+        if (! this.mouse.isclick())
+            return;
+
+    }
+
+    private editModeMouseMovingHandler(e: MouseEvent) {
+        if (this.drawing_shape == ShapeID.None)
+            return;
+        if (this.mouse.isclick())
+            return;
+    }
+
+    private mouseInitialize() {
         this.mouse = new Mouse();
 
         this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
@@ -494,6 +522,13 @@ class Canvas {
                 e.preventDefault();
             }
         }, false);
+
+        // Canvas general mouse handler
+        this.canvas.addEventListener('mouseup', (e: MouseEvent) => { this.viewModeMouseClickHandler(e); }, false);
+        this.canvas.addEventListener('mouseup', (e: MouseEvent) => { this.editModeMouseClickHandler(e); }, false);
+        this.canvas.addEventListener('mouseup', (e: MouseEvent) => { this.viewModeMouseMovingHandler(e); }, false);
+        this.canvas.addEventListener('mouseup', (e: MouseEvent) => { this.editModeMouseMovingHandler(e); }, false);
+        
         // touch screen event handlers, TODO: test !!!
         // this.canvas.addEventListener('touchstart', (e) => {
         //     this.mouse.start.x = e.offsetX;
@@ -521,11 +556,19 @@ class Canvas {
 
     redraw() {
         this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Draw image ...
+
+        // Draw regions ...
         for (let i in this.regions) {
             if (parseInt(i) === this.selected_index)
                 this.regions[i].draw(this.brush, true);
             else
                 this.regions[i].draw(this.brush, false);
+        }
+
+        // Draw drawing polygon ...
+        if (this.drawing_shape === ShapeID.Polygon) {
+            this.drawing_polygon.draw(this.brush, false);
         }
     }
 
@@ -533,11 +576,15 @@ class Canvas {
         this.regions.push(s);
     }
 
+    Delete(index: number) {
+        this.regions.slice(index, 1);
+    }
+
     popShape() {
         this.regions.pop();
     }
 
-    test() {
+    private test() {
         let p1 = new Point(10, 10);
         let p2 = new Point(320, 240);
         this.pushShape(new Rectangle(p1, p2));
