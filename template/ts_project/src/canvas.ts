@@ -12,6 +12,9 @@ const DISTANCE_THRESHOLD = 2;
 const EDGE_LINE_WIDTH = 1.0;
 const VERTEX_COLOR = "#ff0000";
 
+const ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
+const DEFAULT_ZOOM_LEVEL = 3; // 1.0 index
+
 const enum ShapeID {
     Rectangle,
     Ellipse,
@@ -121,7 +124,7 @@ class Rectangle extends Shape2d {
     constructor(p1: Point, p2: Point) {
         super(ShapeID.Rectangle);
         this.p1 = new Point(p1.x, p1.y);
-        this.p2 = new Point(p2.x, p2.y);  // Deep copy
+        this.p2 = new Point(p2.x, p2.y); // Deep copy
 
         this.normal();
     }
@@ -206,7 +209,7 @@ class Ellipse extends Shape2d {
     constructor(c: Point, r: Point) {
         super(ShapeID.Ellipse);
         this.c = new Point(c.x, c.y);
-        this.r = new Point(r.x, r.y);   // Dot share with others !
+        this.r = new Point(r.x, r.y); // Dot share with others !
     }
 
     inside(p: Point): boolean {
@@ -322,7 +325,7 @@ class Polygon extends Shape2d {
     }
 
     push(p: Point) {
-        this.points.push(new Point(p.x, p.y));    // Dot share with others, or will be a disater !!!
+        this.points.push(new Point(p.x, p.y)); // Dot share with others, or will be a disater !!!
     }
 
     insert(index: number, p: Point) {
@@ -339,55 +342,104 @@ class Polygon extends Shape2d {
 }
 
 class Canvas {
-    canvas: HTMLCanvasElement; // message canvas
+    canvas: HTMLCanvasElement; // canvas element
     brush: CanvasRenderingContext2D;
-    shapes: Array < Shape2d > ; // shapes == regions
-    scale: number;
+    regions: Array < Shape2d > ; // shape regions
+    selected_index: number;
+    zoom_index: number;
+    mouse: Mouse;
 
     constructor(id: string) {
-            this.canvas = <HTMLCanvasElement>document.getElementById(id);
+        this.canvas = document.getElementById(id) as HTMLCanvasElement;
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-        this.shapes = new Array<Shape2d>();
+        this.regions = new Array < Shape2d > ();
 
         // Line width and color
         this.brush.strokeStyle = VERTEX_COLOR;
         this.brush.lineWidth = EDGE_LINE_WIDTH;
 
-        this.scale = 3;
+        this.zoom_index = DEFAULT_ZOOM_LEVEL;
+
+        this.mouseInitialize();
+        this.selected_index = -1;
     }
 
-    setZoom(index:number) {
-        let ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
+    mouseInitialize() {
+        this.mouse = new Mouse();
+
+        this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
+            this.mouse.start.x = e.offsetX;
+            this.mouse.start.y = e.offsetY;
+        }, false);
+        this.canvas.addEventListener('mouseup', (e: MouseEvent) => {
+            this.mouse.stop.x = e.offsetX;
+            this.mouse.stop.y = e.offsetY;
+        }, false);
+        this.canvas.addEventListener('mouseover', (e: MouseEvent) => {
+            this.redraw();
+        }, false);
+        this.canvas.addEventListener('mousemove', (e: MouseEvent) => {
+            this.mouse.moving.x = e.offsetX;
+            this.mouse.moving.y = e.offsetY;
+        }, false);
+        this.canvas.addEventListener('wheel', (e: WheelEvent) => {
+            if (e.ctrlKey) {
+                if (e.deltaY < 0) {
+                    this.setZoom(this.zoom_index + 1);
+                } else {
+                    this.setZoom(this.zoom_index - 1);
+                }
+                e.preventDefault();
+            }
+        }, false);
+        // touch screen event handlers, TODO: test !!!
+        // this.canvas.addEventListener('touchstart', (e) => {
+        //     this.mouse.start.x = e.offsetX;
+        //     this.mouse.start.y = e.offsetY;
+        // }, false);
+        // this.canvas.addEventListener('touchend', (e) => {
+        //     this.mouse.stop.x = e.offsetX;
+        //     this.mouse.stop.y = e.offsetY;
+        // }, false);
+        // this.canvas.addEventListener('touchmove', (e) => {
+        //     this.mouse.moving.x = e.offsetX;
+        //     this.mouse.moving.y = e.offsetY;
+        // }, false);
+    }
+
+    setZoom(index: number) {
         index = Math.round(index);
         if (index < 0)
             index = 0;
         if (index >= ZOOM_LEVELS.length)
             index = ZOOM_LEVELS.length - 1;
-        this.scale = index;
-        this.brush.scale(ZOOM_LEVELS[this.scale], ZOOM_LEVELS[this.scale]);
+        this.zoom_index = index;
+        this.brush.scale(ZOOM_LEVELS[this.zoom_index], ZOOM_LEVELS[this.zoom_index]);
     }
 
-    redraw(selected:boolean) {
+    redraw() {
         this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        for (let s of this.shapes) {
-            s.draw(this.brush, selected);
+        for (let i in this.regions) {
+            if (parseInt(i) === this.selected_index )
+                this.regions[i].draw(this.brush, true);
+            else
+                this.regions[i].draw(this.brush, false);
         }
     }
 
-    pushShape(s:Shape2d) {
-        this.shapes.push(s);
+    pushShape(s: Shape2d) {
+        this.regions.push(s);
     }
 
     popShape() {
-        this.shapes.pop();
+        this.regions.pop();
     }
 
     test() {
         let p1 = new Point(10, 10);
         let p2 = new Point(320, 240);
         this.pushShape(new Rectangle(p1, p2));
-        console.log("-------------------------->", this.shapes);
+        console.log("-------------------------->", this.regions);
 
         p1.x = 320;
         p1.y = 240;
