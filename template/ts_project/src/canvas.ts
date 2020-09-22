@@ -68,6 +68,7 @@ class Mouse {
     start: Point;
     moving: Point;
     stop: Point;
+    is_down:boolean;
 
     constructor() {
         this.reset();
@@ -77,6 +78,8 @@ class Mouse {
         this.start = new Point(0, 0);
         this.moving = new Point(0, 0);
         this.stop = new Point(0, 0);
+
+        this.is_down = false;
     }
 
     isclick(): boolean {
@@ -385,7 +388,7 @@ class Canvas {
 
         this.zoom_index = DEFAULT_ZOOM_LEVEL;
 
-        this.mouseInitialize();
+        this.registerEventHandlers();
     }
 
     setMessage(message: string) {
@@ -407,7 +410,6 @@ class Canvas {
     private viewModeMouseHandler(e: MouseEvent) {
         if (this.drawing_shape == ShapeID.None) {
             this.canvas.style.cursor = "default";
-            console.log("mousedown_005 ...", this.mouse.start);
         }
     }
 
@@ -418,10 +420,8 @@ class Canvas {
         if (! this.mouse.isclick())
             return;
 
-        console.log("mousedown_006 ...", this.mouse.start);
         // Selected or remove object
         let [index, sub_index] = this.findInside(this.mouse.start);
-        console.log("mousedown_007 ...", this.mouse.start);
 
         if (index >= 0) {
             if (index == this.selected_index)
@@ -431,8 +431,6 @@ class Canvas {
             this.redraw();
             return;
         }
-
-        console.log("mousedown_008 ...", this.mouse.start);
 
         // click on vertex/edge of selected pylogon, add remove or add point 
         if (this.selected_index >= 0 && this.drawing_shape == ShapeID.Polygon) {
@@ -453,8 +451,6 @@ class Canvas {
             return;
         }
 
-        console.log("mousedown_009 ...", this.mouse.start);
-
         // is drawing polygon on blank space ?
         if (this.selected_index < 0 && this.drawing_shape == ShapeID.Polygon) {
             this.drawing_polygon.push(this.mouse.start);
@@ -474,14 +470,11 @@ class Canvas {
             return;
         }
 
-        console.log("mousedown_013 ...", this.mouse.start, "===> ", this.mouse.stop);
         // Drag and drop on blank area ? Only for rectangle/ellipse drawing
         if (this.selected_index < 0) {
             if (this.drawing_shape == ShapeID.Rectangle) {
-                console.log("mousemove_013_01 ...", this.mouse.start, "===> ", this.mouse.stop);
                 this.pushShape(new Rectangle(this.mouse.start, this.mouse.stop));
                 this.redraw();
-                console.log("new rectangle added: ", this.regions);
                 return;
             }
             if (this.drawing_shape == ShapeID.Ellipse) {
@@ -493,8 +486,6 @@ class Canvas {
         }
 
         // Now selected_index >= 0
-        console.log("mousedown_011 ...", this.mouse.start);
-
         // Resize object ?
         let [index, sub_index] = this.findVertex(this.mouse.start);
         if (index == this.selected_index) {
@@ -505,8 +496,6 @@ class Canvas {
             this.redraw();
             return;
         }
-        console.log("mousedown_012 ...", this.mouse.start);
-
         [index, sub_index] = this.findInside(this.mouse.start);
         if (index == this.selected_index) {
             // Moving whole object
@@ -518,12 +507,9 @@ class Canvas {
     }
 
     private editModeMouseDblclickHandler(e: MouseEvent) {
-        console.log("mousedown_014 ...", this.mouse.start);
-
         if (this.drawing_shape != ShapeID.Polygon)
             return;
 
-        console.log("mousedown_015 ...", this.mouse.start);
         // End drawing polygon
         if (this.drawing_polygon.vertex().length >= 3) {
             this.pushShape(this.drawing_polygon);
@@ -533,32 +519,23 @@ class Canvas {
     }
 
     private viewModeKeydownHandler(e: KeyboardEvent) {
-        console.log("mousedown_016 ...", this.mouse.start);
-
         if (this.drawing_shape != ShapeID.None)
             return;
 
         if (e.key === "+") {
-           console.log("mousedown_017 ...", this.mouse.start);
-
             this.setZoom(this.zoom_index + 1);
             return;
         }
         if (e.key === "=") {
-            console.log("mousedown_018 ...", this.mouse.start);
-
             this.setZoom(this.zoom_index - 1);
             return;
         }
         if (e.key === "-") {
-            console.log("mousedown_019 ...", this.mouse.start);
             this.setZoom(DEFAULT_ZOOM_LEVEL);
             return;
         }
 
         if (e.key === 'F1') { // F1 for help
-            console.log("mousedown_020 ...", this.mouse.start);
-
             // todo
             e.preventDefault();
             return;
@@ -566,8 +543,6 @@ class Canvas {
     }
 
     private editModeKeydownHandler(e: KeyboardEvent) {
-        console.log("mousedown_021 ...", this.mouse.start);
-
         if (this.drawing_shape == ShapeID.None)
             return;
 
@@ -578,8 +553,6 @@ class Canvas {
         }
 
         if (e.key === 'Enter') {
-            console.log("mousedown_022 ...", this.mouse.start);
-
             if (this.drawing_shape == ShapeID.Polygon) {
                 // End drawing polygon
                 if (this.drawing_polygon.vertex().length >= 3) {
@@ -592,8 +565,6 @@ class Canvas {
         }
 
         if (e.key === 'Backspace') {
-            console.log("mousedown_023 ...", this.mouse.start);
-
             if (this.drawing_shape == ShapeID.Polygon) {
                 // delete last vertex from polygon
                 this.drawing_polygon.pop();
@@ -601,10 +572,18 @@ class Canvas {
                 return;
             }
         }
+
+        if (e.key === 'd') {
+            if (this.selected_index >= 0) {
+                this.regions.slice(this.selected_index, 1);
+                this.redraw();
+            }
+        }
+
         // e.preventDefault();
     }
 
-    private mouseInitialize() {
+    private registerEventHandlers() {
         this.mouse = new Mouse();
 
         this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
@@ -612,11 +591,13 @@ class Canvas {
 
             this.mouse.start.x = e.offsetX;
             this.mouse.start.y = e.offsetY;
+            this.mouse.is_down = true;
 
         }, false);
         this.canvas.addEventListener('mouseup', (e: MouseEvent) => {
             // console.log("mousedown_002 ...", this.mouse.start);
 
+            this.mouse.is_down = false;
             this.mouse.stop.x = e.offsetX;
             this.mouse.stop.y = e.offsetY;
 
@@ -635,6 +616,18 @@ class Canvas {
             // console.log("mousedown_004 ...", this.mouse.start);
             this.mouse.moving.x = e.offsetX;
             this.mouse.moving.y = e.offsetY;
+            // Drawing response ...
+            if (this.drawing_shape == ShapeID.Rectangle && this.mouse.is_down) {
+                let rect = new Rectangle(this.mouse.start, this.mouse.moving);
+                rect.draw(this.brush, false);
+                return;
+            }
+            if (this.drawing_shape == ShapeID.Ellipse && this.mouse.is_down) {
+                let ellipse = new Ellipse(this.mouse.start, this.mouse.moving);
+                ellipse.draw(this.brush, false);
+                return;
+            }
+
         }, false);
         this.canvas.addEventListener('wheel', (e: WheelEvent) => {
             if (e.ctrlKey) {
@@ -671,9 +664,13 @@ class Canvas {
         // Handle keyboard 
         this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
             this.viewModeKeydownHandler(e); 
-            e.stopPropagation();
         }, false);
         this.canvas.addEventListener('keyup', (e: KeyboardEvent) => {
+            this.editModeKeydownHandler(e); 
+            e.stopPropagation();
+        }, false);
+
+        window.addEventListener('keydown', (e: KeyboardEvent) => {
             this.editModeKeydownHandler(e); 
             e.stopPropagation();
         }, false);
