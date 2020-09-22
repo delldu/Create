@@ -433,12 +433,14 @@ class Canvas {
             [index, sub_index] = this.findVertex((this.mouse.start));
             if (index == this.selected_index) {
                 this.regions[index].delete(sub_index);
+                this.redraw();
                 return;
             }
             // Add new vertex
             [index, sub_index] = this.findEdge((this.mouse.start));
             if (index == this.selected_index) {
                 this.regions[index].insert(sub_index, this.mouse.start);
+                this.redraw();
                 return;
             }
             return;
@@ -450,6 +452,8 @@ class Canvas {
             this.redraw();
             return;
         }
+
+        // todo: How end polygon drawing ? ...
     }
 
     private editModeMouseMovingHandler(e: MouseEvent) {
@@ -483,8 +487,33 @@ class Canvas {
             return;
         }
 
-        // Drag and drop on blank area ?
+        // Drag and drop on blank area ? Only for rectangle/ellipse drawing
+        if (this.selected_index < 0) {
+            if (this.drawing_shape == ShapeID.Rectangle) {
+                this.pushShape(new Rectangle(this.mouse.start, this.mouse.stop));
+                this.redraw();
+                return;
+            }
+            if  (this.drawing_shape == ShapeID.Ellipse) {
+                this.pushShape(new Ellipse(this.mouse.start, this.mouse.stop));
+                this.redraw();
+                return;
+            }
+        }
+    }
 
+    private editModeMouseDblclickHandler(e: MouseEvent) {
+        e.stopPropagation();
+
+        if (this.drawing_shape != ShapeID.Polygon)
+            return;
+
+        // End drawing polygon
+        if (this.drawing_polygon.vertex().length >= 3) {
+            this.pushShape(this.drawing_polygon);
+        }
+        this.drawing_polygon = new Polygon();
+        this.redraw();
     }
 
     private mouseInitialize() {
@@ -534,6 +563,16 @@ class Canvas {
         //     this.mouse.moving.x = e.offsetX;
         //     this.mouse.moving.y = e.offsetY;
         // }, false);
+
+        this.canvas.addEventListener('dblclick', (e: MouseEvent) => { this.editModeMouseDblclickHandler(e); }, false);
+
+        // Handle keyboard 
+        // window.addEventListener('keydown', nc_window_keydown_handler, false);
+        // nc_reg_canvas.addEventListener('keydown', nc_reg_canvas_keydown_handler, false);
+        // nc_reg_canvas.addEventListener('keyup', nc_reg_canvas_keyup_handler, false);
+
+        // this.canvas.addEventListener('keydown', (e: MouseEvent) => { this.editModeMouseDblclickHandler(e); }, false);
+        // this.canvas.addEventListener('keyup', (e: MouseEvent) => { this.editModeMouseDblclickHandler(e); }, false);
     }
 
     setZoom(index: number) {
