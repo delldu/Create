@@ -6,7 +6,7 @@
 // ***
 // ***********************************************************************************
 
-"use strict";
+// "use strict";
 
 class Message {
     timer: number;
@@ -44,7 +44,7 @@ class Message {
 // ***
 // ***********************************************************************************
 
-"use strict";
+// "use strict";
 
 class Progress {
     element: HTMLElement;
@@ -80,10 +80,10 @@ class Progress {
 // ***
 // ***********************************************************************************
 
-"use strict";
+// "use strict";
 
 const DISTANCE_THRESHOLD = 2;
-const EDGE_LINE_WIDTH = 1.0;
+const EDGE_LINE_WIDTH = 1;
 const VERTEX_COLOR = "#ff0000";
 
 const ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
@@ -289,11 +289,12 @@ class Rectangle extends Shape2d {
         if (selected) {
             brush.fillStyle = VERTEX_COLOR;
             brush.globalAlpha = 1.0;
-            brush.fillRect(this.x, this.y, this.w, this.h);
+            brush.fillRect(this.x + 0.5, this.y + 0.5, this.w, this.h);
             // Draw
             this.drawVertex(brush);
         } else {
-            brush.strokeRect(this.x, this.y, this.w, this.h);
+            brush.strokeStyle = VERTEX_COLOR;
+            brush.strokeRect(this.x + 0.5, this.y + 0.5, this.w, this.h);
         }
         brush.restore();
     }
@@ -1018,7 +1019,7 @@ class Canvas {
 // ***********************************************************************************
 
 
-"use strict";
+// "use strict";
 
 // ***********************************************************************************
 // ***
@@ -1029,5 +1030,5 @@ class Canvas {
 // ***********************************************************************************
 
 
-"use strict";
+// "use strict";
 
