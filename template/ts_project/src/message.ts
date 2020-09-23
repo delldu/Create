@@ -14,7 +14,7 @@ class Message {
 
     constructor(id: string) {
         this.timer = 0;
-        this.element = document.getElementById(id);
+        this.element = document.getElementById(id) as HTMLElement;
         this.element.addEventListener('dblclick', function() {
             this.style.display = 'none';
         }, false);

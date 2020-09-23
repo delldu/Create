@@ -76,14 +76,16 @@ class Mouse {
     start_drawing: boolean;
 
     constructor() {
-        this.reset();
-    }
-
-    reset() {
         this.start = new Point(0, 0);
         this.moving = new Point(0, 0);
         this.stop = new Point(0, 0);
 
+        this.pressed = false;
+        this.draged = false;
+        this.start_drawing = false;
+    }
+
+    reset() {
         this.pressed = false;
         this.draged = false;
         this.start_drawing = false;
@@ -119,7 +121,7 @@ abstract class Shape2d {
         return -1;
     }
 
-    abstract draw(brush: CanvasRenderingContext2D, selected: boolean);
+    abstract draw(brush: CanvasRenderingContext2D, selected: boolean): void;
 
     drawVertex(brush: CanvasRenderingContext2D) {
         brush.save();
@@ -140,12 +142,6 @@ abstract class Shape2d {
             p.y += deltaY;
         }
     }
-
-    // Vertex add/delete
-    abstract push(p: Point);
-    abstract insert(index: number, p: Point);
-    abstract delete(index: number);
-    abstract pop();
 }
 
 class Rectangle extends Shape2d {
@@ -154,7 +150,7 @@ class Rectangle extends Shape2d {
     w: number;
     h: number;
 
-    constructor(x, y, w, h: number) {
+    constructor(x:number, y:number, w:number, h: number) {
         super(ShapeID.Rectangle);
         this.x = x;
         this.y = y;
@@ -227,12 +223,6 @@ class Rectangle extends Shape2d {
         }
         brush.restore();
     }
-
-    // Useless, only for interface
-    push(p: Point) {}
-    insert(index: number, p: Point) {}
-    delete(index: number) {}
-    pop() {}
 }
 
 class Ellipse extends Shape2d {
@@ -309,12 +299,6 @@ class Ellipse extends Shape2d {
         }
         brush.restore();
     }
-
-    // Useless, only for interface
-    push(p: Point) {}
-    insert(index: number, p: Point) {}
-    delete(index: number) {}
-    pop() {}
 }
 
 class Polygon extends Shape2d {
@@ -332,7 +316,7 @@ class Polygon extends Shape2d {
 
         let vs = this.points.slice(0); // Deep copy
         vs.push(this.points[0]); // Closed
-        let wn = 0; // the  winding number counter
+        let wn = 0; // winding number counter
         for (let i = 0; i < n; i++) {
             var is_left = p.onLeft(vs[i], vs[i + 1]);
             if (p.y >= vs[i].y) {
@@ -419,11 +403,10 @@ class ImagePatchStack {
     stack: Array < ImagePatch > ;
 
     constructor() {
-        this.reset();
+        this.stack = new Array < ImagePatch > ();
     }
 
     save(src: CanvasRenderingContext2D, rect: Rectangle) {
-        console.log("Save image: ", rect);
         let data = src.getImageData(rect.x, rect.y, rect.w, rect.h);
         let patch = new ImagePatch(rect, data);
         this.stack.push(patch);
@@ -434,23 +417,19 @@ class ImagePatchStack {
             return;
 
         let patch = this.stack.pop();
-        if (patch.rect.w > 0 && patch.rect.h > 0) {
-            console.log("Restore image: ", patch.rect);
+        if (patch && patch.rect.w > 0 && patch.rect.h > 0)
             dst.putImageData(patch.data, patch.rect.x, patch.rect.y);
-        } else {
-            console.log("Restore image: impossiable ?", patch.rect);
-        }
     }
 
     reset() {
-        this.stack = new Array < ImagePatch > ();
+        this.stack.length = 0;
     }
 }
 
 class Canvas {
     canvas: HTMLCanvasElement; // canvas element
     private brush: CanvasRenderingContext2D;
-    private backgroud: HTMLImageElement;
+    // private backgroud: HTMLImageElement;
     private image_stack: ImagePatchStack;
 
     mode_index: number;
@@ -458,7 +437,7 @@ class Canvas {
     // Shape container
     private regions: Array < Shape2d > ; // shape regions
     private selected_index: number;
-    private drawing_polygon: Polygon; // this is temperay record
+    // private drawing_polygon: Polygon; // this is temperay record
 
     // Zoom control
     zoom_index: number;
@@ -487,6 +466,7 @@ class Canvas {
 
         this.mode_index = 0;
 
+        this.mouse = new Mouse();
         this.registerEventHandlers();
 
         // Create backgroud and drawing canvas
@@ -603,7 +583,6 @@ class Canvas {
     private editModeMouseDownHandler(e: MouseEvent) {
         // Start:  On vertext, On Edge, Inside, Blank area
         console.log("if click on blank --- this.mouse.start_drawing = true else this.mouse.start_drawing = false");
-
         this.image_stack.reset();
     }
 
@@ -772,8 +751,6 @@ class Canvas {
     }
 
     private registerEventHandlers() {
-        this.mouse = new Mouse();
-
         this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
             this.mouse.start.x = e.offsetX;
             this.mouse.start.y = e.offsetY;
