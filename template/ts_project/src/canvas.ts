@@ -468,10 +468,10 @@ class Canvas {
     setMode(index: number) {
         // Bad case: (-1 % MODE_LIST.length) == -1
         if (index < 0)
-            index = MODE_LIST.length;
+            index = MODE_LIST.length - 1;
         index = index % MODE_LIST.length;
         this.mode_index = index;
-        console.log("Now canvas mode has been switched to ", this.mode_index);
+        console.log("Set mode:", this.mode_index);
     }
 
     getMode(): number {
@@ -628,7 +628,7 @@ class Canvas {
     }
 
     private editModeMouseUpHandler(e: MouseEvent) {
-        console.log("editModeMouseUpHandler ...");
+        console.log("editModeMouseUpHandler ...", this.mouse);
         if (this.mouse.pressed && this.mouse.draged) {
             if (this.mouse.start_drawing) {
                 console.log("Drawing is ok ..., for rectangle/ellipse, save result and close miniCanvas, for polygon ...");
@@ -712,8 +712,6 @@ class Canvas {
         this.mouse = new Mouse();
 
         this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
-            // console.log("mousedown_001 ...", this.mouse.start);
-
             this.mouse.start.x = e.offsetX;
             this.mouse.start.y = e.offsetY;
             this.mouse.pressed = true;
@@ -724,24 +722,19 @@ class Canvas {
                 this.viewModeMouseDownHandler(e);
         }, false);
         this.canvas.addEventListener('mouseup', (e: MouseEvent) => {
-            // console.log("mousedown_002 ...", this.mouse.start);
-
-            this.mouse.pressed = false;
             this.mouse.stop.x = e.offsetX;
             this.mouse.stop.y = e.offsetY;
-
             if (this.isEditMode())
                 this.editModeMouseUpHandler(e);
             else
                 this.viewModeMouseUpHandler(e);
+            this.mouse.pressed = false;
             e.stopPropagation();
         }, false);
         this.canvas.addEventListener('mouseover', (e: MouseEvent) => {
-            // console.log("mousedown_003 ...", this.mouse.start);
             this.redraw();
         }, false);
         this.canvas.addEventListener('mousemove', (e: MouseEvent) => {
-            // console.log("mousedown_004 ...", this.mouse.start);
             this.mouse.moving.x = e.offsetX;
             this.mouse.moving.y = e.offsetY;
             this.mouse.draged = true;
@@ -826,9 +819,10 @@ class Canvas {
     setZoom(index: number) {
         // Bad case: (-1 % ZOOM_LEVELS.length) == -1
         if (index < 0) {
-            index = ZOOM_LEVELS.length;
+            index = ZOOM_LEVELS.length - 1;
         }
         index = index % ZOOM_LEVELS.length;
+
         this.zoom_index = index;
         this.brush.scale(ZOOM_LEVELS[this.zoom_index], ZOOM_LEVELS[this.zoom_index]);
         this.redraw();
