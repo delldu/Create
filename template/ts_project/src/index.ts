@@ -99,7 +99,6 @@ const enum ShapeID {
 
 const MODE_LIST = [ShapeID.None, ShapeID.Rectangle, ShapeID.Ellipse, ShapeID.Polygon];
 
-
 class Point {
     x: number;
     y: number;
@@ -145,7 +144,10 @@ class Mouse {
     start: Point;
     moving: Point;
     stop: Point;
-    is_down:boolean;
+
+    pressed: boolean;
+    draged: boolean;
+    start_drawing: boolean;
 
     constructor() {
         this.reset();
@@ -156,7 +158,9 @@ class Mouse {
         this.moving = new Point(0, 0);
         this.stop = new Point(0, 0);
 
-        this.is_down = false;
+        this.pressed = false;
+        this.draged = false;
+        this.start_drawing = false;
     }
 
     isclick(): boolean {
@@ -434,9 +438,28 @@ class Polygon extends Shape2d {
     }
 }
 
+// Mini Canvas: only redraw single object
+class MinCanvas {
+    canvas: HTMLCanvasElement;
+    brush: CanvasRenderingContext2D;
+
+    constructor(id: string) {
+        this.canvas = document.getElementById(id) as HTMLCanvasElement;
+        this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+    }
+
+    draw(shape: Shape2d) {
+        this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        shape.draw(this.brush, false);
+    }
+}
+
 class Canvas {
     canvas: HTMLCanvasElement; // canvas element
     private brush: CanvasRenderingContext2D;
+
+    private backgroud: HTMLImageElement;
+    private drawing_canvas: HTMLCanvasElement; // This is a temperary canvas
 
     mode_index: number;
 
@@ -452,9 +475,21 @@ class Canvas {
     private mouse: Mouse;
 
     constructor(id: string) {
+        /*
+        #image_panel        { position:relative; outline:none; }
+        #image_panel img    { visibility:hidden; opacity:0; position:absolute; top:0px; left:0px; width:100%; height:100%; outline:none; }
+        #image_panel canvas { position:absolute; top:0px; left:0px; outline:none;}
+        #image_panel .visible { visibility:visible !important; opacity:1 !important; }
+        */
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
-        this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+        this.canvas.style.position = "absolute";
+        this.canvas.style.opacity = "0.5";
+        // this.canvas.style.zIndex = "-1";
+        this.canvas.style.top = "5px";
+        this.canvas.style.left = "5px";
+        this.canvas.style.border = "1px solid green";
 
+        this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.regions = new Array < Shape2d > ();
         this.drawing_polygon = new Polygon();
         this.selected_index = -1;
@@ -469,54 +504,80 @@ class Canvas {
 
         this.registerEventHandlers();
 
-        this.canvas.focus();
+        // Create backgroud and drawing canvas
+        let parent = this.canvas.parentElement;
+        this.backgroud = document.createElement('img');
+        this.backgroud.id = this.canvas.id + "_backgroud_image";
+        this.backgroud.style.opacity = "1";
+        // this.backgroud.style.zIndex = "0";
+        this.backgroud.style.position = "absolute";
+        this.backgroud.style.top = "0";
+        this.backgroud.style.left = "0";
+        this.backgroud.style.border = "1px solid red";
+        this.backgroud.width = this.canvas.width;
+        this.backgroud.height = this.canvas.height;
+        parent.insertBefore(this.backgroud, this.canvas);
+        this.backgroud.src = "dog.jpg";
+        this.backgroud.onload = function() {
+
+        }
+
+        this.drawing_canvas = document.createElement('canvas');
+        this.drawing_canvas.id = this.canvas.id + "_drawing_canvas";
+        this.drawing_canvas.width = this.canvas.width;
+        this.drawing_canvas.height = this.canvas.height;
+        // this.drawing_canvas.style.zIndex = "0";
+        this.drawing_canvas.style.position = "absolute";
+        this.drawing_canvas.style.opacity = "0.5";
+        this.drawing_canvas.style.top = "10px";
+        this.drawing_canvas.style.left = "10px";
+        this.drawing_canvas.style.border = "1px solid blue";
+        parent.insertBefore(this.drawing_canvas, this.canvas);
     }
 
     setMessage(message: string) {
         console.log(message);
     }
 
-    setMode(index:number) {
+    setMode(index: number) {
+        // Bad case: (-1 % MODE_LIST.length) == -1
+        if (index < 0)
+            index = MODE_LIST.length;
         index = index % MODE_LIST.length;
         this.mode_index = index;
         console.log("Now canvas mode has been switched to ", this.mode_index);
     }
 
-    getMode():number {
+    getMode(): number {
         return this.mode_index;
     }
 
-    isEditMode():boolean {
+    isEditMode(): boolean {
         return this.mode_index > 0;
     }
 
-    getShape():ShapeID {
-        return MODE_LIST[this.mode_index];        
+    getShape(): ShapeID {
+        return MODE_LIST[this.mode_index];
     }
 
     private viewModeMouseDownHandler(e: MouseEvent) {
         console.log("viewModeMouseDownHandler ...");
-        // if (this.drawing_shape == ShapeID.None) {
-        //     this.canvas.style.cursor = "default";
-        // }
     }
 
     private viewModeMouseMoveHandler(e: MouseEvent) {
-        console.log("viewModeMouseMoveHandler ...");
-
-        // if (this.drawing_shape == ShapeID.None) {
-        //     this.canvas.style.cursor = "default";
-        // }
+        // make sure moving distance is enough ...
+        if (this.mouse.pressed && ! this.mouse.isclick()) {
+            // todo ?
+            console.log("viewModeMouseMove ... Draging ... moving backgroud for more deteails ?");
+            this.canvas.style.cursor = "pointer";
+            // this.canvas.start = new Point(this.mouse.stop.x, this.mouse.stop.y);
+        }
     }
 
     private viewModeMouseUpHandler(e: MouseEvent) {
         console.log("viewModeMouseUpHandler ...");
-
-        // if (this.drawing_shape == ShapeID.None) {
-        //     this.canvas.style.cursor = "default";
-        // }
+        this.canvas.style.cursor = "default";
     }
-
 
     // private editModeMouseClickHandler(e: MouseEvent) {
     //     if (this.drawing_shape == ShapeID.None)
@@ -565,11 +626,15 @@ class Canvas {
     // }
 
     private editModeMouseDownHandler(e: MouseEvent) {
-        console.log("editModeMouseDownHandler ...");
+        // Start:  On vertext, On Edge, Inside, Blank area
+        console.log("if click on blank --- this.mouse.start_drawing = true else this.mouse.start_drawing = false");
     }
 
     private editModeMouseMoveHandler(e: MouseEvent) {
-        console.log("editModeMouseMoveHandler ...");
+        // make sure moving distance is enough ...
+        if (this.mouse.pressed && ! this.mouse.isclick()) {
+            console.log("editModeMouseMove ... Draging ... show MinCanvas with box ...");
+        }
 
 
         // if (this.drawing_shape == ShapeID.None) {
@@ -625,80 +690,68 @@ class Canvas {
     private editModeMouseDblclickHandler(e: MouseEvent) {
         console.log("editModeMouseDblclickHandler ...");
 
-    //     if (this.drawing_shape != ShapeID.Polygon)
-    //         return;
+        //     if (this.drawing_shape != ShapeID.Polygon)
+        //         return;
 
-    //     // End drawing polygon
-    //     if (this.drawing_polygon.vertex().length >= 3) {
-    //         this.pushShape(this.drawing_polygon);
-    //     }
-    //     this.drawing_polygon = new Polygon();
-    //     this.redraw();
+        //     // End drawing polygon
+        //     if (this.drawing_polygon.vertex().length >= 3) {
+        //         this.pushShape(this.drawing_polygon);
+        //     }
+        //     this.drawing_polygon = new Polygon();
+        //     this.redraw();
     }
 
     private editModeMouseUpHandler(e: MouseEvent) {
         console.log("editModeMouseUpHandler ...");
+        if (this.mouse.pressed && this.mouse.draged) {
+            if (this.mouse.start_drawing) {
+                console.log("Drawing is ok ..., for rectangle/ellipse, save result and close miniCanvas, for polygon ...");
+                // we get new object, save them, redraw, ...
+            } else {
+                console.log("Set selected flags covered by box ..., close MinCanvas, reset mouse, redraw big canvas");
+            }
+            // this.mouse_start_drawing && this.getShape is polygon, we should reserver mouse history else we need this.mouse.reset();
+        }
     }
 
     private viewModeKeyDownHandler(e: KeyboardEvent) {
-        console.log("viewModeKeydownHandler ...");
-        // if (this.drawing_shape != ShapeID.None)
-        //     return;
-
-        // if (e.key === "+") {
-        //     this.setZoom(this.zoom_index + 1);
-        //     return;
-        // }
-        // if (e.key === "=") {
-        //     this.setZoom(this.zoom_index - 1);
-        //     return;
-        // }
-        // if (e.key === "-") {
-        //     this.setZoom(DEFAULT_ZOOM_LEVEL);
-        //     return;
-        // }
-
-        // if (e.key === 'F1') { // F1 for help
-        //     // todo
-        //     e.preventDefault();
-        //     return;
-        // }
-    }
-
-    private editModeKeyDownHandler(e: KeyboardEvent) {
-        console.log("viewModeKeyDownHandler ...");
-        // if (this.drawing_shape != ShapeID.None)
-        //     return;
-
-        // if (e.key === "+") {
-        //     this.setZoom(this.zoom_index + 1);
-        //     return;
-        // }
-        // if (e.key === "=") {
-        //     this.setZoom(this.zoom_index - 1);
-        //     return;
-        // }
-        // if (e.key === "-") {
-        //     this.setZoom(DEFAULT_ZOOM_LEVEL);
-        //     return;
-        // }
-
-        // if (e.key === 'F1') { // F1 for help
-        //     // todo
-        //     e.preventDefault();
-        //     return;
-        // }
+        // console.log("viewModeKeydownHandler ...");
+        e.preventDefault();
     }
 
     private viewModeKeyUpHandler(e: KeyboardEvent) {
-        console.log("viewModeKeyUpHandler ...");
+        console.log("viewModeKeyUpHandler ...", e.key);
+
+        if (e.key === "+") {
+            this.setZoom(this.zoom_index + 1);
+        } else if (e.key === "=") {
+            this.setZoom(DEFAULT_ZOOM_LEVEL);
+        } else if (e.key === "-") {
+            this.setZoom(this.zoom_index - 1);
+        } else if (e.key === 'F1') { // F1 for help
+            // todo
+        } else {
+            // todo
+        }
+        e.preventDefault();
+    }
+
+
+    private editModeKeyDownHandler(e: KeyboardEvent) {
+        console.log("editModeKeyDown ...", e.key);
+
+        e.preventDefault();
     }
 
     private editModeKeyUpHandler(e: KeyboardEvent) {
-        console.log("editModeKeyUpHandler ...");
-
-        // if (this.drawing_shape == ShapeID.None)
+        console.log("editModeKeyUpHandler ...", e.key);
+        // if (e.key === "d") {
+        //     delete selected objects ..., redraw ...
         //     return;
+        // }
+        // if (e.key === 'Enter' || e.key === 'Escape') {
+                // end polygon drawing
+        // }
 
         // if (e.key === 'Escape') {
         //     this.selected_index = -1;
@@ -726,15 +779,7 @@ class Canvas {
         //         return;
         //     }
         // }
-
-        // if (e.key === 'd') {
-        //     if (this.selected_index >= 0) {
-        //         this.regions.slice(this.selected_index, 1);
-        //         this.redraw();
-        //     }
-        // }
-
-        // e.preventDefault();
+        e.preventDefault();
     }
 
     private registerEventHandlers() {
@@ -745,7 +790,7 @@ class Canvas {
 
             this.mouse.start.x = e.offsetX;
             this.mouse.start.y = e.offsetY;
-            this.mouse.is_down = true;
+            this.mouse.pressed = true;
 
             if (this.isEditMode())
                 this.editModeMouseDownHandler(e);
@@ -755,7 +800,7 @@ class Canvas {
         this.canvas.addEventListener('mouseup', (e: MouseEvent) => {
             // console.log("mousedown_002 ...", this.mouse.start);
 
-            this.mouse.is_down = false;
+            this.mouse.pressed = false;
             this.mouse.stop.x = e.offsetX;
             this.mouse.stop.y = e.offsetY;
 
@@ -773,6 +818,7 @@ class Canvas {
             // console.log("mousedown_004 ...", this.mouse.start);
             this.mouse.moving.x = e.offsetX;
             this.mouse.moving.y = e.offsetY;
+            this.mouse.draged = true;
 
             if (this.isEditMode())
                 this.editModeMouseMoveHandler(e);
@@ -780,12 +826,12 @@ class Canvas {
                 this.viewModeMouseMoveHandler(e);
 
             // // Drawing response ...
-            // if (this.drawing_shape == ShapeID.Rectangle && this.mouse.is_down) {
+            // if (this.drawing_shape == ShapeID.Rectangle && this.mouse.pressed) {
             //     let rect = new Rectangle(this.mouse.start, this.mouse.moving);
             //     rect.draw(this.brush, false);
             //     return;
             // }
-            // if (this.drawing_shape == ShapeID.Ellipse && this.mouse.is_down) {
+            // if (this.drawing_shape == ShapeID.Ellipse && this.mouse.pressed) {
             //     let ellipse = new Ellipse(this.mouse.start, this.mouse.moving);
             //     ellipse.draw(this.brush, false);
             //     return;
@@ -793,15 +839,15 @@ class Canvas {
 
         }, false);
         this.canvas.addEventListener('wheel', (e: WheelEvent) => {
-            // if (e.ctrlKey) {
-            //    // console.log("mousedown_005 ...", this.mouse.start);
-            //     if (e.deltaY < 0) {
-            //         this.setZoom(this.zoom_index + 1);
-            //     } else {
-            //         this.setZoom(this.zoom_index - 1);
-            //     }
-            //     e.preventDefault();
-            // }
+            if (e.ctrlKey) {
+               // console.log("mousedown_005 ...", this.mouse.start);
+                if (e.deltaY < 0) {
+                    this.setZoom(this.zoom_index + 1);
+                } else {
+                    this.setZoom(this.zoom_index - 1);
+                }
+                e.preventDefault();
+            }
         }, false);
 
         // touch screen event handlers, TODO: test !!!
@@ -831,33 +877,37 @@ class Canvas {
             console.log("window.addEventListener keydown ...", e.key);
             if (e.key == 'Shift') {
                 this.setMode(this.mode_index + 1);
+                return;
             }
 
             if (this.isEditMode())
-                this.editModeKeyDownHandler(e); 
+                this.editModeKeyDownHandler(e);
             else
-                this.viewModeKeyDownHandler(e); 
+                this.viewModeKeyDownHandler(e);
             // e.stopPropagation();
         }, false);
 
         window.addEventListener('keyup', (e: KeyboardEvent) => {
             console.log("window.addEventListener keyup ...", e.key);
             if (this.isEditMode())
-                this.editModeKeyUpHandler(e); 
+                this.editModeKeyUpHandler(e);
             else
-                this.viewModeKeyUpHandler(e); 
+                this.viewModeKeyUpHandler(e);
             // e.stopPropagation();
         }, false);
     }
 
     setZoom(index: number) {
-        index = Math.round(index);
-        if (index < 0)
-            index = 0;
-        if (index >= ZOOM_LEVELS.length)
-            index = ZOOM_LEVELS.length - 1;
+        // Bad case: (-1 % ZOOM_LEVELS.length) == -1
+        if (index < 0) {
+            index = ZOOM_LEVELS.length;
+        }
+        index = index % ZOOM_LEVELS.length;
         this.zoom_index = index;
         this.brush.scale(ZOOM_LEVELS[this.zoom_index], ZOOM_LEVELS[this.zoom_index]);
+        this.redraw();
+
+        console.log("Set Zoom: index = ", index, "scale: ", ZOOM_LEVELS[index]);
     }
 
     redraw() {
@@ -876,6 +926,10 @@ class Canvas {
         // if (this.drawing_shape === ShapeID.Polygon) {
         //     this.drawing_polygon.draw(this.brush, false);
         // }
+
+
+        let r = new Rectangle(new Point(10, 10), new Point(200, 200));
+        r.draw(this.brush, true);
     }
 
     pushShape(s: Shape2d) {
@@ -918,8 +972,7 @@ class Canvas {
         }
         return [-1, -1];
     }
-}
-// ***********************************************************************************
+}// ***********************************************************************************
 // ***
 // *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
 // ***
