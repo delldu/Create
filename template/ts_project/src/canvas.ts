@@ -23,6 +23,9 @@ const enum ShapeID {
     Polygon
 }
 
+const MODE_LIST = [ShapeID.None, ShapeID.Rectangle, ShapeID.Ellipse, ShapeID.Polygon];
+
+
 class Point {
     x: number;
     y: number;
@@ -361,8 +364,9 @@ class Canvas {
     canvas: HTMLCanvasElement; // canvas element
     private brush: CanvasRenderingContext2D;
 
+    mode_index: number;
+
     // Shape container
-    drawing_shape: ShapeID; // if == ShapeID.None is view mode
     private regions: Array < Shape2d > ; // shape regions
     private selected_index: number;
     private drawing_polygon: Polygon; // this is temperay record
@@ -377,7 +381,6 @@ class Canvas {
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
 
-        this.drawing_shape = ShapeID.None;
         this.regions = new Array < Shape2d > ();
         this.drawing_polygon = new Polygon();
         this.selected_index = -1;
@@ -388,197 +391,274 @@ class Canvas {
 
         this.zoom_index = DEFAULT_ZOOM_LEVEL;
 
+        this.mode_index = 0;
+
         this.registerEventHandlers();
+
+        this.canvas.focus();
     }
 
     setMessage(message: string) {
         console.log(message);
     }
 
-    setShape(shape: ShapeID) {
-        if (shape == ShapeID.None || shape == ShapeID.Rectangle || shape == ShapeID.Ellipse || shape == ShapeID.Polygon) {
-            this.drawing_shape = shape;
-            // Clear Polygon for shape change
-            if (shape != ShapeID.Polygon) {
-                this.drawing_polygon = new Polygon();
-            }
-            return;
-        }
-        this.setMessage("Canvas only support drawing None/Rectangle/Ellipse/Polygon shape.");
+    setMode(index:number) {
+        index = index % MODE_LIST.length;
+        this.mode_index = index;
+        console.log("Now canvas mode has been switched to ", this.mode_index);
     }
 
-    private viewModeMouseHandler(e: MouseEvent) {
-        if (this.drawing_shape == ShapeID.None) {
-            this.canvas.style.cursor = "default";
-        }
+    getMode():number {
+        return this.mode_index;
     }
 
-    private editModeMouseClickHandler(e: MouseEvent) {
-        if (this.drawing_shape == ShapeID.None)
-            return;
-
-        if (! this.mouse.isclick())
-            return;
-
-        // Selected or remove object
-        let [index, sub_index] = this.findInside(this.mouse.start);
-
-        if (index >= 0) {
-            if (index == this.selected_index)
-                this.selected_index = -1;
-            else
-                this.selected_index = index;
-            this.redraw();
-            return;
-        }
-
-        // click on vertex/edge of selected pylogon, add remove or add point 
-        if (this.selected_index >= 0 && this.drawing_shape == ShapeID.Polygon) {
-            // Remove vertex
-            [index, sub_index] = this.findVertex((this.mouse.start));
-            if (index == this.selected_index) {
-                this.regions[index].delete(sub_index);
-                this.redraw();
-                return;
-            }
-            // Add new vertex
-            [index, sub_index] = this.findEdge((this.mouse.start));
-            if (index == this.selected_index) {
-                this.regions[index].insert(sub_index, this.mouse.start);
-                this.redraw();
-                return;
-            }
-            return;
-        }
-
-        // is drawing polygon on blank space ?
-        if (this.selected_index < 0 && this.drawing_shape == ShapeID.Polygon) {
-            this.drawing_polygon.push(this.mouse.start);
-            this.redraw();
-            return;
-        }
+    isEditMode():boolean {
+        return this.mode_index > 0;
     }
 
-    private editModeMouseMovingHandler(e: MouseEvent) {
-        if (this.drawing_shape == ShapeID.None) {
-            console.log("Moving_001 ...")
-            return;
-        }
+    getShape():ShapeID {
+        return MODE_LIST[this.mode_index];        
+    }
 
-        if (this.mouse.isclick()) {
-            console.log("Moving_002 ...")
-            return;
-        }
+    private viewModeMouseDownHandler(e: MouseEvent) {
+        console.log("viewModeMouseDownHandler ...");
+        // if (this.drawing_shape == ShapeID.None) {
+        //     this.canvas.style.cursor = "default";
+        // }
+    }
 
-        // Drag and drop on blank area ? Only for rectangle/ellipse drawing
-        if (this.selected_index < 0) {
-            if (this.drawing_shape == ShapeID.Rectangle) {
-                this.pushShape(new Rectangle(this.mouse.start, this.mouse.stop));
-                this.redraw();
-                return;
-            }
-            if (this.drawing_shape == ShapeID.Ellipse) {
-                this.pushShape(new Ellipse(this.mouse.start, this.mouse.stop));
-                this.redraw();
-                return;
-            }
-            return;
-        }
+    private viewModeMouseMoveHandler(e: MouseEvent) {
+        console.log("viewModeMouseMoveHandler ...");
 
-        // Now selected_index >= 0
-        // Resize object ?
-        let [index, sub_index] = this.findVertex(this.mouse.start);
-        if (index == this.selected_index) {
-            let mx = this.mouse.stop.x - this.mouse.start.x;
-            let my = this.mouse.stop.y - this.mouse.stop.y;
-            let vpoint = this.regions[index].vertex();
-            vpoint[sub_index].move(mx, my);
-            this.redraw();
-            return;
-        }
-        [index, sub_index] = this.findInside(this.mouse.start);
-        if (index == this.selected_index) {
-            // Moving whole object
-            let mx = this.mouse.stop.x - this.mouse.start.x;
-            let my = this.mouse.stop.y - this.mouse.stop.y;
-            this.regions[index].move(mx, my);
-            return;
-        }
+        // if (this.drawing_shape == ShapeID.None) {
+        //     this.canvas.style.cursor = "default";
+        // }
+    }
+
+    private viewModeMouseUpHandler(e: MouseEvent) {
+        console.log("viewModeMouseUpHandler ...");
+
+        // if (this.drawing_shape == ShapeID.None) {
+        //     this.canvas.style.cursor = "default";
+        // }
+    }
+
+
+    // private editModeMouseClickHandler(e: MouseEvent) {
+    //     if (this.drawing_shape == ShapeID.None)
+    //         return;
+
+    //     if (! this.mouse.isclick())
+    //         return;
+
+    //     // Selected or remove object
+    //     let [index, sub_index] = this.findInside(this.mouse.start);
+
+    //     if (index >= 0) {
+    //         if (index == this.selected_index)
+    //             this.selected_index = -1;
+    //         else
+    //             this.selected_index = index;
+    //         this.redraw();
+    //         return;
+    //     }
+
+    //     // click on vertex/edge of selected pylogon, add remove or add point 
+    //     if (this.selected_index >= 0 && this.drawing_shape == ShapeID.Polygon) {
+    //         // Remove vertex
+    //         [index, sub_index] = this.findVertex((this.mouse.start));
+    //         if (index == this.selected_index) {
+    //             this.regions[index].delete(sub_index);
+    //             this.redraw();
+    //             return;
+    //         }
+    //         // Add new vertex
+    //         [index, sub_index] = this.findEdge((this.mouse.start));
+    //         if (index == this.selected_index) {
+    //             this.regions[index].insert(sub_index, this.mouse.start);
+    //             this.redraw();
+    //             return;
+    //         }
+    //         return;
+    //     }
+
+    //     // is drawing polygon on blank space ?
+    //     if (this.selected_index < 0 && this.drawing_shape == ShapeID.Polygon) {
+    //         this.drawing_polygon.push(this.mouse.start);
+    //         this.redraw();
+    //         return;
+    //     }
+    // }
+
+    private editModeMouseDownHandler(e: MouseEvent) {
+        console.log("editModeMouseDownHandler ...");
+    }
+
+    private editModeMouseMoveHandler(e: MouseEvent) {
+        console.log("editModeMouseMoveHandler ...");
+
+
+        // if (this.drawing_shape == ShapeID.None) {
+        //     console.log("Moving_001 ...")
+        //     return;
+        // }
+
+        // if (this.mouse.isclick()) {
+        //     console.log("Moving_002 ...")
+        //     return;
+        // }
+
+        // // Drag and drop on blank area ? Only for rectangle/ellipse drawing
+        // if (this.selected_index < 0) {
+        //     if (this.drawing_shape == ShapeID.Rectangle) {
+        //         this.pushShape(new Rectangle(this.mouse.start, this.mouse.stop));
+        //         this.redraw();
+        //         return;
+        //     }
+        //     if (this.drawing_shape == ShapeID.Ellipse) {
+        //         this.pushShape(new Ellipse(this.mouse.start, this.mouse.stop));
+        //         this.redraw();
+        //         return;
+        //     }
+        //     return;
+        // }
+
+        // // Now selected_index >= 0
+        // // Resize object ?
+        // let [index, sub_index] = this.findVertex(this.mouse.start);
+        // if (index == this.selected_index) {
+        //     let mx = this.mouse.stop.x - this.mouse.start.x;
+        //     let my = this.mouse.stop.y - this.mouse.stop.y;
+        //     let vpoint = this.regions[index].vertex();
+        //     vpoint[sub_index].move(mx, my);
+        //     this.redraw();
+        //     return;
+        // }
+        // [index, sub_index] = this.findInside(this.mouse.start);
+        // if (index == this.selected_index) {
+        //     // Moving whole object
+        //     let mx = this.mouse.stop.x - this.mouse.start.x;
+        //     let my = this.mouse.stop.y - this.mouse.stop.y;
+        //     this.regions[index].move(mx, my);
+        //     return;
+        // }
+    }
+
+    private viewModeMouseDblclickHandler(e: MouseEvent) {
+        console.log("viewModeMouseDblclickHandler ...");
     }
 
     private editModeMouseDblclickHandler(e: MouseEvent) {
-        if (this.drawing_shape != ShapeID.Polygon)
-            return;
+        console.log("editModeMouseDblclickHandler ...");
 
-        // End drawing polygon
-        if (this.drawing_polygon.vertex().length >= 3) {
-            this.pushShape(this.drawing_polygon);
-        }
-        this.drawing_polygon = new Polygon();
-        this.redraw();
+    //     if (this.drawing_shape != ShapeID.Polygon)
+    //         return;
+
+    //     // End drawing polygon
+    //     if (this.drawing_polygon.vertex().length >= 3) {
+    //         this.pushShape(this.drawing_polygon);
+    //     }
+    //     this.drawing_polygon = new Polygon();
+    //     this.redraw();
     }
 
-    private viewModeKeydownHandler(e: KeyboardEvent) {
-        if (this.drawing_shape != ShapeID.None)
-            return;
-
-        if (e.key === "+") {
-            this.setZoom(this.zoom_index + 1);
-            return;
-        }
-        if (e.key === "=") {
-            this.setZoom(this.zoom_index - 1);
-            return;
-        }
-        if (e.key === "-") {
-            this.setZoom(DEFAULT_ZOOM_LEVEL);
-            return;
-        }
-
-        if (e.key === 'F1') { // F1 for help
-            // todo
-            e.preventDefault();
-            return;
-        }
+    private editModeMouseUpHandler(e: MouseEvent) {
+        console.log("editModeMouseUpHandler ...");
     }
 
-    private editModeKeydownHandler(e: KeyboardEvent) {
-        if (this.drawing_shape == ShapeID.None)
-            return;
+    private viewModeKeyDownHandler(e: KeyboardEvent) {
+        console.log("viewModeKeydownHandler ...");
+        // if (this.drawing_shape != ShapeID.None)
+        //     return;
 
-        if (e.key === 'Escape') {
-            this.selected_index = -1;
-            this.redraw();
-            return;
-        }
+        // if (e.key === "+") {
+        //     this.setZoom(this.zoom_index + 1);
+        //     return;
+        // }
+        // if (e.key === "=") {
+        //     this.setZoom(this.zoom_index - 1);
+        //     return;
+        // }
+        // if (e.key === "-") {
+        //     this.setZoom(DEFAULT_ZOOM_LEVEL);
+        //     return;
+        // }
 
-        if (e.key === 'Enter') {
-            if (this.drawing_shape == ShapeID.Polygon) {
-                // End drawing polygon
-                if (this.drawing_polygon.vertex().length >= 3) {
-                    this.pushShape(this.drawing_polygon);
-                }
-                this.drawing_polygon = new Polygon();
-                this.redraw();
-                return;
-            }
-        }
+        // if (e.key === 'F1') { // F1 for help
+        //     // todo
+        //     e.preventDefault();
+        //     return;
+        // }
+    }
 
-        if (e.key === 'Backspace') {
-            if (this.drawing_shape == ShapeID.Polygon) {
-                // delete last vertex from polygon
-                this.drawing_polygon.pop();
-                this.redraw();
-                return;
-            }
-        }
+    private editModeKeyDownHandler(e: KeyboardEvent) {
+        console.log("viewModeKeyDownHandler ...");
+        // if (this.drawing_shape != ShapeID.None)
+        //     return;
 
-        if (e.key === 'd') {
-            if (this.selected_index >= 0) {
-                this.regions.slice(this.selected_index, 1);
-                this.redraw();
-            }
-        }
+        // if (e.key === "+") {
+        //     this.setZoom(this.zoom_index + 1);
+        //     return;
+        // }
+        // if (e.key === "=") {
+        //     this.setZoom(this.zoom_index - 1);
+        //     return;
+        // }
+        // if (e.key === "-") {
+        //     this.setZoom(DEFAULT_ZOOM_LEVEL);
+        //     return;
+        // }
+
+        // if (e.key === 'F1') { // F1 for help
+        //     // todo
+        //     e.preventDefault();
+        //     return;
+        // }
+    }
+
+    private viewModeKeyUpHandler(e: KeyboardEvent) {
+        console.log("viewModeKeyUpHandler ...");
+    }
+
+    private editModeKeyUpHandler(e: KeyboardEvent) {
+        console.log("editModeKeyUpHandler ...");
+
+        // if (this.drawing_shape == ShapeID.None)
+        //     return;
+
+        // if (e.key === 'Escape') {
+        //     this.selected_index = -1;
+        //     this.redraw();
+        //     return;
+        // }
+
+        // if (e.key === 'Enter') {
+        //     if (this.drawing_shape == ShapeID.Polygon) {
+        //         // End drawing polygon
+        //         if (this.drawing_polygon.vertex().length >= 3) {
+        //             this.pushShape(this.drawing_polygon);
+        //         }
+        //         this.drawing_polygon = new Polygon();
+        //         this.redraw();
+        //         return;
+        //     }
+        // }
+
+        // if (e.key === 'Backspace') {
+        //     if (this.drawing_shape == ShapeID.Polygon) {
+        //         // delete last vertex from polygon
+        //         this.drawing_polygon.pop();
+        //         this.redraw();
+        //         return;
+        //     }
+        // }
+
+        // if (e.key === 'd') {
+        //     if (this.selected_index >= 0) {
+        //         this.regions.slice(this.selected_index, 1);
+        //         this.redraw();
+        //     }
+        // }
 
         // e.preventDefault();
     }
@@ -593,6 +673,10 @@ class Canvas {
             this.mouse.start.y = e.offsetY;
             this.mouse.is_down = true;
 
+            if (this.isEditMode())
+                this.editModeMouseDownHandler(e);
+            else
+                this.viewModeMouseDownHandler(e);
         }, false);
         this.canvas.addEventListener('mouseup', (e: MouseEvent) => {
             // console.log("mousedown_002 ...", this.mouse.start);
@@ -601,11 +685,10 @@ class Canvas {
             this.mouse.stop.x = e.offsetX;
             this.mouse.stop.y = e.offsetY;
 
-            // Canvas general mouse handler
-            this.viewModeMouseHandler(e);
-            this.editModeMouseClickHandler(e);
-            this.editModeMouseMovingHandler(e);
-
+            if (this.isEditMode())
+                this.editModeMouseUpHandler(e);
+            else
+                this.viewModeMouseUpHandler(e);
             e.stopPropagation();
         }, false);
         this.canvas.addEventListener('mouseover', (e: MouseEvent) => {
@@ -616,29 +699,35 @@ class Canvas {
             // console.log("mousedown_004 ...", this.mouse.start);
             this.mouse.moving.x = e.offsetX;
             this.mouse.moving.y = e.offsetY;
-            // Drawing response ...
-            if (this.drawing_shape == ShapeID.Rectangle && this.mouse.is_down) {
-                let rect = new Rectangle(this.mouse.start, this.mouse.moving);
-                rect.draw(this.brush, false);
-                return;
-            }
-            if (this.drawing_shape == ShapeID.Ellipse && this.mouse.is_down) {
-                let ellipse = new Ellipse(this.mouse.start, this.mouse.moving);
-                ellipse.draw(this.brush, false);
-                return;
-            }
+
+            if (this.isEditMode())
+                this.editModeMouseMoveHandler(e);
+            else
+                this.viewModeMouseMoveHandler(e);
+
+            // // Drawing response ...
+            // if (this.drawing_shape == ShapeID.Rectangle && this.mouse.is_down) {
+            //     let rect = new Rectangle(this.mouse.start, this.mouse.moving);
+            //     rect.draw(this.brush, false);
+            //     return;
+            // }
+            // if (this.drawing_shape == ShapeID.Ellipse && this.mouse.is_down) {
+            //     let ellipse = new Ellipse(this.mouse.start, this.mouse.moving);
+            //     ellipse.draw(this.brush, false);
+            //     return;
+            // }
 
         }, false);
         this.canvas.addEventListener('wheel', (e: WheelEvent) => {
-            if (e.ctrlKey) {
-               // console.log("mousedown_005 ...", this.mouse.start);
-                if (e.deltaY < 0) {
-                    this.setZoom(this.zoom_index + 1);
-                } else {
-                    this.setZoom(this.zoom_index - 1);
-                }
-                e.preventDefault();
-            }
+            // if (e.ctrlKey) {
+            //    // console.log("mousedown_005 ...", this.mouse.start);
+            //     if (e.deltaY < 0) {
+            //         this.setZoom(this.zoom_index + 1);
+            //     } else {
+            //         this.setZoom(this.zoom_index - 1);
+            //     }
+            //     e.preventDefault();
+            // }
         }, false);
 
         // touch screen event handlers, TODO: test !!!
@@ -656,23 +745,34 @@ class Canvas {
         // }, false);
 
         this.canvas.addEventListener('dblclick', (e: MouseEvent) => {
-            this.editModeMouseDblclickHandler(e);
-
-            e.stopPropagation();
+            if (this.isEditMode())
+                this.editModeMouseDblclickHandler(e);
+            else
+                this.viewModeMouseDblclickHandler(e);
+            // e.stopPropagation();
         }, false);
 
         // Handle keyboard 
-        this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
-            this.viewModeKeydownHandler(e); 
-        }, false);
-        this.canvas.addEventListener('keyup', (e: KeyboardEvent) => {
-            this.editModeKeydownHandler(e); 
-            e.stopPropagation();
+        window.addEventListener('keydown', (e: KeyboardEvent) => {
+            console.log("window.addEventListener keydown ...", e.key);
+            if (e.key == 'Shift') {
+                this.setMode(this.mode_index + 1);
+            }
+
+            if (this.isEditMode())
+                this.editModeKeyDownHandler(e); 
+            else
+                this.viewModeKeyDownHandler(e); 
+            // e.stopPropagation();
         }, false);
 
-        window.addEventListener('keydown', (e: KeyboardEvent) => {
-            this.editModeKeydownHandler(e); 
-            e.stopPropagation();
+        window.addEventListener('keyup', (e: KeyboardEvent) => {
+            console.log("window.addEventListener keyup ...", e.key);
+            if (this.isEditMode())
+                this.editModeKeyUpHandler(e); 
+            else
+                this.viewModeKeyUpHandler(e); 
+            // e.stopPropagation();
         }, false);
     }
 
@@ -699,9 +799,9 @@ class Canvas {
         }
 
         // Draw drawing polygon ...
-        if (this.drawing_shape === ShapeID.Polygon) {
-            this.drawing_polygon.draw(this.brush, false);
-        }
+        // if (this.drawing_shape === ShapeID.Polygon) {
+        //     this.drawing_polygon.draw(this.brush, false);
+        // }
     }
 
     pushShape(s: Shape2d) {
