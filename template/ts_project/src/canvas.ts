@@ -110,10 +110,10 @@ abstract class Shape2d {
     abstract whichEdgeHas(p: Point): number; // which edge include point p ?
     // which vertex include point p ?
     whichVertexHas(p: Point): number {
-        let vset = this.vertex();
-        let n = vset.length;
+        let vs = this.vertex();
+        let n = vs.length;
         for (let i = 0; i < n; i++) {
-            if (p.distance(vset[i]) <= DISTANCE_THRESHOLD)
+            if (p.distance(vs[i]) <= DISTANCE_THRESHOLD)
                 return i;
         }
         return -1;
@@ -149,33 +149,54 @@ abstract class Shape2d {
 }
 
 class Rectangle extends Shape2d {
-    p1: Point;
-    p2: Point;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
 
-    constructor(p1: Point, p2: Point) {
+    constructor(x, y, w, h: number) {
         super(ShapeID.Rectangle);
-        this.p1 = new Point(p1.x, p1.y);
-        this.p2 = new Point(p2.x, p2.y); // Deep copy
-
-        this.normal();
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
     }
 
-    normal() {
-        let t;
-        if (this.p1.x > this.p2.x) {
-            t = this.p1.x;
-            this.p1.x = this.p2.x;
-            this.p2.x = t;
+    clone(): Rectangle {
+        let c = new Rectangle(this.x, this.y, this.w, this.h);
+        return c;
+    }
+
+    extend(delta: number) {
+        this.x = this.x - delta;
+        this.y = this.y - delta;
+        if (this.x < 0)
+            this.x = 0;
+        if (this.y < 0)
+            this.y = 0;
+        this.w += 2 * delta;
+        this.h += 2 * delta;
+    }
+
+    updateFromPoints(p1: Point, p2: Point) {
+        if (p1.x > p2.x) {
+            this.x = p2.x;
+            this.w = p1.x - p2.x;
+        } else {
+            this.x = p1.x;
+            this.w = p2.x - p1.x;
         }
-        if (this.p1.y > this.p2.y) {
-            t = this.p1.y;
-            this.p1.y = this.p2.y;
-            this.p2.y = t;
+        if (p1.y > p2.y) {
+            this.y = p2.y;
+            this.h = p1.y - p2.y;
+        } else {
+            this.y = p1.y;
+            this.h = p2.y - p1.y;
         }
     }
 
     bodyHas(p: Point): boolean {
-        return (p.x > this.p1.x && p.x < this.p2.x && p.y > this.p1.y && p.y < this.p2.y);
+        return (p.x > this.x && p.x < this.x + this.w && p.y > this.y && p.y < this.y + this.h);
     }
 
     // useless, so just return -1 to meet interface
@@ -186,10 +207,10 @@ class Rectangle extends Shape2d {
     vertex(): Array < Point > {
         let points = new Array < Point > ();
         // x1y1, x2y1, x2y2, x1y2
-        points.push(this.p1);
-        points.push(new Point(this.p2.x, this.p1.y));
-        points.push(this.p2);
-        points.push(new Point(this.p1.x, this.p2.y));
+        points.push(new Point(this.x, this.y));
+        points.push(new Point(this.x + this.w, this.y));
+        points.push(new Point(this.x + this.w, this.y + this.h));
+        points.push(new Point(this.x, this.y + this.h));
         return points;
     }
 
@@ -198,24 +219,16 @@ class Rectangle extends Shape2d {
         if (selected) {
             brush.fillStyle = VERTEX_COLOR;
             brush.globalAlpha = 1.0;
-        }
-        let points = this.vertex();
-        brush.beginPath();
-        brush.moveTo(points[0].x, points[0].y);
-        for (let i = 0; i < points.length; ++i)
-            brush.lineTo(points[i].x, points[i].y);
-        brush.lineTo(points[0].x, points[0].y); // close loop
-        brush.closePath();
-        if (selected) {
-            brush.fill();
+            brush.fillRect(this.x, this.y, this.w, this.h);
+            // Draw
             this.drawVertex(brush);
         } else {
-            brush.stroke();
+            brush.strokeRect(this.x, this.y, this.w, this.h);
         }
         brush.restore();
     }
 
-    // Vertex add/delete
+    // Useless, only for interface
     push(p: Point) {}
     insert(index: number, p: Point) {}
     delete(index: number) {}
@@ -223,18 +236,45 @@ class Rectangle extends Shape2d {
 }
 
 class Ellipse extends Shape2d {
-    c: Point; // Center
-    r: Point; // Radius of x, y
+    cx: number;
+    cy: number; // Center
+    rx: number;
+    ry: number; // Radius
 
-    constructor(c: Point, r: Point) {
+    constructor(cx: number, cy: number, rx: number, ry: number) {
         super(ShapeID.Ellipse);
-        this.c = new Point(c.x, c.y);
-        this.r = new Point(r.x, r.y); // Dot share with others !
+        this.cx = cx;
+        this.cy = cy;
+        this.rx = rx;
+        this.ry = ry;
+    }
+
+    updateFromPoints(p1: Point, p2: Point) {
+        let x, y, w, h;
+        if (p1.x > p2.x) {
+            x = p2.x;
+            w = p1.x - p2.x;
+        } else {
+            x = p1.x;
+            w = p2.x - p1.x;
+        }
+        if (p1.y > p2.y) {
+            y = p2.y;
+            h = p1.y - p2.y;
+        } else {
+            y = p1.y;
+            h = p2.y - p1.y;
+        }
+
+        this.cx = Math.round(x + w / 2);
+        this.rx = Math.round(w / 2);
+        this.cy = Math.round(y + h / 2);
+        this.ry = Math.round(h / 2);
     }
 
     bodyHas(p: Point): boolean {
-        return (this.c.x - p.x) * (this.c.x - p.x) / (this.r.x * this.r.x) +
-            (this.c.y - p.y) * (this.c.y - p.y) / (this.r.y * this.r.y) < 1;
+        return (this.cx - p.x) * (this.cx - p.x) / (this.rx * this.rx) +
+            (this.cy - p.y) * (this.cy - p.y) / (this.ry * this.ry) < 1;
     }
 
     // Useless, just return -1 to meet interface
@@ -244,10 +284,10 @@ class Ellipse extends Shape2d {
 
     vertex(): Array < Point > {
         let points = new Array < Point > ();
-        points.push(new Point(this.c.x - this.r.x, this.c.y));
-        points.push(new Point(this.c.x, this.c.y + this.r.y));
-        points.push(new Point(this.c.x + this.r.x, this.c.y));
-        points.push(new Point(this.c.x, this.c.y - this.r.y));
+        points.push(new Point(this.cx - this.rx, this.cy));
+        points.push(new Point(this.cx, this.cy + this.ry));
+        points.push(new Point(this.cx + this.rx, this.cy));
+        points.push(new Point(this.cx, this.cy - this.ry));
         return points;
     }
 
@@ -258,7 +298,8 @@ class Ellipse extends Shape2d {
             brush.globalAlpha = 1.0;
         }
         brush.beginPath();
-        brush.ellipse(this.c.x, this.c.y, this.r.x, this.r.y, 0, 0, 2 * Math.PI);
+        // void ctx.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise);
+        brush.ellipse(this.cx, this.cy, this.rx, this.ry, 0, 0, 2 * Math.PI);
         brush.closePath();
         if (selected) {
             brush.fill();
@@ -269,7 +310,7 @@ class Ellipse extends Shape2d {
         brush.restore();
     }
 
-    // Vertex add/delete
+    // Useless, only for interface
     push(p: Point) {}
     insert(index: number, p: Point) {}
     delete(index: number) {}
@@ -289,17 +330,17 @@ class Polygon extends Shape2d {
         if (n < 3)
             return false;
 
-        let vset = this.points.slice(0); // Deep copy
-        vset.push(this.points[0]); // Closed
+        let vs = this.points.slice(0); // Deep copy
+        vs.push(this.points[0]); // Closed
         let wn = 0; // the  winding number counter
         for (let i = 0; i < n; i++) {
-            var is_left = p.onLeft(vset[i], vset[i + 1]);
-            if (p.y >= vset[i].y) {
+            var is_left = p.onLeft(vs[i], vs[i + 1]);
+            if (p.y >= vs[i].y) {
                 // P1.y <= p.y < P2.y
-                if (p.y < vset[i + 1].y && is_left > 0) ++wn;
+                if (p.y < vs[i + 1].y && is_left > 0) ++wn;
             } else {
                 // P2.y <= p.y < P1.y
-                if (p.y >= vset[i + 1].y && is_left < 0) --wn;
+                if (p.y >= vs[i + 1].y && is_left < 0) --wn;
             }
         }
         return (wn === 0) ? false : true;
@@ -310,10 +351,10 @@ class Polygon extends Shape2d {
         let n = this.points.length;
         if (n < 3)
             return -1;
-        let vset = this.points.slice(0); // Deep copy
-        vset.push(this.points[0]); // Closed
+        let vs = this.points.slice(0); // Deep copy
+        vs.push(this.points[0]); // Closed
         for (let i = 0; i < n; i++) {
-            if (p.tolineDistance(vset[i], vset[i + 1]) <= DISTANCE_THRESHOLD)
+            if (p.tolineDistance(vs[i], vs[i + 1]) <= DISTANCE_THRESHOLD)
                 return i;
         }
         return -1;
@@ -324,7 +365,6 @@ class Polygon extends Shape2d {
     }
 
     draw(brush: CanvasRenderingContext2D, selected: boolean) {
-        // console.log("Shape ID:", this.id, ", ", this.points);
         if (this.points.length < 1)
             return;
         brush.save();
@@ -364,28 +404,54 @@ class Polygon extends Shape2d {
     }
 }
 
-// Mini Canvas: only redraw single object
-class MinCanvas {
-    canvas: HTMLCanvasElement;
-    brush: CanvasRenderingContext2D;
+// ImagePatch
+class ImagePatch {
+    rect: Rectangle;
+    data: ImageData;
 
-    constructor(id: string) {
-        this.canvas = document.getElementById(id) as HTMLCanvasElement;
-        this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+    constructor(rect: Rectangle, data: ImageData) {
+        this.rect = rect;
+        this.data = data;
+    }
+}
+
+class ImagePatchStack {
+    stack: Array < ImagePatch > ;
+
+    constructor() {
+        this.reset();
     }
 
-    draw(shape: Shape2d) {
-        this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        shape.draw(this.brush, false);
+    save(src: CanvasRenderingContext2D, rect: Rectangle) {
+        console.log("Save image: ", rect);
+        let data = src.getImageData(rect.x, rect.y, rect.w, rect.h);
+        let patch = new ImagePatch(rect, data);
+        this.stack.push(patch);
+    }
+
+    restore(dst: CanvasRenderingContext2D) {
+        if (this.stack.length < 1) // empty
+            return;
+
+        let patch = this.stack.pop();
+        if (patch.rect.w > 0 && patch.rect.h > 0) {
+            console.log("Restore image: ", patch.rect);
+            dst.putImageData(patch.data, patch.rect.x, patch.rect.y);
+        } else {
+            console.log("Restore image: impossiable ?", patch.rect);
+        }
+    }
+
+    reset() {
+        this.stack = new Array < ImagePatch > ();
     }
 }
 
 class Canvas {
     canvas: HTMLCanvasElement; // canvas element
     private brush: CanvasRenderingContext2D;
-
     private backgroud: HTMLImageElement;
-    private drawing_canvas: HTMLCanvasElement; // This is a temperary canvas
+    private image_stack: ImagePatchStack;
 
     mode_index: number;
 
@@ -408,16 +474,9 @@ class Canvas {
         #image_panel .visible { visibility:visible !important; opacity:1 !important; }
         */
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
-        this.canvas.style.position = "absolute";
-        this.canvas.style.opacity = "0.5";
-        // this.canvas.style.zIndex = "-1";
-        this.canvas.style.top = "5px";
-        this.canvas.style.left = "5px";
-        this.canvas.style.border = "1px solid green";
-
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.regions = new Array < Shape2d > ();
-        this.drawing_polygon = new Polygon();
+        // this.drawing_polygon = new Polygon();
         this.selected_index = -1;
 
         // Line width and color
@@ -431,34 +490,24 @@ class Canvas {
         this.registerEventHandlers();
 
         // Create backgroud and drawing canvas
-        let parent = this.canvas.parentElement;
-        this.backgroud = document.createElement('img');
-        this.backgroud.id = this.canvas.id + "_backgroud_image";
-        this.backgroud.style.opacity = "1";
-        // this.backgroud.style.zIndex = "0";
-        this.backgroud.style.position = "absolute";
-        this.backgroud.style.top = "0";
-        this.backgroud.style.left = "0";
-        this.backgroud.style.border = "1px solid red";
-        this.backgroud.width = this.canvas.width;
-        this.backgroud.height = this.canvas.height;
-        parent.insertBefore(this.backgroud, this.canvas);
-        this.backgroud.src = "dog.jpg";
-        this.backgroud.onload = function() {
+        // let parent = this.canvas.parentElement;
+        // this.backgroud = document.createElement('img');
+        // this.backgroud.id = this.canvas.id + "_backgroud_image";
+        // this.backgroud.style.opacity = "1";
+        // // this.backgroud.style.zIndex = "0";
+        // this.backgroud.style.position = "absolute";
+        // this.backgroud.style.top = "0";
+        // this.backgroud.style.left = "0";
+        // this.backgroud.style.border = "1px solid red";
+        // this.backgroud.width = this.canvas.width;
+        // this.backgroud.height = this.canvas.height;
+        // parent.insertBefore(this.backgroud, this.canvas);
+        // this.backgroud.src = "dog.jpg";
+        // this.backgroud.onload = function() {
+        //     // waiting for image loaded ...
+        // }
 
-        }
-
-        this.drawing_canvas = document.createElement('canvas');
-        this.drawing_canvas.id = this.canvas.id + "_drawing_canvas";
-        this.drawing_canvas.width = this.canvas.width;
-        this.drawing_canvas.height = this.canvas.height;
-        // this.drawing_canvas.style.zIndex = "0";
-        this.drawing_canvas.style.position = "absolute";
-        this.drawing_canvas.style.opacity = "0.5";
-        this.drawing_canvas.style.top = "10px";
-        this.drawing_canvas.style.left = "10px";
-        this.drawing_canvas.style.border = "1px solid blue";
-        parent.insertBefore(this.drawing_canvas, this.canvas);
+        this.image_stack = new ImagePatchStack();
     }
 
     setMessage(message: string) {
@@ -492,7 +541,7 @@ class Canvas {
 
     private viewModeMouseMoveHandler(e: MouseEvent) {
         // make sure moving distance is enough ...
-        if (this.mouse.pressed && ! this.mouse.isclick()) {
+        if (this.mouse.pressed && !this.mouse.isclick()) {
             // todo ?
             console.log("viewModeMouseMove ... Draging ... moving backgroud for more deteails ?");
             this.canvas.style.cursor = "pointer";
@@ -554,12 +603,26 @@ class Canvas {
     private editModeMouseDownHandler(e: MouseEvent) {
         // Start:  On vertext, On Edge, Inside, Blank area
         console.log("if click on blank --- this.mouse.start_drawing = true else this.mouse.start_drawing = false");
+
+        this.image_stack.reset();
     }
 
     private editModeMouseMoveHandler(e: MouseEvent) {
         // make sure moving distance is enough ...
-        if (this.mouse.pressed && ! this.mouse.isclick()) {
+        if (this.mouse.pressed && !this.mouse.isclick()) {
             console.log("editModeMouseMove ... Draging ... show MinCanvas with box ...");
+
+            this.image_stack.restore(this.brush);
+            let rect = new Rectangle(0, 0, 1, 1);
+            rect.updateFromPoints(this.mouse.start, this.mouse.moving);
+
+            // make sure rect including border
+            let erect = rect.clone();
+            erect.extend(EDGE_LINE_WIDTH);
+            this.image_stack.save(this.brush, erect);
+
+            // Drawing ...
+            rect.draw(this.brush, false);
         }
 
 
@@ -614,8 +677,8 @@ class Canvas {
     }
 
     private editModeMouseDblclickHandler(e: MouseEvent) {
-        console.log("editModeMouseDblclickHandler ...");
-
+        console.log("editModeMouseDblclick  ...");
+        // end drawing for pylogon ...
         //     if (this.drawing_shape != ShapeID.Polygon)
         //         return;
 
@@ -629,6 +692,7 @@ class Canvas {
 
     private editModeMouseUpHandler(e: MouseEvent) {
         console.log("editModeMouseUpHandler ...", this.mouse);
+
         if (this.mouse.pressed && this.mouse.draged) {
             if (this.mouse.start_drawing) {
                 console.log("Drawing is ok ..., for rectangle/ellipse, save result and close miniCanvas, for polygon ...");
@@ -655,6 +719,7 @@ class Canvas {
         } else if (e.key === "-") {
             this.setZoom(this.zoom_index - 1);
         } else if (e.key === 'F1') { // F1 for help
+            this.canvas.style.cursor = "help";
             // todo
         } else {
             // todo
@@ -665,8 +730,6 @@ class Canvas {
 
     private editModeKeyDownHandler(e: KeyboardEvent) {
         console.log("editModeKeyDown ...", e.key);
-
-        e.preventDefault();
     }
 
     private editModeKeyUpHandler(e: KeyboardEvent) {
@@ -676,7 +739,7 @@ class Canvas {
         //     return;
         // }
         // if (e.key === 'Enter' || e.key === 'Escape') {
-                // end polygon drawing
+        // end polygon drawing
         // }
 
         // if (e.key === 'Escape') {
@@ -728,7 +791,9 @@ class Canvas {
                 this.editModeMouseUpHandler(e);
             else
                 this.viewModeMouseUpHandler(e);
+
             this.mouse.pressed = false;
+            this.mouse.draged = false;
             e.stopPropagation();
         }, false);
         this.canvas.addEventListener('mouseover', (e: MouseEvent) => {
@@ -759,7 +824,7 @@ class Canvas {
         }, false);
         this.canvas.addEventListener('wheel', (e: WheelEvent) => {
             if (e.ctrlKey) {
-               // console.log("mousedown_005 ...", this.mouse.start);
+                // console.log("mousedown_005 ...", this.mouse.start);
                 if (e.deltaY < 0) {
                     this.setZoom(this.zoom_index + 1);
                 } else {
@@ -788,7 +853,7 @@ class Canvas {
                 this.editModeMouseDblclickHandler(e);
             else
                 this.viewModeMouseDblclickHandler(e);
-            // e.stopPropagation();
+            e.stopPropagation();
         }, false);
 
         // Handle keyboard 
@@ -803,7 +868,8 @@ class Canvas {
                 this.editModeKeyDownHandler(e);
             else
                 this.viewModeKeyDownHandler(e);
-            // e.stopPropagation();
+
+            e.preventDefault();
         }, false);
 
         window.addEventListener('keyup', (e: KeyboardEvent) => {
@@ -812,7 +878,7 @@ class Canvas {
                 this.editModeKeyUpHandler(e);
             else
                 this.viewModeKeyUpHandler(e);
-            // e.stopPropagation();
+            e.preventDefault();
         }, false);
     }
 
@@ -848,7 +914,7 @@ class Canvas {
         // }
 
 
-        let r = new Rectangle(new Point(10, 10), new Point(200, 200));
+        let r = new Rectangle(10, 10, 200, 200);
         r.draw(this.brush, true);
     }
 
