@@ -75,6 +75,8 @@ class Mouse {
     draged: boolean;
     start_drawing: boolean;
 
+    history: Array < Point > ;
+
     constructor() {
         this.start = new Point(0, 0);
         this.moving = new Point(0, 0);
@@ -83,18 +85,29 @@ class Mouse {
         this.pressed = false;
         this.draged = false;
         this.start_drawing = false;
+
+        this.history = new Array < Point > ();
     }
 
     reset() {
         this.pressed = false;
         this.draged = false;
         this.start_drawing = false;
+
+        this.history.length = 0;
     }
 
     isclick(): boolean {
         let d = this.start.distance(this.stop);
-        // console.log("mouse isclick? ", "start = ", this.start, "stop = ", this.stop, "distance: ", d);
         return d <= DISTANCE_THRESHOLD;
+    }
+
+    draging(): boolean {
+        if (!this.pressed)
+            return false;
+
+        let d = this.start.distance(this.moving);
+        return d > DISTANCE_THRESHOLD;
     }
 }
 
@@ -108,10 +121,11 @@ abstract class Shape2d {
     abstract vertex(): Array < Point > ;
 
     // Search ...
-    abstract bodyHas(p: Point): boolean; // p inside 2d shape ?
-    abstract whichEdgeHas(p: Point): number; // which edge include point p ?
+    abstract inside(p: Point): boolean; // p inside 2d shape ?
+    abstract onEdge(p: Point): number; // which edge include point p ?
+
     // which vertex include point p ?
-    whichVertexHas(p: Point): number {
+    onVertex(p: Point): number {
         let vs = this.vertex();
         let n = vs.length;
         for (let i = 0; i < n; i++) {
@@ -150,7 +164,7 @@ class Rectangle extends Shape2d {
     w: number;
     h: number;
 
-    constructor(x:number, y:number, w:number, h: number) {
+    constructor(x: number, y: number, w: number, h: number) {
         super(ShapeID.Rectangle);
         this.x = x;
         this.y = y;
@@ -191,12 +205,12 @@ class Rectangle extends Shape2d {
         }
     }
 
-    bodyHas(p: Point): boolean {
+    inside(p: Point): boolean {
         return (p.x > this.x && p.x < this.x + this.w && p.y > this.y && p.y < this.y + this.h);
     }
 
     // useless, so just return -1 to meet interface
-    whichEdgeHas(p: Point): number {
+    onEdge(p: Point): number {
         return -1;
     }
 
@@ -240,36 +254,13 @@ class Ellipse extends Shape2d {
         this.ry = ry;
     }
 
-    updateFromPoints(p1: Point, p2: Point) {
-        let x, y, w, h;
-        if (p1.x > p2.x) {
-            x = p2.x;
-            w = p1.x - p2.x;
-        } else {
-            x = p1.x;
-            w = p2.x - p1.x;
-        }
-        if (p1.y > p2.y) {
-            y = p2.y;
-            h = p1.y - p2.y;
-        } else {
-            y = p1.y;
-            h = p2.y - p1.y;
-        }
-
-        this.cx = Math.round(x + w / 2);
-        this.rx = Math.round(w / 2);
-        this.cy = Math.round(y + h / 2);
-        this.ry = Math.round(h / 2);
-    }
-
-    bodyHas(p: Point): boolean {
+    inside(p: Point): boolean {
         return (this.cx - p.x) * (this.cx - p.x) / (this.rx * this.rx) +
             (this.cy - p.y) * (this.cy - p.y) / (this.ry * this.ry) < 1;
     }
 
     // Useless, just return -1 to meet interface
-    whichEdgeHas(p: Point): number {
+    onEdge(p: Point): number {
         return -1;
     }
 
@@ -310,7 +301,7 @@ class Polygon extends Shape2d {
         this.points = new Array < Point > ();
     }
 
-    bodyHas(p: Point): boolean {
+    inside(p: Point): boolean {
         let n = this.points.length;
         if (n < 3)
             return false;
@@ -332,7 +323,7 @@ class Polygon extends Shape2d {
     }
 
     // Support add point on edge in edit mode ...
-    whichEdgeHas(p: Point): number {
+    onEdge(p: Point): number {
         let n = this.points.length;
         if (n < 3)
             return -1;
@@ -389,7 +380,108 @@ class Polygon extends Shape2d {
     }
 }
 
-// ImagePatch
+class ShapeBlobs {
+    blobs: Array < Shape2d > ;
+
+    selected_index: number; // current select blob
+    drawing: boolean; // Support drawing polygon
+    resizing: boolean; // Support resize current blob size by vertex
+
+    constructor() {
+        this.blobs = new Array < Shape2d > ();
+        this.selected_index = -1;
+
+        this.drawing = false;
+        this.resizing = false;
+    }
+
+    resetState() {
+        this.drawing = false;
+        this.resizing = false;
+    }
+
+    check() {
+        if (this.selected_index >= this.blobs.length)
+            this.selected_index = -1;
+    }
+
+    findBlob(p: Point): number {
+        for (let i = 0; i < this.blobs.length; i++) {
+            if (this.blobs[i].inside(p))
+                return i;
+        }
+        return -1;
+    }
+
+    push(s: Shape2d) {
+        this.blobs.push(s);
+    }
+
+    delete(index: number) {
+        this.blobs.slice(index, 1);
+    }
+
+    pop() {
+        this.blobs.pop();
+    }
+
+    draw(brush: CanvasRenderingContext2D) {
+        for (let i = 0; i < this.blobs.length; i++) {
+            if (i === this.selected_index)
+                this.blobs[i].draw(brush, true);
+            else
+                this.blobs[i].draw(brush, false);
+        }
+    }
+
+    // Process current blob ...
+    redrawCurrentBlob(brush: CanvasRenderingContext2D, selected: boolean) {
+        if (this.selected_index < 0 || this.selected_index >= this.blobs.length)
+            return;
+        this.blobs[this.selected_index].draw(brush, selected);
+    }
+
+    // Resize current blob, todo !!!
+    resizeCurrentBlob(vertex_index: number, deltaX: number, deltaY: number) {
+            if (this.selected_index < 0 || this.selected_index >= this.blobs.length)
+                return;
+            // todo
+            let blob = this.blobs[this.selected_index];
+            if (blob.id == ShapeID.Polygon) {
+                blob = <Polygon> blob;
+        } if (blob.id == ShapeID.Rectangle) {
+            blob = <Rectangle> blob;
+        } if (blob.id == ShapeID.Ellipse) {
+            blob = <Ellipse>blob;
+        }
+    }
+
+    // Insert vertex on current blob
+    insertVertexOnCurrentBlob(vertex_index: number, point:Point) {
+        if (this.selected_index < 0 || this.selected_index >= this.blobs.length)
+            return;
+        if (this.blobs[this.selected_index].id == ShapeID.Polygon) {
+            // do some thing, todo !!!
+            let blob = this.blobs[this.selected_index] as Polygon;
+            blob.insert(vertex_index, point);
+        }
+    }
+
+    // Find vertex on current blob
+    findVertexOnCurrentBlob(p: Point): number {
+        if (this.selected_index < 0 || this.selected_index >= this.blobs.length)
+            return -1;
+        return this.blobs[this.selected_index].onVertex(p);
+    }
+
+    // Find edge on current edge
+    findEdgeOnCurrentBlob(p: Point): number {
+        if (this.selected_index < 0 || this.selected_index >= this.blobs.length)
+            return -1;
+        return this.blobs[this.selected_index].onEdge(p);
+    }
+}
+
 class ImagePatch {
     rect: Rectangle;
     data: ImageData;
@@ -400,7 +492,7 @@ class ImagePatch {
     }
 }
 
-class ImagePatchStack {
+class ImageStack {
     stack: Array < ImagePatch > ;
 
     constructor() {
@@ -431,13 +523,13 @@ class Canvas {
     canvas: HTMLCanvasElement; // canvas element
     private brush: CanvasRenderingContext2D;
     // private backgroud: HTMLImageElement;
-    private image_stack: ImagePatchStack;
+    private image_stack: ImageStack;
 
     mode_index: number;
 
     // Shape container
-    private regions: Array < Shape2d > ; // shape regions
-    private selected_index: number;
+    shape_blobs: ShapeBlobs ; // shape regions
+    // private selected_index: number;
     // private drawing_polygon: Polygon; // this is temperay record
 
     // Zoom control
@@ -455,9 +547,11 @@ class Canvas {
         */
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-        this.regions = new Array < Shape2d > ();
-        // this.drawing_polygon = new Polygon();
-        this.selected_index = -1;
+        this.shape_blobs = new ShapeBlobs();
+
+        // this.regions = new Array < Shape2d > ();
+        // // this.drawing_polygon = new Polygon();
+        // this.selected_index = -1;
 
         // Line width and color
         this.brush.strokeStyle = VERTEX_COLOR;
@@ -488,7 +582,7 @@ class Canvas {
         //     // waiting for image loaded ...
         // }
 
-        this.image_stack = new ImagePatchStack();
+        this.image_stack = new ImageStack();
     }
 
     setMessage(message: string) {
@@ -535,64 +629,55 @@ class Canvas {
         this.canvas.style.cursor = "default";
     }
 
-    // private editModeMouseClickHandler(e: MouseEvent) {
-    //     if (this.drawing_shape == ShapeID.None)
-    //         return;
-
-    //     if (! this.mouse.isclick())
-    //         return;
-
-    //     // Selected or remove object
-    //     let [index, sub_index] = this.findInside(this.mouse.start);
-
-    //     if (index >= 0) {
-    //         if (index == this.selected_index)
-    //             this.selected_index = -1;
-    //         else
-    //             this.selected_index = index;
-    //         this.redraw();
-    //         return;
-    //     }
-
-    //     // click on vertex/edge of selected pylogon, add remove or add point 
-    //     if (this.selected_index >= 0 && this.drawing_shape == ShapeID.Polygon) {
-    //         // Remove vertex
-    //         [index, sub_index] = this.findVertex((this.mouse.start));
-    //         if (index == this.selected_index) {
-    //             this.regions[index].delete(sub_index);
-    //             this.redraw();
-    //             return;
-    //         }
-    //         // Add new vertex
-    //         [index, sub_index] = this.findEdge((this.mouse.start));
-    //         if (index == this.selected_index) {
-    //             this.regions[index].insert(sub_index, this.mouse.start);
-    //             this.redraw();
-    //             return;
-    //         }
-    //         return;
-    //     }
-
-    //     // is drawing polygon on blank space ?
-    //     if (this.selected_index < 0 && this.drawing_shape == ShapeID.Polygon) {
-    //         this.drawing_polygon.push(this.mouse.start);
-    //         this.redraw();
-    //         return;
-    //     }
-    // }
-
     private editModeMouseDownHandler(e: MouseEvent) {
-        // Start:  On vertext, On Edge, Inside, Blank area
-        console.log("if click on blank --- this.mouse.start_drawing = true else this.mouse.start_drawing = false");
+        // Start:  On selected vertext, On selected Edge, Inside, Blank area
+        this.shape_blobs.check();
+        // if polygon is drawing ...
+        if (this.getShape() == ShapeID.Polygon && this.shape_blobs.drawing) {
+            // continue to draw polygon
+            return;
+        }
+        this.shape_blobs.resetState();
+
+        // Some blob is selected ...
+        if (this.shape_blobs.selected_index >= 0) {
+            // Resize blob or add vertex on current blob
+            let index = this.shape_blobs.findVertexOnCurrentBlob(this.mouse.start);
+            if (index >= 0) {
+                this.canvas.style.cursor = "crosshair";
+                this.shape_blobs.resizing = true;
+                return;
+            }
+            // Add vertex
+            index = this.shape_blobs.findEdgeOnCurrentBlob(this.mouse.start);
+            if (index >= 0) {    // General this is polygon drawing ...
+                this.shape_blobs.insertVertexOnCurrentBlob(index, this.mouse.start);
+                this.shape_blobs.redrawCurrentBlob(this.brush, true);
+                return;
+            }
+            // otherwise need continue ...
+        }
+        // Suppose we are free, choice or draw some thing ...
+        let index = this.shape_blobs.findBlob(this.mouse.start);
+        if (index >= 0) { // Found blob
+            // Reset current blob
+            this.shape_blobs.redrawCurrentBlob(this.brush, false);
+            this.shape_blobs.selected_index = index;
+            this.shape_blobs.redrawCurrentBlob(this.brush, true);
+            return;
+        }
+
+        // click on blank area, drawing one new blob ...
+        this.shape_blobs.resetState();
+        this.shape_blobs.drawing = true;
         this.image_stack.reset();
     }
 
     private editModeMouseMoveHandler(e: MouseEvent) {
         // make sure moving distance is enough ...
-        if (this.mouse.pressed && !this.mouse.isclick()) {
-            console.log("editModeMouseMove ... Draging ... show MinCanvas with box ...");
-
+        if (this.mouse.pressed) {
             this.image_stack.restore(this.brush);
+
             let rect = new Rectangle(0, 0, 1, 1);
             rect.updateFromPoints(this.mouse.start, this.mouse.moving);
 
@@ -601,73 +686,23 @@ class Canvas {
             erect.extend(EDGE_LINE_WIDTH);
             this.image_stack.save(this.brush, erect);
 
-            // Drawing ...
-            rect.draw(this.brush, false);
+            if (this.getShape() == ShapeID.Polygon) {
+                this.brush.beginPath();
+                this.brush.moveTo(this.mouse.start.x, this.mouse.start.y);
+                this.brush.lineTo(this.mouse.moving.x, this.mouse.moving.y);
+                this.brush.stroke();
+            } else if (this.getShape() == ShapeID.Ellipse) {
+                let ellipse = new Ellipse((rect.x + rect.w)/2, (rect.y + rect.h)/2, rect.w/2, rect.h/2);
+                ellipse.draw(this.brush, false);
+            } else {
+                // Drawing ...
+                rect.draw(this.brush, false);
+            }
         }
-
-
-        // if (this.drawing_shape == ShapeID.None) {
-        //     console.log("Moving_001 ...")
-        //     return;
-        // }
-
-        // if (this.mouse.isclick()) {
-        //     console.log("Moving_002 ...")
-        //     return;
-        // }
-
-        // // Drag and drop on blank area ? Only for rectangle/ellipse drawing
-        // if (this.selected_index < 0) {
-        //     if (this.drawing_shape == ShapeID.Rectangle) {
-        //         this.pushShape(new Rectangle(this.mouse.start, this.mouse.stop));
-        //         this.redraw();
-        //         return;
-        //     }
-        //     if (this.drawing_shape == ShapeID.Ellipse) {
-        //         this.pushShape(new Ellipse(this.mouse.start, this.mouse.stop));
-        //         this.redraw();
-        //         return;
-        //     }
-        //     return;
-        // }
-
-        // // Now selected_index >= 0
-        // // Resize object ?
-        // let [index, sub_index] = this.findVertex(this.mouse.start);
-        // if (index == this.selected_index) {
-        //     let mx = this.mouse.stop.x - this.mouse.start.x;
-        //     let my = this.mouse.stop.y - this.mouse.stop.y;
-        //     let vpoint = this.regions[index].vertex();
-        //     vpoint[sub_index].move(mx, my);
-        //     this.redraw();
-        //     return;
-        // }
-        // [index, sub_index] = this.findInside(this.mouse.start);
-        // if (index == this.selected_index) {
-        //     // Moving whole object
-        //     let mx = this.mouse.stop.x - this.mouse.start.x;
-        //     let my = this.mouse.stop.y - this.mouse.stop.y;
-        //     this.regions[index].move(mx, my);
-        //     return;
-        // }
     }
 
     private viewModeMouseDblclickHandler(e: MouseEvent) {
         console.log("viewModeMouseDblclickHandler ...");
-    }
-
-    private editModeMouseDblclickHandler(e: MouseEvent) {
-        console.log("editModeMouseDblclick  ...");
-        // end drawing for pylogon ...
-        //     if (this.drawing_shape != ShapeID.Polygon)
-        //         return;
-
-        //     // End drawing polygon
-        //     if (this.drawing_polygon.vertex().length >= 3) {
-        //         this.pushShape(this.drawing_polygon);
-        //     }
-        //     this.drawing_polygon = new Polygon();
-        //     this.redraw();
     }
 
     private editModeMouseUpHandler(e: MouseEvent) {
@@ -682,6 +717,42 @@ class Canvas {
             }
             // this.mouse_start_drawing && this.getShape is polygon, we should reserver mouse history else we need this.mouse.reset();
         }
+
+        // if polygon is drawing ...
+        if (this.getShape() == ShapeID.Polygon && this.shape_blobs.drawing) {
+            // Draging ...
+            if (this.mouse.pressed && this.mouse.draged) {
+                this.mouse.history.push(this.mouse.start);
+                this.mouse.history.push(this.mouse.stop);
+            } else {    // Click
+                this.mouse.history.push(this.mouse.start);
+            }
+            let n = this.mouse.history.length;
+            if (n >= 3 && this.mouse.history[0].distance(this.mouse.history[n - 1]) < DISTANCE_THRESHOLD) {
+                // closed, finish drawing
+                let polygon = new Polygon();
+                for (let i = 0; i < n; i++)
+                    polygon.push(this.mouse.history[i]);
+                this.shape_blobs.push(polygon);
+                this.shape_blobs.drawing = false;
+                this.mouse.history.length = 0;
+                this.mouse.reset();
+                this.image_stack.reset();
+            }
+            // continue to draw polygon
+            return;
+        }
+        if (this.shape_blobs.resizing && this.mouse.pressed && this.mouse.draged) {
+            let index = this.shape_blobs.findEdgeOnCurrentBlob(this.mouse.start);
+            if (index >= 0)
+                this.shape_blobs.resizeCurrentBlob(index, this.mouse.stop.x - this.mouse.start.x,
+                    this.mouse.stop.y - this.mouse.start.y);
+            return;
+        }
+
+        this.mouse.reset();
+        this.shape_blobs.resetState();
+        this.image_stack.reset();
     }
 
     private viewModeKeyDownHandler(e: KeyboardEvent) {
@@ -786,19 +857,6 @@ class Canvas {
                 this.editModeMouseMoveHandler(e);
             else
                 this.viewModeMouseMoveHandler(e);
-
-            // // Drawing response ...
-            // if (this.drawing_shape == ShapeID.Rectangle && this.mouse.pressed) {
-            //     let rect = new Rectangle(this.mouse.start, this.mouse.moving);
-            //     rect.draw(this.brush, false);
-            //     return;
-            // }
-            // if (this.drawing_shape == ShapeID.Ellipse && this.mouse.pressed) {
-            //     let ellipse = new Ellipse(this.mouse.start, this.mouse.moving);
-            //     ellipse.draw(this.brush, false);
-            //     return;
-            // }
-
         }, false);
         this.canvas.addEventListener('wheel', (e: WheelEvent) => {
             if (e.ctrlKey) {
@@ -826,14 +884,6 @@ class Canvas {
         //     this.mouse.moving.y = e.offsetY;
         // }, false);
 
-        this.canvas.addEventListener('dblclick', (e: MouseEvent) => {
-            if (this.isEditMode())
-                this.editModeMouseDblclickHandler(e);
-            else
-                this.viewModeMouseDblclickHandler(e);
-            e.stopPropagation();
-        }, false);
-
         // Handle keyboard 
         window.addEventListener('keydown', (e: KeyboardEvent) => {
             console.log("window.addEventListener keydown ...", e.key);
@@ -841,7 +891,6 @@ class Canvas {
                 this.setMode(this.mode_index + 1);
                 return;
             }
-
             if (this.isEditMode())
                 this.editModeKeyDownHandler(e);
             else
@@ -878,62 +927,10 @@ class Canvas {
         this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
         // Draw image ...
 
-        // Draw regions ...
-        for (let i = 0; i < this.regions.length; i++) {
-            if (i === this.selected_index)
-                this.regions[i].draw(this.brush, true);
-            else
-                this.regions[i].draw(this.brush, false);
-        }
-
-        // Draw drawing polygon ...
-        // if (this.drawing_shape === ShapeID.Polygon) {
-        //     this.drawing_polygon.draw(this.brush, false);
-        // }
-
+        // Draw blobs ...
+        this.shape_blobs.draw(this.brush);
 
         let r = new Rectangle(10, 10, 200, 200);
         r.draw(this.brush, true);
-    }
-
-    pushShape(s: Shape2d) {
-        this.regions.push(s);
-    }
-
-    Delete(index: number) {
-        this.regions.slice(index, 1);
-    }
-
-    popShape() {
-        this.regions.pop();
-    }
-
-    // Find shape object
-    private findInside(p: Point): [number, number] {
-        for (let i = 0; i < this.regions.length; i++) {
-            if (this.regions[i].bodyHas(p))
-                return [i, 0];
-        }
-        return [-1, 0];
-    }
-
-    private findVertex(p: Point): [number, number] {
-        let vertex_index = -1;
-        for (let i = 0; i < this.regions.length; i++) {
-            vertex_index = this.regions[i].whichVertexHas(p);
-            if (vertex_index >= 0)
-                return [i, vertex_index];
-        }
-        return [-1, -1];
-    }
-
-    private findEdge(p: Point): [number, number] {
-        let edge_index = -1;
-        for (let i = 0; i < this.regions.length; i++) {
-            edge_index = this.regions[i].whichEdgeHas(p);
-            if (edge_index >= 0)
-                return [i, edge_index];
-        }
-        return [-1, -1];
     }
 }
