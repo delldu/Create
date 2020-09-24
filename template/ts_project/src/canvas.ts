@@ -270,7 +270,7 @@ class Ellipse extends Shape2d {
             y = p1.y;
             h = p2.y - p1.y;
         }
-       
+
         this.cx = x + w/2;
         this.cy = y + h/2;
         this.rx = w/2;
@@ -686,9 +686,8 @@ class Canvas {
 
         if (index >= 0) { // Found blob
             // Reset current blob
-            this.shape_blobs.redrawCurrentBlob(this.brush, false);
             this.shape_blobs.selected_index = index;
-            this.shape_blobs.redrawCurrentBlob(this.brush, true);
+            this.redraw();
             return;
         }
 
