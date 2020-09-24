@@ -254,6 +254,29 @@ class Ellipse extends Shape2d {
         this.ry = ry;
     }
 
+    updateFromPoints(p1: Point, p2: Point) {
+        let x, y, w, h;
+        if (p1.x > p2.x) {
+            x = p2.x;
+            w = p1.x - p2.x;
+        } else {
+            x = p1.x;
+            w = p2.x - p1.x;
+        }
+        if (p1.y > p2.y) {
+            y = p2.y;
+            h = p1.y - p2.y;
+        } else {
+            y = p1.y;
+            h = p2.y - p1.y;
+        }
+       
+        this.cx = x + w/2;
+        this.cy = y + h/2;
+        this.rx = w/2;
+        this.ry = h/2;
+    }
+
     inside(p: Point): boolean {
         return (this.cx - p.x) * (this.cx - p.x) / (this.rx * this.rx) +
             (this.cy - p.y) * (this.cy - p.y) / (this.ry * this.ry) < 1;
@@ -659,6 +682,8 @@ class Canvas {
         }
         // Suppose we are free, choice or draw some thing ...
         let index = this.shape_blobs.findBlob(this.mouse.start);
+        console.log("FindBlob: ", index, this.mouse.start, this.shape_blobs);
+
         if (index >= 0) { // Found blob
             // Reset current blob
             this.shape_blobs.redrawCurrentBlob(this.brush, false);
@@ -708,16 +733,6 @@ class Canvas {
     private editModeMouseUpHandler(e: MouseEvent) {
         console.log("editModeMouseUpHandler ...", this.mouse);
 
-        if (this.mouse.pressed && this.mouse.draged) {
-            if (this.mouse.start_drawing) {
-                console.log("Drawing is ok ..., for rectangle/ellipse, save result and close miniCanvas, for polygon ...");
-                // we get new object, save them, redraw, ...
-            } else {
-                console.log("Set selected flags covered by box ..., close MinCanvas, reset mouse, redraw big canvas");
-            }
-            // this.mouse_start_drawing && this.getShape is polygon, we should reserver mouse history else we need this.mouse.reset();
-        }
-
         // if polygon is drawing ...
         if (this.getShape() == ShapeID.Polygon && this.shape_blobs.drawing) {
             // Draging ...
@@ -742,6 +757,20 @@ class Canvas {
             // continue to draw polygon
             return;
         }
+        // Other drawing, save blob
+        if (this.shape_blobs.drawing && this.mouse.pressed && this.mouse.draged) {
+            if (this.getShape() == ShapeID.Rectangle) {
+                let rect = new Rectangle(0, 0, 1, 1);
+                rect.updateFromPoints(this.mouse.start, this.mouse.stop);
+                this.shape_blobs.push(rect);
+            }
+            if (this.getShape() == ShapeID.Ellipse) {
+                let ellipse = new Ellipse(0, 0, 1, 1);
+                ellipse.updateFromPoints(this.mouse.start, this.mouse.stop);
+                this.shape_blobs.push(ellipse);
+            }
+        }
+
         if (this.shape_blobs.resizing && this.mouse.pressed && this.mouse.draged) {
             let index = this.shape_blobs.findEdgeOnCurrentBlob(this.mouse.start);
             if (index >= 0)
