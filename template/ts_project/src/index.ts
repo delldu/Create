@@ -132,6 +132,11 @@ class Box {
         this.h = h;
     }
 
+    clone(): Box {
+        let c = new Box(this.x, this.y, this.w, this.h);
+        return c;
+    }    
+
     extend(delta: number) {
         this.x = this.x - delta;
         this.y = this.y - delta;
@@ -175,24 +180,33 @@ class Mouse {
         return d <= DISTANCE_THRESHOLD;
     }
 
-    // Bounding Box
-    bbox(): Box {
+    // Bounding Box for two points
+    points_bbox(p1:Point, p2:Point): Box {
         let box = new Box(0, 0, 0, 0);
-        if (this.start.x > this.stop.x) {
-            box.x = this.stop.x;
-            box.w = this.start.x - this.stop.x;
+        if (p1.x > p2.x) {
+            box.x = p2.x;
+            box.w = p1.x - p2.x;
         } else {
-            box.x = this.start.x;
-            box.w = this.stop.x - this.start.x;
+            box.x = p1.x;
+            box.w = p2.x - p1.x;
         }
-        if (this.start.y > this.stop.y) {
-            box.y = this.stop.y;
-            box.h = this.start.y - this.stop.y;
+        if (p1.y > p2.y) {
+            box.y = p2.y;
+            box.h = p1.y - p2.y;
         } else {
-            box.y = this.start.y;
-            box.h = this.stop.y = this.start.y;
+            box.y = p1.y;
+            box.h = p2.y - p1.y;
         }
         return box;
+    }
+
+    bbox(): Box {
+        return this.points_bbox(this.start, this.stop);
+    }
+
+    // Bounding box for moving
+    mbbox(): Box {
+        return this.points_bbox(this.start, this.moving);
     }
 }
 
@@ -441,20 +455,34 @@ class ShapeBlobs {
 
     draging(m: Mouse, brush: CanvasRenderingContext2D) {
         // vertex could be draged ?
-        let [v_index, v_sub_index] = this.findVertex(m.start);
-        if (v_index >= 0 && v_sub_index >= 0) {
-            console.log("Draging vertex ...");
-            return;
-        }
+        console.log("---mouse: ", m);
+        let box = m.mbbox();
+        console.log("---mouse mbbox:", box);
 
-        // whold blob could be draged ?
-        let b_index = this.findBlob(m.start);
-        if (b_index >= 0) {
-            console.log("Draging vertex ...");
-            return;
-        }
+        brush.beginPath();
+        brush.moveTo(box.x, box.y);
+        brush.lineTo(box.x, box.y + box.h);
+        brush.lineTo(box.x + box.w, box.y + box.h);
+        brush.lineTo(box.x + box.w, box.y);
+        brush.lineTo(box.x, box.y);
+        brush.stroke();
+        // let [v_index, v_sub_index] = this.findVertex(m.start);
+        // if (v_index >= 0 && v_sub_index >= 0) {
+        //     console.log("Draging vertex ...");
+        //     return;
+        // }
+
+        // // whold blob could be draged ?
+        // let b_index = this.findBlob(m.start);
+        // if (b_index >= 0) {
+        //     console.log("Draging vertex ...");
+        //     brush.beginPath();
+        //     brush.moveTo(m.start.x, m.start.y);
+        //     brush.lineTo(m.moving.x, m.moving.y);
+        //     brush.stroke();
+        //     return;
+        // }
     }
-
 
     draged(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D) {
         // vertex could be draged ? this will change blob
@@ -534,6 +562,7 @@ class Canvas {
     // Shape container
     shape_blobs: ShapeBlobs; // shape regions
     private shape_stack: ShapeStack;
+    private image_stack: ImageStack;
 
     // Zoom control
     zoom_index: number;
@@ -580,6 +609,8 @@ class Canvas {
         // this.backgroud.onload = function() {
         //     // waiting for image loaded ...
         // }
+
+        this.image_stack = new ImageStack();
     }
 
     setMessage(message: string) {
@@ -626,12 +657,22 @@ class Canvas {
     private editModeMouseDownHandler(e: MouseEvent) {
         // Start:  On selected vertext, On selected Edge, Inside, Blank area
         // e.ctrlKey, e.altKey -- boolean
+        this.image_stack.reset();
     }
 
     private editModeMouseMoveHandler(e: MouseEvent) {
         if (this.mouse.pressed) {
             this.canvas.style.cursor = "pointer";
             // Draging Vertex, Draging blob, Draging blank ...
+
+            this.image_stack.restore(this.brush);
+
+            let rect = this.mouse.mbbox();
+            // make sure rect including border
+            let erect = rect.clone();
+            erect.extend(EDGE_LINE_WIDTH);
+            this.image_stack.save(this.brush, erect);
+
             this.shape_blobs.draging(this.mouse, this.brush);
         } else {
             this.canvas.style.cursor = "default";
@@ -751,6 +792,7 @@ class Canvas {
         this.canvas.addEventListener('mousemove', (e: MouseEvent) => {
             this.mouse.moving.x = e.offsetX;
             this.mouse.moving.y = e.offsetY;
+
             // this.mouse.draged = true;
 
             if (this.isEditMode())
@@ -830,7 +872,46 @@ class Canvas {
         // Draw blobs ...
         this.shape_blobs.draw(this.brush);
     }
-}// ***********************************************************************************
+}
+
+class ImagePatch {
+    rect: Box;
+    data: ImageData;
+
+    constructor(rect: Box, data: ImageData) {
+        this.rect = rect;
+        this.data = data;
+    }
+}
+
+class ImageStack {
+    stack: Array < ImagePatch > ;
+
+    constructor() {
+        this.stack = new Array < ImagePatch > ();
+    }
+
+    save(src: CanvasRenderingContext2D, rect: Box) {
+        let data = src.getImageData(rect.x, rect.y, rect.w, rect.h);
+        let patch = new ImagePatch(rect, data);
+        this.stack.push(patch);
+    }
+
+    restore(dst: CanvasRenderingContext2D) {
+        if (this.stack.length < 1) // empty
+            return;
+
+        let patch = this.stack.pop();
+        if (patch && patch.rect.w > 0 && patch.rect.h > 0)
+            dst.putImageData(patch.data, patch.rect.x, patch.rect.y);
+    }
+
+    reset() {
+        this.stack.length = 0;
+    }
+}
+
+// ***********************************************************************************
 // ***
 // *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
 // ***
