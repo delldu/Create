@@ -400,10 +400,10 @@ class ShapeBlobs {
 
         // whold blob could be draged ?
         let b_index = this.findBlob(m.start);
-        if (b_index) {
+        if (b_index >= 0) {
             let deltaX = m.stop.x - m.start.x;
             let deltaY = m.stop.y - m.start.y;
-            this.blobs[v_index].move(deltaX, deltaY);
+            this.blobs[b_index].move(deltaX, deltaY);
             this.draw(brush);
         } else {
             // Add new blob
@@ -422,6 +422,7 @@ class ShapeBlobs {
                 blob.push(new Point(box.x, box.y));
                 blob.push(new Point(box.x, box.y + box.h));
                 blob.push(new Point(box.x + box.w, box.y + box.h));
+                blob.push(new Point(box.x + box.w, box.y));
             }
             this.push(blob);
             this.draw(brush); // redraw
