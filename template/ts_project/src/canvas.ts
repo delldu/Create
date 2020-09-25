@@ -6,7 +6,6 @@
 // ***
 // ***********************************************************************************
 
-
 const DISTANCE_THRESHOLD = 2;
 const EDGE_LINE_WIDTH = 1;
 const VERTEX_COLOR = "#ff0000";
@@ -61,7 +60,7 @@ class Box {
     clone(): Box {
         let c = new Box(this.x, this.y, this.w, this.h);
         return c;
-    }    
+    }
 
     extend(delta: number) {
         this.x = this.x - delta;
@@ -91,7 +90,6 @@ class Mouse {
     stop: Point;
 
     pressed: boolean; // mouse pressed
-    // ctrlKey: boolean;
 
     constructor() {
         this.start = new Point(0, 0);
@@ -107,7 +105,7 @@ class Mouse {
     }
 
     // Bounding Box for two points
-    points_bbox(p1:Point, p2:Point): Box {
+    points_bbox(p1: Point, p2: Point): Box {
         let box = new Box(0, 0, 0, 0);
         if (p1.x > p2.x) {
             box.x = p2.x;
@@ -381,10 +379,7 @@ class ShapeBlobs {
 
     draging(m: Mouse, brush: CanvasRenderingContext2D) {
         // vertex could be draged ?
-        console.log("---mouse: ", m);
         let box = m.mbbox();
-        console.log("---mouse mbbox:", box);
-
         brush.beginPath();
         brush.moveTo(box.x, box.y);
         brush.lineTo(box.x, box.y + box.h);
@@ -392,22 +387,6 @@ class ShapeBlobs {
         brush.lineTo(box.x + box.w, box.y);
         brush.lineTo(box.x, box.y);
         brush.stroke();
-        // let [v_index, v_sub_index] = this.findVertex(m.start);
-        // if (v_index >= 0 && v_sub_index >= 0) {
-        //     console.log("Draging vertex ...");
-        //     return;
-        // }
-
-        // // whold blob could be draged ?
-        // let b_index = this.findBlob(m.start);
-        // if (b_index >= 0) {
-        //     console.log("Draging vertex ...");
-        //     brush.beginPath();
-        //     brush.moveTo(m.start.x, m.start.y);
-        //     brush.lineTo(m.moving.x, m.moving.y);
-        //     brush.stroke();
-        //     return;
-        // }
     }
 
     draged(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D) {
@@ -486,7 +465,7 @@ class Canvas {
     mode_index: number;
 
     // Shape container
-    shape_blobs: ShapeBlobs; // shape regions
+    shape_blobs: ShapeBlobs;
     private shape_stack: ShapeStack;
     private image_stack: ImageStack;
 
@@ -502,10 +481,6 @@ class Canvas {
 
         this.shape_blobs = new ShapeBlobs();
         this.shape_stack = new ShapeStack();
-
-        // this.regions = new Array < Shape > ();
-        // // this.drawing_polygon = new Shape();
-        // this.selected_index = -1;
 
         // Line width and color
         this.brush.strokeStyle = VERTEX_COLOR;
@@ -574,7 +549,6 @@ class Canvas {
     }
 
     private viewModeMouseUpHandler(e: MouseEvent) {
-        // console.log("viewModeMouseUpHandler ...", e);
         if (!this.mouse.isclick() && this.mouse.pressed) {
             console.log("draging ..., which src object ? moving backgroud ?");
         }
@@ -653,36 +627,6 @@ class Canvas {
         // if (e.key === "d") {
         //     delete selected objects ..., redraw ...
         //     return;
-        // }
-        // if (e.key === 'Enter' || e.key === 'Escape') {
-        // end polygon drawing
-        // }
-
-        // if (e.key === 'Escape') {
-        //     this.selected_index = -1;
-        //     this.redraw();
-        //     return;
-        // }
-
-        // if (e.key === 'Enter') {
-        //     if (this.drawing_shape == ShapeID.Shape) {
-        //         // End drawing polygon
-        //         if (this.drawing_polygon.vertex().length >= 3) {
-        //             this.pushShape(this.drawing_polygon);
-        //         }
-        //         this.drawing_polygon = new Shape();
-        //         this.redraw();
-        //         return;
-        //     }
-        // }
-
-        // if (e.key === 'Backspace') {
-        //     if (this.drawing_shape == ShapeID.Shape) {
-        //         // delete last vertex from polygon
-        //         this.drawing_polygon.pop();
-        //         this.redraw();
-        //         return;
-        //     }
         // }
         e.preventDefault();
     }
@@ -836,4 +780,3 @@ class ImageStack {
         this.stack.length = 0;
     }
 }
-
