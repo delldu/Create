@@ -68,6 +68,18 @@ class Box {
         this.h = h;
     }
 
+    valid():boolean {
+        if (this.x < 0 || this.y < 0) {
+            console.log("Start position is not valid. give up.");
+            return false;
+        }
+        if (this.w < BRUSH_LINE_WIDTH * 8 || this.h < BRUSH_LINE_WIDTH * 8) {
+            console.log("Too small blob, give up.");
+            return false;
+        }
+        return true;
+    }
+
     clone(): Box {
         let c = new Box(this.x, this.y, this.w, this.h);
         return c;
@@ -229,8 +241,8 @@ class Shape {
         if (n < 1)
             return new Box(0, 0, 0, 0);
         let x1 = this.points[0].x;
-        let y1 = this.points[0].x;
-        let x2 = this.points[0].y;
+        let y1 = this.points[0].y;
+        let x2 = this.points[0].x;
         let y2 = this.points[0].y;
         for (let i = 1; i < n; i++) {
             if (x1 > this.points[i].x)
@@ -508,8 +520,11 @@ class ShapeBlobs {
             blob.push(this.blobs[v_index].points[(v_sub_index + 1) % n]);
             blob.push(m.moving);
 
-            image_stack.restore(brush);
             let rect = blob.bbox();
+            if (! rect.valid())
+                return;
+
+            image_stack.restore(brush);
             rect.extend(BRUSH_LINE_WIDTH);
             image_stack.save(brush, rect);
 
@@ -526,8 +541,11 @@ class ShapeBlobs {
             let blob = this.blobs[b_index].clone();
             blob.offset(deltaX, deltaY);
 
-            image_stack.restore(brush);
             let rect = blob.bbox();
+            if (! rect.valid())
+                return;
+
+            image_stack.restore(brush);
             rect.extend(BRUSH_LINE_WIDTH);
             image_stack.save(brush, rect);
 
@@ -536,6 +554,9 @@ class ShapeBlobs {
         } else {
             // Add new blob
             let box = m.mbbox();
+            if (! box.valid())
+                return;
+
             let blob = new Shape();
             if (ctrl) { // Add 3x3 rectangle, heavy blob
                 blob.push(new Point(box.x, box.y));
@@ -553,8 +574,11 @@ class ShapeBlobs {
                 blob.push(new Point(box.x + box.w, box.y));
             }
 
-            image_stack.restore(brush);
             let rect = blob.bbox();
+            if (! rect.valid())
+                return;
+
+            image_stack.restore(brush);
             rect.extend(BRUSH_LINE_WIDTH);
             image_stack.save(brush, rect);
 
@@ -589,6 +613,9 @@ class ShapeBlobs {
         } else {
             // Add new blob
             let box = m.bbox();
+            if (! box.valid())
+                return false;
+
             let blob = new Shape();
             if (ctrl) { // Add 3x3 rectangle, heavy blob
                 blob.push(new Point(box.x, box.y));
@@ -605,6 +632,10 @@ class ShapeBlobs {
                 blob.push(new Point(box.x + box.w, box.y + box.h));
                 blob.push(new Point(box.x + box.w, box.y));
             }
+            box = blob.bbox();
+            if (! box.valid())
+                return false;
+
             this.push(blob);
         } // end of b_index 
         return true;
