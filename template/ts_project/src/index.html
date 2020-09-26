@@ -36,7 +36,23 @@
         // canvas.test();
         // canvas.setZoom(3);
         // canvas.redraw();
+        // canvas.setBackground("canvas_background");
+        // choiceBackgroundImage();
+
+        // document.getElementById("choice_" + canvas.id + "_bgfile").click();
         canvas.redraw(); // Draw rectangle ?
+    }
+
+    function ChoiceFile(file) {
+        // set file to buffer ... canvas_background_image element 
+        if (file.files && file.files[0]) {
+            var img = document.getElementById("canvas_background_image");
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+                img.src = evt.target.result;
+            }
+            reader.readAsDataURL(file.files[0]);
+        }
     }
 
     function test_uploader() {
@@ -58,12 +74,12 @@
     <div id="message_id" class="message">Message Bar</div>
     <p>Test Progress Class ...</p>
     <progress value="0" max="100">Progress Bar>Progress Bar</progress>
-    <div id="canvas_group">
-        <p>Test Canvas Class ...</p>
-        <canvas id="canvas" width="640" height="480" style="border:1px solid #c3c3c3;">
-            New Image Video Company ...
-        </canvas>
-    </div>
+    <p>Test Canvas Class ...</p>
+    <input type="file" onchange="ChoiceFile(this);" title="Change Backgroud.">
+
+    <canvas id="canvas" width="640" height="480" style="border:1px solid #c3c3c3;">
+    </canvas>
+ 
     <p>Test Uploader Class ...</p>
     <p>Test Downloader Class ...</p>
     <p>Test Workspace Class ...</p>
