@@ -516,7 +516,9 @@ class ShapeBlobs {
         if (v_index >= 0 && v_sub_index >= 0) {
             let n = this.blobs[v_index].points.length;
             let blob = new Shape();
-            blob.push(this.blobs[v_index].points[(v_sub_index - 1) % n]);
+            // Bad case -1 % n = -1 !!!
+            // So we use (n + v_sub_index - 1)%n instead of (v_sub_index - 1) % n
+            blob.push(this.blobs[v_index].points[(n + v_sub_index - 1) % n]);
             blob.push(this.blobs[v_index].points[(v_sub_index + 1) % n]);
             blob.push(m.moving);
 
