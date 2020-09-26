@@ -69,15 +69,8 @@ class Box {
     }
 
     valid():boolean {
-        if (this.x < 0 || this.y < 0) {
-            console.log("Start position is not valid. give up.");
-            return false;
-        }
-        if (this.w < BRUSH_LINE_WIDTH * 8 || this.h < BRUSH_LINE_WIDTH * 8) {
-            console.log("Too small blob, give up.");
-            return false;
-        }
-        return true;
+        // console.log("Too small blob, give up.");
+        return (this.w >= MOUSE_DISTANCE_THRESHOLD * 4 && this.h >= MOUSE_DISTANCE_THRESHOLD * 4);
     }
 
     clone(): Box {
