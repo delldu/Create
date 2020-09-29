@@ -5,6 +5,7 @@
     --matter-secondary-rgb: 102, 0, 238;
     --matter-font-family: "Roboto";
 }
+
 /* Font */
 .matter-h1 {
     font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
@@ -260,7 +261,8 @@
     display: inline-block;
     box-sizing: border-box;
     margin: 0;
-    border: solid 1px; /* Safari */
+    border: solid 1px;
+    /* Safari */
     border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.24);
     border-radius: 4px;
     padding: 0 16px;
@@ -337,6 +339,7 @@
 .matter-button-outlined:disabled::after {
     opacity: 0;
 }
+
 .matter-button-text {
     --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
     position: relative;
@@ -538,13 +541,16 @@
     box-sizing: border-box;
     border: none;
     border-radius: 50%;
-    padding: 0.25em;
-    width: 3em;
-    height: 3em;
+    padding: 4px;
+    width: 48px;
+    height: 48px;
     color: rgb(var(--matter-helper-theme));
     background-color: transparent;
-    font-size: 16px;
+    font-size: 32px;
     overflow: hidden;
+    position: absolute;
+    left: 45%;
+    top: 50%;    
 }
 
 .matter-progress-circular::-webkit-progress-bar {
@@ -556,7 +562,8 @@
     animation: matter-progress-circular 6s infinite cubic-bezier(0.3, 0.6, 1, 1);
 }
 
-:-ms-lang(x), .matter-progress-circular:indeterminate {
+:-ms-lang(x),
+.matter-progress-circular:indeterminate {
     animation: none;
 }
 
@@ -565,8 +572,8 @@
     content: "";
     display: block;
     box-sizing: border-box;
-    margin-bottom: 0.25em;
-    border: solid 0.25em currentColor;
+    margin-bottom: 4px;
+    border: solid 4px currentColor;
     border-radius: 50%;
     width: 100% !important;
     height: 100%;
@@ -580,7 +587,7 @@
 
 .matter-progress-circular:indeterminate::-moz-progress-bar {
     box-sizing: border-box;
-    border: solid 0.25em currentColor;
+    border: solid 4px currentColor;
     border-radius: 50%;
     width: 100%;
     height: 100%;
@@ -599,31 +606,39 @@
     0% {
         transform: rotate(0deg);
     }
+
     12.5% {
         transform: rotate(180deg);
         animation-timing-function: linear;
     }
+
     25% {
         transform: rotate(630deg);
     }
+
     37.5% {
         transform: rotate(810deg);
         animation-timing-function: linear;
     }
+
     50% {
         transform: rotate(1260deg);
     }
+
     62.5% {
         transform: rotate(1440deg);
         animation-timing-function: linear;
     }
+
     75% {
         transform: rotate(1890deg);
     }
+
     87.5% {
         transform: rotate(2070deg);
         animation-timing-function: linear;
     }
+
     100% {
         transform: rotate(2520deg);
     }
@@ -634,18 +649,22 @@
         -webkit-clip-path: polygon(50% 50%, 37% 0, 50% 0, 50% 0, 50% 0, 50% 0);
         clip-path: polygon(50% 50%, 37% 0, 50% 0, 50% 0, 50% 0, 50% 0);
     }
+
     18% {
         -webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 0, 100% 0, 100% 0);
         clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 0, 100% 0, 100% 0);
     }
+
     53% {
         -webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%);
         clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%);
     }
+
     88% {
         -webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 100%);
         clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 100%);
     }
+
     100% {
         -webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 63%);
         clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 63%);
@@ -658,11 +677,14 @@
     -moz-appearance: none;
     appearance: none;
     border: none;
-    width: 160px;
-    height: 4px;
+    width: 480px;
+    height: 16px;
     vertical-align: middle;
     color: rgb(var(--matter-helper-theme));
     background-color: rgba(var(--matter-helper-theme), 0.12);
+    position: absolute;
+    left: 35%;
+    top: 65%;
 }
 
 .matter-progress-linear::-webkit-progress-bar {
@@ -690,9 +712,9 @@
 .matter-progress-linear:indeterminate {
     background-size: 200% 100%;
     background-image:
-            linear-gradient(to right, currentColor 16%, transparent 16%),
-            linear-gradient(to right, currentColor 16%, transparent 16%),
-            linear-gradient(to right, currentColor 25%, transparent 25%);
+        linear-gradient(to right, currentColor 16%, transparent 16%),
+        linear-gradient(to right, currentColor 16%, transparent 16%),
+        linear-gradient(to right, currentColor 25%, transparent 25%);
     animation: matter-progress-linear 1.8s infinite linear;
 }
 
@@ -712,33 +734,43 @@
     0% {
         background-position: 32% 0, 32% 0, 50% 0;
     }
+
     2% {
         background-position: 32% 0, 32% 0, 50% 0;
     }
+
     21% {
         background-position: 32% 0, -18% 0, 0 0;
     }
+
     42% {
         background-position: 32% 0, -68% 0, -27% 0;
     }
+
     50% {
         background-position: 32% 0, -93% 0, -46% 0;
     }
+
     56% {
         background-position: 32% 0, -118% 0, -68% 0;
     }
+
     66% {
         background-position: -11% 0, -200% 0, -100% 0;
     }
+
     71% {
         background-position: -32% 0, -200% 0, -100% 0;
     }
+
     79% {
         background-position: -54% 0, -242% 0, -100% 0;
     }
+
     86% {
         background-position: -68% 0, -268% 0, -100% 0;
     }
+
     100% {
         background-position: -100% 0, -300% 0, -100% 0;
     }
@@ -757,7 +789,7 @@
 }
 
 /* Box */
-.matter-checkbox > input {
+.matter-checkbox>input {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -766,7 +798,8 @@
     display: block;
     box-sizing: border-box;
     margin: 3px 1px;
-    border: solid 2px; /* Safari */
+    border: solid 2px;
+    /* Safari */
     border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
     border-radius: 2px;
     width: 18px;
@@ -777,7 +810,7 @@
 }
 
 /* Span */
-.matter-checkbox > input + span {
+.matter-checkbox>input+span {
     display: inline-block;
     box-sizing: border-box;
     padding-left: 30px;
@@ -786,7 +819,7 @@
 }
 
 /* Highlight */
-.matter-checkbox > input + span::before {
+.matter-checkbox>input+span::before {
     content: "";
     position: absolute;
     left: -10px;
@@ -803,7 +836,7 @@
 }
 
 /* Check Mark */
-.matter-checkbox > input + span::after {
+.matter-checkbox>input+span::after {
     content: "";
     z-index: 1;
     display: block;
@@ -822,75 +855,75 @@
 }
 
 /* Checked, Indeterminate */
-.matter-checkbox > input:checked,
-.matter-checkbox > input:indeterminate {
+.matter-checkbox>input:checked,
+.matter-checkbox>input:indeterminate {
     border-color: rgb(var(--matter-helper-theme));
     background-color: rgb(var(--matter-helper-theme));
 }
 
-.matter-checkbox > input:checked + span::before,
-.matter-checkbox > input:indeterminate + span::before {
+.matter-checkbox>input:checked+span::before,
+.matter-checkbox>input:indeterminate+span::before {
     background-color: rgb(var(--matter-helper-theme));
 }
 
-.matter-checkbox > input:checked + span::after,
-.matter-checkbox > input:indeterminate + span::after {
+.matter-checkbox>input:checked+span::after,
+.matter-checkbox>input:indeterminate+span::after {
     border-color: rgb(var(--matter-helper-ontheme, 255, 255, 255));
 }
 
-.matter-checkbox > input:indeterminate + span::after {
+.matter-checkbox>input:indeterminate+span::after {
     border-left-width: 0;
     transform: translate(4px, 3px);
 }
 
 /* Hover, Focus */
-.matter-checkbox:hover > input + span::before {
+.matter-checkbox:hover>input+span::before {
     opacity: 0.04;
 }
 
-.matter-checkbox > input:focus + span::before {
+.matter-checkbox>input:focus+span::before {
     opacity: 0.12;
 }
 
-.matter-checkbox:hover > input:focus + span::before {
+.matter-checkbox:hover>input:focus+span::before {
     opacity: 0.16;
 }
 
 /* Active */
-.matter-checkbox:active > input,
-.matter-checkbox:active:hover > input {
+.matter-checkbox:active>input,
+.matter-checkbox:active:hover>input {
     border-color: rgb(var(--matter-helper-theme));
 }
 
-.matter-checkbox:active > input:checked {
+.matter-checkbox:active>input:checked {
     border-color: transparent;
     background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
 }
 
-.matter-checkbox:active > input + span::before {
+.matter-checkbox:active>input+span::before {
     opacity: 1;
     transform: scale(0);
     transition: transform 0s, opacity 0s;
 }
 
 /* Disabled */
-.matter-checkbox > input:disabled {
+.matter-checkbox>input:disabled {
     border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     cursor: initial;
 }
 
-.matter-checkbox > input:checked:disabled,
-.matter-checkbox > input:indeterminate:disabled {
+.matter-checkbox>input:checked:disabled,
+.matter-checkbox>input:indeterminate:disabled {
     border-color: transparent;
     background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
 }
 
-.matter-checkbox > input:disabled + span {
+.matter-checkbox>input:disabled+span {
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     cursor: initial;
 }
 
-.matter-checkbox > input:disabled + span::before {
+.matter-checkbox>input:disabled+span::before {
     opacity: 0;
     transform: scale(0);
 }
@@ -907,7 +940,7 @@
 }
 
 /* Circle */
-.matter-radio > input {
+.matter-radio>input {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -916,7 +949,8 @@
     display: block;
     box-sizing: border-box;
     margin: 2px 0;
-    border: solid 2px; /* Safari */
+    border: solid 2px;
+    /* Safari */
     border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
     border-radius: 50%;
     width: 20px;
@@ -927,7 +961,7 @@
 }
 
 /* Span */
-.matter-radio > input + span {
+.matter-radio>input+span {
     display: inline-block;
     box-sizing: border-box;
     padding-left: 30px;
@@ -936,7 +970,7 @@
 }
 
 /* Highlight */
-.matter-radio > input + span::before {
+.matter-radio>input+span::before {
     content: "";
     position: absolute;
     left: -10px;
@@ -953,7 +987,7 @@
 }
 
 /* Check Mark */
-.matter-radio > input + span::after {
+.matter-radio>input+span::after {
     content: "";
     display: block;
     position: absolute;
@@ -968,63 +1002,63 @@
 }
 
 /* Checked */
-.matter-radio > input:checked {
+.matter-radio>input:checked {
     border-color: rgb(var(--matter-helper-theme));
 }
 
-.matter-radio > input:checked + span::before {
+.matter-radio>input:checked+span::before {
     background-color: rgb(var(--matter-helper-theme));
 }
 
-.matter-radio > input:checked + span::after {
+.matter-radio>input:checked+span::after {
     transform: translate(5px, 5px) scale(1);
 }
 
 /* Hover, Focus */
-.matter-radio:hover > input + span::before {
+.matter-radio:hover>input+span::before {
     transform: scale(1);
     opacity: 0.04;
 }
 
-.matter-radio > input:focus + span::before  {
+.matter-radio>input:focus+span::before {
     transform: scale(1);
     opacity: 0.12;
 }
 
-.matter-radio:hover > input:focus + span::before {
+.matter-radio:hover>input:focus+span::before {
     transform: scale(1);
     opacity: 0.16;
 }
 
 /* Active */
-.matter-radio:active > input {
+.matter-radio:active>input {
     border-color: rgb(var(--matter-helper-theme));
 }
 
-.matter-radio:active > input + span::before,
-.matter-radio:active:hover > input + span::before {
+.matter-radio:active>input+span::before,
+.matter-radio:active:hover>input+span::before {
     opacity: 1;
     transform: scale(0);
     transition: transform 0s, opacity 0s;
 }
 
 /* Disabled */
-.matter-radio > input:disabled {
+.matter-radio>input:disabled {
     border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     cursor: initial;
 }
 
-.matter-radio > input:disabled + span {
+.matter-radio>input:disabled+span {
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     cursor: initial;
 }
 
-.matter-radio > input:disabled + span::before {
+.matter-radio>input:disabled+span::before {
     opacity: 0;
     transform: scale(0);
 }
 
-.matter-radio > input:disabled + span::after {
+.matter-radio>input:disabled+span::after {
     background-color: currentColor;
 }
 
@@ -1040,7 +1074,7 @@
 }
 
 /* Track */
-.matter-switch > input {
+.matter-switch>input {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -1061,7 +1095,7 @@
 }
 
 /* Span */
-.matter-switch > input + span {
+.matter-switch>input+span {
     display: inline-block;
     box-sizing: border-box;
     margin-right: -51px;
@@ -1071,7 +1105,7 @@
 }
 
 /* Highlight */
-.matter-switch > input + span::before {
+.matter-switch>input+span::before {
     content: "";
     position: absolute;
     right: 11px;
@@ -1088,7 +1122,7 @@
 }
 
 /* Thumb */
-.matter-switch > input + span::after {
+.matter-switch>input+span::after {
     content: "";
     z-index: 1;
     position: absolute;
@@ -1104,65 +1138,65 @@
 }
 
 /* Checked */
-.matter-switch > input:checked {
+.matter-switch>input:checked {
     background-color: rgba(var(--matter-helper-theme), 0.6);
 }
 
-.matter-switch > input:checked + span::before {
+.matter-switch>input:checked+span::before {
     right: -5px;
     background-color: rgb(var(--matter-helper-theme));
 }
 
-.matter-switch > input:checked + span::after {
+.matter-switch>input:checked+span::after {
     background-color: rgb(var(--matter-helper-theme));
     transform: translateX(16px);
 }
 
 /* Hover, Focus */
-.matter-switch:hover > input + span::before {
+.matter-switch:hover>input+span::before {
     opacity: 0.04;
 }
 
-.matter-switch > input:focus + span::before {
+.matter-switch>input:focus+span::before {
     opacity: 0.12;
 }
 
-.matter-switch:hover > input:focus + span::before {
+.matter-switch:hover>input:focus+span::before {
     opacity: 0.16;
 }
 
 /* Active */
-.matter-switch:active > input {
+.matter-switch:active>input {
     background-color: rgba(var(--matter-helper-theme), 0.6);
 }
 
-.matter-switch:active > input:checked {
+.matter-switch:active>input:checked {
     background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
 }
 
-.matter-switch:active > input + span::before {
+.matter-switch:active>input+span::before {
     opacity: 1;
     transform: scale(0);
     transition: transform 0s, opacity 0s;
 }
 
 /* Disabled */
-.matter-switch > input:disabled {
+.matter-switch>input:disabled {
     background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     opacity: 0.38;
     cursor: default;
 }
 
-.matter-switch > input:checked:disabled {
+.matter-switch>input:checked:disabled {
     background-color: rgba(var(--matter-helper-theme), 0.6);
 }
 
-.matter-switch > input:disabled + span {
+.matter-switch>input:disabled+span {
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0, 0.38));
     cursor: default;
 }
 
-.matter-switch > input:disabled + span::before {
+.matter-switch>input:disabled+span::before {
     z-index: 1;
     margin: 10px;
     width: 20px;
@@ -1173,7 +1207,7 @@
     transition: none;
 }
 
-.matter-switch > input:disabled + span::after {
+.matter-switch>input:disabled+span::after {
     opacity: 0.38;
 }
 
@@ -1187,8 +1221,8 @@
 }
 
 /* Input, Textarea */
-.matter-textfield-standard > input,
-.matter-textfield-standard > textarea {
+.matter-textfield-standard>input,
+.matter-textfield-standard>textarea {
     display: block;
     box-sizing: border-box;
     margin: 0;
@@ -1199,9 +1233,11 @@
     width: 100%;
     height: inherit;
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
-    -webkit-text-fill-color: currentColor; /* Safari */
+    -webkit-text-fill-color: currentColor;
+    /* Safari */
     background-color: transparent;
-    box-shadow: none; /* Firefox */
+    box-shadow: none;
+    /* Firefox */
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
@@ -1210,8 +1246,8 @@
 }
 
 /* Span */
-.matter-textfield-standard > input + span,
-.matter-textfield-standard > textarea + span {
+.matter-textfield-standard>input+span,
+.matter-textfield-standard>textarea+span {
     position: absolute;
     top: 0;
     left: 0;
@@ -1228,8 +1264,8 @@
 }
 
 /* Underline */
-.matter-textfield-standard > input + span::after,
-.matter-textfield-standard > textarea + span::after {
+.matter-textfield-standard>input+span::after,
+.matter-textfield-standard>textarea+span::after {
     content: "";
     position: absolute;
     left: 0;
@@ -1244,55 +1280,56 @@
 }
 
 /* Hover */
-.matter-textfield-standard:hover > input,
-.matter-textfield-standard:hover > textarea {
+.matter-textfield-standard:hover>input,
+.matter-textfield-standard:hover>textarea {
     border-bottom-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
 }
 
 /* Placeholder-shown */
-.matter-textfield-standard > input:not(:focus):placeholder-shown + span,
-.matter-textfield-standard > textarea:not(:focus):placeholder-shown + span {
+.matter-textfield-standard>input:not(:focus):placeholder-shown+span,
+.matter-textfield-standard>textarea:not(:focus):placeholder-shown+span {
     font-size: inherit;
     line-height: 56px;
 }
 
 /* Focus */
-.matter-textfield-standard > input:focus,
-.matter-textfield-standard > textarea:focus {
+.matter-textfield-standard>input:focus,
+.matter-textfield-standard>textarea:focus {
     outline: none;
 }
 
-.matter-textfield-standard > input:focus + span,
-.matter-textfield-standard > textarea:focus + span {
+.matter-textfield-standard>input:focus+span,
+.matter-textfield-standard>textarea:focus+span {
     color: rgb(var(--matter-helper-theme));
 }
 
-.matter-textfield-standard > input:focus + span::after,
-.matter-textfield-standard > textarea:focus + span::after {
+.matter-textfield-standard>input:focus+span::after,
+.matter-textfield-standard>textarea:focus+span::after {
     transform: scale(1);
 }
 
 /* Disabled */
-.matter-textfield-standard > input:disabled,
-.matter-textfield-standard > textarea:disabled {
+.matter-textfield-standard>input:disabled,
+.matter-textfield-standard>textarea:disabled {
     border-bottom-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
 }
 
-.matter-textfield-standard > input:disabled + span,
-.matter-textfield-standard > textarea:disabled + span {
+.matter-textfield-standard>input:disabled+span,
+.matter-textfield-standard>textarea:disabled+span {
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
 }
 
 /* Faster transition in Safari for less noticable fractional font-size issue */
 @media not all and (min-resolution:.001dpcm) {
-    @supports (-webkit-appearance:none) {
-        .matter-textfield-standard > input,
-        .matter-textfield-standard > input + span,
-        .matter-textfield-standard > input + span::after,
-        .matter-textfield-standard > textarea,
-        .matter-textfield-standard > textarea + span,
-        .matter-textfield-standard > textarea + span::after {
+    @supports (-webkit-appearance: none) {
+
+        .matter-textfield-standard>input,
+        .matter-textfield-standard>input+span,
+        .matter-textfield-standard>input+span::after,
+        .matter-textfield-standard>textarea,
+        .matter-textfield-standard>textarea+span,
+        .matter-textfield-standard>textarea+span::after {
             transition-duration: 0.1s;
         }
     }
@@ -1308,8 +1345,8 @@
 }
 
 /* Input, Textarea */
-.matter-textfield-filled > input,
-.matter-textfield-filled > textarea {
+.matter-textfield-filled>input,
+.matter-textfield-filled>textarea {
     display: block;
     box-sizing: border-box;
     margin: 0;
@@ -1321,9 +1358,11 @@
     width: 100%;
     height: inherit;
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
-    -webkit-text-fill-color: currentColor; /* Safari */
+    -webkit-text-fill-color: currentColor;
+    /* Safari */
     background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.04);
-    box-shadow: none; /* Firefox */
+    box-shadow: none;
+    /* Firefox */
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
@@ -1332,8 +1371,8 @@
 }
 
 /* Span */
-.matter-textfield-filled > input + span,
-.matter-textfield-filled > textarea + span {
+.matter-textfield-filled>input+span,
+.matter-textfield-filled>textarea+span {
     position: absolute;
     top: 0;
     left: 0;
@@ -1350,8 +1389,8 @@
 }
 
 /* Underline */
-.matter-textfield-filled > input + span::after,
-.matter-textfield-filled > textarea + span::after {
+.matter-textfield-filled>input+span::after,
+.matter-textfield-filled>textarea+span::after {
     content: "";
     position: absolute;
     left: 0;
@@ -1366,76 +1405,79 @@
 }
 
 /* Hover */
-.matter-textfield-filled:hover > input,
-.matter-textfield-filled:hover > textarea {
+.matter-textfield-filled:hover>input,
+.matter-textfield-filled:hover>textarea {
     border-bottom-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
     background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.08);
 }
 
 /* Placeholder-shown */
-.matter-textfield-filled > input:not(:focus):placeholder-shown + span,
-.matter-textfield-filled > textarea:not(:focus):placeholder-shown + span {
+.matter-textfield-filled>input:not(:focus):placeholder-shown+span,
+.matter-textfield-filled>textarea:not(:focus):placeholder-shown+span {
     font-size: inherit;
     line-height: 48px;
 }
 
 /* Focus */
-.matter-textfield-filled > input:focus,
-.matter-textfield-filled > textarea:focus {
+.matter-textfield-filled>input:focus,
+.matter-textfield-filled>textarea:focus {
     outline: none;
 }
 
-.matter-textfield-filled > input:focus + span,
-.matter-textfield-filled > textarea:focus + span {
+.matter-textfield-filled>input:focus+span,
+.matter-textfield-filled>textarea:focus+span {
     color: rgb(var(--matter-helper-theme));
 }
 
-.matter-textfield-filled > input:focus + span::after,
-.matter-textfield-filled > textarea:focus + span::after {
+.matter-textfield-filled>input:focus+span::after,
+.matter-textfield-filled>textarea:focus+span::after {
     transform: scale(1);
 }
 
 /* Disabled */
-.matter-textfield-filled > input:disabled,
-.matter-textfield-filled > textarea:disabled {
+.matter-textfield-filled>input:disabled,
+.matter-textfield-filled>textarea:disabled {
     border-bottom-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.24);
 }
 
-.matter-textfield-filled > input:disabled + span,
-.matter-textfield-filled > textarea:disabled + span {
+.matter-textfield-filled>input:disabled+span,
+.matter-textfield-filled>textarea:disabled+span {
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
 }
 
 /* Faster transition in Safari for less noticable fractional font-size issue */
 @media not all and (min-resolution:.001dpcm) {
-    @supports (-webkit-appearance:none) {
-        .matter-textfield-filled > input,
-        .matter-textfield-filled > input + span,
-        .matter-textfield-filled > input + span::after,
-        .matter-textfield-filled > textarea,
-        .matter-textfield-filled > textarea + span,
-        .matter-textfield-filled > textarea + span::after {
+    @supports (-webkit-appearance: none) {
+
+        .matter-textfield-filled>input,
+        .matter-textfield-filled>input+span,
+        .matter-textfield-filled>input+span::after,
+        .matter-textfield-filled>textarea,
+        .matter-textfield-filled>textarea+span,
+        .matter-textfield-filled>textarea+span::after {
             transition-duration: 0.1s;
         }
     }
-}.matter-textfield-outlined {
-     --matter-helper-theme: rgb(var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243)));
-     --matter-helper-safari1: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
-     --matter-helper-safari2: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
-     --matter-helper-safari3: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
-     position: relative;
-     display: inline-block;
-     padding-top: 6px;
-     font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
-     font-size: 16px;
-     line-height: 1.5;
- }
+}
+
+.matter-textfield-outlined {
+    --matter-helper-theme: rgb(var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243)));
+    --matter-helper-safari1: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    --matter-helper-safari2: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    --matter-helper-safari3: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
+    position: relative;
+    display: inline-block;
+    padding-top: 6px;
+    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-size: 16px;
+    line-height: 1.5;
+}
 
 /* Input, Textarea */
-.matter-textfield-outlined > input,
-.matter-textfield-outlined > textarea {
+.matter-textfield-outlined>input,
+.matter-textfield-outlined>textarea {
     box-sizing: border-box;
     margin: 0;
     border-style: solid;
@@ -1446,7 +1488,8 @@
     width: 100%;
     height: inherit;
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
-    -webkit-text-fill-color: currentColor; /* Safari */
+    -webkit-text-fill-color: currentColor;
+    /* Safari */
     background-color: transparent;
     box-shadow: inset 1px 0 transparent, inset -1px 0 transparent, inset 0 -1px transparent;
     font-family: inherit;
@@ -1456,14 +1499,14 @@
     transition: border 0.2s, box-shadow 0.2s;
 }
 
-.matter-textfield-outlined > input:not(:focus):placeholder-shown,
-.matter-textfield-outlined > textarea:not(:focus):placeholder-shown {
+.matter-textfield-outlined>input:not(:focus):placeholder-shown,
+.matter-textfield-outlined>textarea:not(:focus):placeholder-shown {
     border-top-color: var(--matter-helper-safari2);
 }
 
 /* Span */
-.matter-textfield-outlined > input + span,
-.matter-textfield-outlined > textarea + span {
+.matter-textfield-outlined>input+span,
+.matter-textfield-outlined>textarea+span {
     position: absolute;
     top: 0;
     left: 0;
@@ -1477,17 +1520,17 @@
     transition: color 0.2s, font-size 0.2s, line-height 0.2s;
 }
 
-.matter-textfield-outlined > input:not(:focus):placeholder-shown + span,
-.matter-textfield-outlined > textarea:not(:focus):placeholder-shown + span {
+.matter-textfield-outlined>input:not(:focus):placeholder-shown+span,
+.matter-textfield-outlined>textarea:not(:focus):placeholder-shown+span {
     font-size: inherit;
     line-height: 68px;
 }
 
 /* Corners */
-.matter-textfield-outlined > input + span::before,
-.matter-textfield-outlined > input + span::after,
-.matter-textfield-outlined > textarea + span::before,
-.matter-textfield-outlined > textarea + span::after {
+.matter-textfield-outlined>input+span::before,
+.matter-textfield-outlined>input+span::after,
+.matter-textfield-outlined>textarea+span::before,
+.matter-textfield-outlined>textarea+span::after {
     content: "";
     display: block;
     box-sizing: border-box;
@@ -1500,109 +1543,110 @@
     transition: border 0.2s, box-shadow 0.2s;
 }
 
-.matter-textfield-outlined > input + span::before,
-.matter-textfield-outlined > textarea + span::before {
+.matter-textfield-outlined>input+span::before,
+.matter-textfield-outlined>textarea+span::before {
     margin-right: 4px;
     border-left: solid 1px transparent;
     border-radius: 4px 0;
 }
 
-.matter-textfield-outlined > input + span::after,
-.matter-textfield-outlined > textarea + span::after {
+.matter-textfield-outlined>input+span::after,
+.matter-textfield-outlined>textarea+span::after {
     flex-grow: 1;
     margin-left: 4px;
     border-right: solid 1px transparent;
     border-radius: 0 4px;
 }
 
-.matter-textfield-outlined > input:not(:focus):placeholder-shown + span::before,
-.matter-textfield-outlined > textarea:not(:focus):placeholder-shown + span::before,
-.matter-textfield-outlined > input:not(:focus):placeholder-shown + span::after,
-.matter-textfield-outlined > textarea:not(:focus):placeholder-shown + span::after {
+.matter-textfield-outlined>input:not(:focus):placeholder-shown+span::before,
+.matter-textfield-outlined>textarea:not(:focus):placeholder-shown+span::before,
+.matter-textfield-outlined>input:not(:focus):placeholder-shown+span::after,
+.matter-textfield-outlined>textarea:not(:focus):placeholder-shown+span::after {
     border-top-color: transparent;
 }
 
 /* Hover */
-.matter-textfield-outlined:hover > input,
-.matter-textfield-outlined:hover > textarea {
+.matter-textfield-outlined:hover>input,
+.matter-textfield-outlined:hover>textarea {
     border-color: transparent var(--matter-helper-safari3) var(--matter-helper-safari3);
 }
 
-.matter-textfield-outlined:hover > input + span::before,
-.matter-textfield-outlined:hover > textarea + span::before,
-.matter-textfield-outlined:hover > input + span::after,
-.matter-textfield-outlined:hover > textarea + span::after {
+.matter-textfield-outlined:hover>input+span::before,
+.matter-textfield-outlined:hover>textarea+span::before,
+.matter-textfield-outlined:hover>input+span::after,
+.matter-textfield-outlined:hover>textarea+span::after {
     border-top-color: var(--matter-helper-safari3);
 }
 
-.matter-textfield-outlined:hover > input:not(:focus):placeholder-shown,
-.matter-textfield-outlined:hover > textarea:not(:focus):placeholder-shown {
+.matter-textfield-outlined:hover>input:not(:focus):placeholder-shown,
+.matter-textfield-outlined:hover>textarea:not(:focus):placeholder-shown {
     border-color: var(--matter-helper-safari3);
 }
 
 /* Focus */
-.matter-textfield-outlined > input:focus,
-.matter-textfield-outlined > textarea:focus {
+.matter-textfield-outlined>input:focus,
+.matter-textfield-outlined>textarea:focus {
     border-color: transparent var(--matter-helper-theme) var(--matter-helper-theme);
     box-shadow: inset 1px 0 var(--matter-helper-theme), inset -1px 0 var(--matter-helper-theme), inset 0 -1px var(--matter-helper-theme);
     outline: none;
 }
 
-.matter-textfield-outlined > input:focus + span,
-.matter-textfield-outlined > textarea:focus + span {
+.matter-textfield-outlined>input:focus+span,
+.matter-textfield-outlined>textarea:focus+span {
     color: var(--matter-helper-theme);
 }
 
-.matter-textfield-outlined > input:focus + span::before,
-.matter-textfield-outlined > input:focus + span::after,
-.matter-textfield-outlined > textarea:focus + span::before,
-.matter-textfield-outlined > textarea:focus + span::after {
+.matter-textfield-outlined>input:focus+span::before,
+.matter-textfield-outlined>input:focus+span::after,
+.matter-textfield-outlined>textarea:focus+span::before,
+.matter-textfield-outlined>textarea:focus+span::after {
     border-top-color: var(--matter-helper-theme) !important;
     box-shadow: inset 0 1px var(--matter-helper-theme);
 }
 
 /* Disabled */
-.matter-textfield-outlined > input:disabled,
-.matter-textfield-outlined > input:disabled + span,
-.matter-textfield-outlined > textarea:disabled,
-.matter-textfield-outlined > textarea:disabled + span {
+.matter-textfield-outlined>input:disabled,
+.matter-textfield-outlined>input:disabled+span,
+.matter-textfield-outlined>textarea:disabled,
+.matter-textfield-outlined>textarea:disabled+span {
     border-color: transparent var(--matter-helper-safari1) var(--matter-helper-safari1) !important;
     color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
     pointer-events: none;
 }
 
-.matter-textfield-outlined > input:disabled + span::before,
-.matter-textfield-outlined > input:disabled + span::after,
-.matter-textfield-outlined > textarea:disabled + span::before,
-.matter-textfield-outlined > textarea:disabled + span::after {
+.matter-textfield-outlined>input:disabled+span::before,
+.matter-textfield-outlined>input:disabled+span::after,
+.matter-textfield-outlined>textarea:disabled+span::before,
+.matter-textfield-outlined>textarea:disabled+span::after {
     border-top-color: var(--matter-helper-safari1) !important;
 }
 
-.matter-textfield-outlined > input:disabled:placeholder-shown,
-.matter-textfield-outlined > input:disabled:placeholder-shown + span,
-.matter-textfield-outlined > textarea:disabled:placeholder-shown,
-.matter-textfield-outlined > textarea:disabled:placeholder-shown + span {
+.matter-textfield-outlined>input:disabled:placeholder-shown,
+.matter-textfield-outlined>input:disabled:placeholder-shown+span,
+.matter-textfield-outlined>textarea:disabled:placeholder-shown,
+.matter-textfield-outlined>textarea:disabled:placeholder-shown+span {
     border-top-color: var(--matter-helper-safari1) !important;
 }
 
-.matter-textfield-outlined > input:disabled:placeholder-shown + span::before,
-.matter-textfield-outlined > input:disabled:placeholder-shown + span::after,
-.matter-textfield-outlined > textarea:disabled:placeholder-shown + span::before,
-.matter-textfield-outlined > textarea:disabled:placeholder-shown + span::after {
+.matter-textfield-outlined>input:disabled:placeholder-shown+span::before,
+.matter-textfield-outlined>input:disabled:placeholder-shown+span::after,
+.matter-textfield-outlined>textarea:disabled:placeholder-shown+span::before,
+.matter-textfield-outlined>textarea:disabled:placeholder-shown+span::after {
     border-top-color: transparent !important;
 }
 
 /* Faster transition in Safari for less noticable fractional font-size issue */
 @media not all and (min-resolution:.001dpcm) {
-    @supports (-webkit-appearance:none) {
-        .matter-textfield-outlined > input,
-        .matter-textfield-outlined > input + span,
-        .matter-textfield-outlined > textarea,
-        .matter-textfield-outlined > textarea + span,
-        .matter-textfield-outlined > input + span::before,
-        .matter-textfield-outlined > input + span::after,
-        .matter-textfield-outlined > textarea + span::before,
-        .matter-textfield-outlined > textarea + span::after {
+    @supports (-webkit-appearance: none) {
+
+        .matter-textfield-outlined>input,
+        .matter-textfield-outlined>input+span,
+        .matter-textfield-outlined>textarea,
+        .matter-textfield-outlined>textarea+span,
+        .matter-textfield-outlined>input+span::before,
+        .matter-textfield-outlined>input+span::after,
+        .matter-textfield-outlined>textarea+span::before,
+        .matter-textfield-outlined>textarea+span::after {
             transition-duration: 0.1s;
         }
     }
@@ -1632,8 +1676,8 @@
     top: -40px;
 }
 
-.matter-tooltip > span,
-.matter-tooltip-top > span {
+.matter-tooltip>span,
+.matter-tooltip-top>span {
     position: -webkit-sticky;
     position: sticky;
     left: 0;
@@ -1654,24 +1698,25 @@
     transition: transform 0.075s, opacity 0.075s;
 }
 
-:not(html):hover > .matter-tooltip > span,
-.matter-tooltip:hover > span,
-:not(html):hover > .matter-tooltip-top > span,
-.matter-tooltip-top:hover > span {
+:not(html):hover>.matter-tooltip>span,
+.matter-tooltip:hover>span,
+:not(html):hover>.matter-tooltip-top>span,
+.matter-tooltip-top:hover>span {
     transform: scale(1);
     opacity: 1;
     transition: transform 0.15s, opacity 0.15s;
 }
 
-:focus-within > .matter-tooltip > span,
-:focus-within > .matter-tooltip-top > span {
+:focus-within>.matter-tooltip>span,
+:focus-within>.matter-tooltip-top>span {
     transform: scale(1);
     opacity: 1;
     transition: transform 0.15s, opacity 0.15s;
 }
 
 /* Non-desktop */
-@media (pointer: coarse), (hover: none) {
+@media (pointer: coarse),
+(hover: none) {
 
     .matter-tooltip,
     .matter-tooltip-top {
@@ -1682,12 +1727,13 @@
     .matter-tooltip {
         bottom: -48px;
     }
+
     .matter-tooltip-top {
         top: -48px;
     }
 
-    .matter-tooltip > span,
-    .matter-tooltip-top > span {
+    .matter-tooltip>span,
+    .matter-tooltip-top>span {
         padding: 6px 16px;
     }
 }

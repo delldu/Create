@@ -15,7 +15,7 @@ TS_SOURCE_FILES := \
 all: ${TARGET}
 
 dist/index.js: src/index.ts
-	tsc src/index.ts --strict --removeComments --outDir dist
+	tsc src/index.ts -lib es2015,dom --strict --removeComments --outDir dist
 
 src/index.ts: ${TS_SOURCE_FILES}
 	cat $^ > $@

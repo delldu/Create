@@ -33,18 +33,18 @@ textarea {
 
 /* Top panel : #navbar, #toolbar */
 .top_panel {
-    font-size: 0.9rem;
+    font-size: 16px;
     display: block;
     background-color: #212121;
     color: #ffffff;
     z-index: 1001;
-    margin-bottom: 1rem;
+    margin-bottom: 24px;
 }
 
 /* Navigation menu bar that appear at the top */
 .menubar {
     display: inline-block;
-    height: 1.8rem;
+    height: 32px;
 }
 
 /* height needed to avoid extra bottom border */
@@ -131,6 +131,24 @@ textarea {
 .toolbar li:hover {
     color: red;
     cursor: pointer;
+}
+
+.toolbar svg {
+    fill: white;
+    margin: 0.2rem 0.1rem;
+    height: 2.0rem;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.toolbar svg:hover {
+    fill: yellow;
+    cursor: pointer;
+}
+
+.toolbar svg:active {
+    fill: white;
 }
 
 /* Middle panel: containing leftsidebar, workspace */
