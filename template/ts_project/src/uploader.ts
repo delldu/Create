@@ -73,7 +73,7 @@ class Keyboard {
 }
 
 if (module_test) {
-	console.log("Testing class Keyboard ...")
+    console.log("Testing class Keyboard ...")
     let kb = new Keyboard(20); // 20 ms
     for (let k = 0; k < 10; k++) {
         if (module_test)
