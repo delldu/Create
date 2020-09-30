@@ -39,6 +39,8 @@ textarea {
     color: #ffffff;
     z-index: 1001;
     margin-bottom: 24px;
+    width: 100%;
+    display: inline-block;
 }
 
 /* Navigation menu bar that appear at the top */

@@ -1,14 +1,38 @@
+/* White/Black Mode */
 :root {
-    --matter-theme-rgb: 33, 150, 243;
-    --matter-ontheme-rgb: 255, 255, 255;
-    --matter-primary-rgb: 33, 150, 243;
-    --matter-secondary-rgb: 102, 0, 238;
-    --matter-font-family: "Roboto";
+    --matter-primary-fg: 255, 255, 255;
+    --matter-primary-bg: 48, 48, 48;
+    /*    --matter-primary-bg: 33, 150, 243;
+*/
+    --matter-font-family: "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system;
+    --matter-onsurface-rgb: 0, 0, 0;
+
+    /* More solution for designers, default useless ! */
+    --matter-primary-fg-dark: 127, 127, 127;
+    --matter-primary-fg-bright: 255, 255, 255;
+
+    --matter-secondary-fg: 0, 0, 255;
+    --matter-secondary-bg: 0, 0, 128;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+}
+
+body {
+    min-width: 200px;
+    padding: 0;
+    margin: 0;
+    font-family: var(--matter-font-family);
 }
 
 /* Font */
 .matter-h1 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 96px;
     font-weight: 300;
     letter-spacing: -1.5px;
@@ -16,7 +40,7 @@
 }
 
 .matter-h2 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 60px;
     font-weight: 300;
     letter-spacing: -0.5px;
@@ -24,7 +48,7 @@
 }
 
 .matter-h3 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 48px;
     font-weight: 400;
     letter-spacing: 0;
@@ -32,7 +56,7 @@
 }
 
 .matter-h4 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 34px;
     font-weight: 400;
     letter-spacing: 0.25px;
@@ -40,7 +64,7 @@
 }
 
 .matter-h5 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 24px;
     font-weight: 400;
     letter-spacing: 0;
@@ -48,7 +72,7 @@
 }
 
 .matter-h6 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 20px;
     font-weight: 500;
     letter-spacing: 0.15px;
@@ -56,7 +80,7 @@
 }
 
 .matter-subtitle1 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 16px;
     font-weight: 400;
     letter-spacing: 0.15px;
@@ -64,7 +88,7 @@
 }
 
 .matter-subtitle2 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.1px;
@@ -72,7 +96,7 @@
 }
 
 .matter-body1 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 16px;
     font-weight: 400;
     letter-spacing: 0.5px;
@@ -80,7 +104,7 @@
 }
 
 .matter-body2 {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 400;
     letter-spacing: 0.25px;
@@ -88,7 +112,7 @@
 }
 
 .matter-button {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 1.25px;
@@ -97,7 +121,7 @@
 }
 
 .matter-caption {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 12px;
     font-weight: 400;
     letter-spacing: 0.4px;
@@ -105,7 +129,7 @@
 }
 
 .matter-overline {
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 10px;
     font-weight: 400;
     letter-spacing: 1.5px;
@@ -113,39 +137,39 @@
     line-height: 16px;
 }
 
-/* Color */
+/* Color*/
 .matter-primary {
-    --matter-theme-rgb: var(--matter-primary-rgb, 33, 150, 243);
-    --matter-ontheme-rgb: var(--matter-onprimary-rgb, 255, 255, 255);
+    --matter-primary-bg: var(--matter-primary-bg, 33, 150, 243);
+    --matter-primary-fg: var(--matter-primary-fg, 255, 255, 255);
 }
 
 .matter-secondary {
-    --matter-theme-rgb: var(--matter-secondary-rgb, 102, 0, 238);
-    --matter-ontheme-rgb: var(--matter-onsecondary-rgb, 255, 255, 255);
+    --matter-primary-bg: var(--matter-secondary-bg, 102, 0, 238);
+    --matter-primary-fg: var(--matter-secondary-fg, 255, 255, 255);
 }
 
 .matter-error {
-    --matter-theme-rgb: var(--matter-error-rgb, 238, 0, 0);
-    --matter-ontheme-rgb: var(--matter-error-rgb, 255, 255, 255);
+    --matter-primary-bg: var(--matter-error-rgb, 238, 0, 0);
+    --matter-primary-fg: var(--matter-error-rgb, 255, 255, 255);
 }
 
 .matter-warning {
-    --matter-theme-rgb: var(--matter-warning-rgb, 238, 102, 0);
-    --matter-ontheme-rgb: var(--matter-onwarning-rgb, 255, 255, 255);
+    --matter-primary-bg: var(--matter-warning-rgb, 238, 102, 0);
+    --matter-primary-fg: var(--matter-onwarning-rgb, 255, 255, 255);
 }
 
 .matter-success {
-    --matter-theme-rgb: var(--matter-success-rgb, 17, 136, 34);
-    --matter-ontheme-rgb: var(--matter-onsuccess-rgb, 255, 255, 255);
+    --matter-primary-bg: var(--matter-success-rgb, 17, 136, 34);
+    --matter-primary-fg: var(--matter-onsuccess-rgb, 255, 255, 255);
 }
 
 /* Text */
 .matter-primary-text {
-    color: rgb(var(--matter-primary-rgb, 33, 150, 243));
+    color: rgb(var(--matter-primary-fg, 33, 150, 243));
 }
 
 .matter-secondary-text {
-    color: rgb(var(--matter-secondary-rgb, 102, 0, 238));
+    color: rgb(var(--matter-secondary-fg, 102, 0, 238));
 }
 
 .matter-error-text {
@@ -161,8 +185,8 @@
 }
 
 .matter-button-contained {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
-    --matter-helper-ontheme: var(--matter-ontheme-rgb, var(--matter-onprimary-rgb, 255, 255, 255));
+    --matter-helper-theme: var(--matter-primary-bg);
+    --matter-helper-ontheme: var(--matter-primary-fg);
     position: relative;
     display: inline-block;
     box-sizing: border-box;
@@ -177,7 +201,7 @@
     color: rgb(var(--matter-helper-ontheme));
     background-color: rgb(var(--matter-helper-theme));
     box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 500;
     line-height: 36px;
@@ -244,8 +268,8 @@
 
 /* Disabled */
 .matter-button-contained:disabled {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.12);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.12);
     box-shadow: none;
     cursor: initial;
 }
@@ -256,14 +280,14 @@
 }
 
 .matter-button-outlined {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-fg);
     position: relative;
     display: inline-block;
     box-sizing: border-box;
     margin: 0;
     border: solid 1px;
     /* Safari */
-    border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.24);
+    border-color: rgba(var(--matter-onsurface-rgb), 0.24);
     border-radius: 4px;
     padding: 0 16px;
     min-width: 64px;
@@ -272,8 +296,9 @@
     text-align: center;
     text-overflow: ellipsis;
     color: rgb(var(--matter-helper-theme));
-    background-color: transparent;
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    background-color: rgb(var(--matter-primary-bg));
+    /*transparent; */
+    font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 500;
     line-height: 34px;
@@ -330,7 +355,7 @@
 
 /* Disabled */
 .matter-button-outlined:disabled {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
     background-color: transparent;
     cursor: initial;
 }
@@ -341,7 +366,7 @@
 }
 
 .matter-button-text {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-fg);
     position: relative;
     display: inline-block;
     box-sizing: border-box;
@@ -355,8 +380,9 @@
     text-align: center;
     text-overflow: ellipsis;
     color: rgb(var(--matter-helper-theme));
-    background-color: transparent;
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    background-color: rgb(var(--matter-primary-bg));
+    /* transparent; */
+    font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 500;
     line-height: 36px;
@@ -413,7 +439,7 @@
 
 /* Disabled */
 .matter-button-text:disabled {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
     background-color: transparent;
     cursor: initial;
 }
@@ -423,91 +449,8 @@
     opacity: 0;
 }
 
-.matter-button-unelevated {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
-    --matter-helper-ontheme: var(--matter-ontheme-rgb, var(--matter-onprimary-rgb, 255, 255, 255));
-    position: relative;
-    display: inline-block;
-    box-sizing: border-box;
-    border: none;
-    border-radius: 4px;
-    padding: 0 16px;
-    min-width: 64px;
-    height: 36px;
-    vertical-align: middle;
-    text-align: center;
-    text-overflow: ellipsis;
-    color: rgb(var(--matter-helper-ontheme));
-    background-color: rgb(var(--matter-helper-theme));
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 36px;
-    outline: none;
-    cursor: pointer;
-}
-
-.matter-button-unelevated::-moz-focus-inner {
-    border: none;
-}
-
-/* Highlight, Ripple */
-.matter-button-unelevated::before,
-.matter-button-unelevated::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: inherit;
-    opacity: 0;
-}
-
-.matter-button-unelevated::before {
-    background-color: rgb(var(--matter-helper-ontheme));
-    transition: opacity 0.2s;
-}
-
-.matter-button-unelevated::after {
-    background: radial-gradient(circle at center, currentColor 1%, transparent 1%) center/10000% 10000% no-repeat;
-    transition: opacity 1s, background-size 0.5s;
-}
-
-/* Hover, Focus */
-.matter-button-unelevated:hover::before {
-    opacity: 0.08;
-}
-
-.matter-button-unelevated:focus::before {
-    opacity: 0.24;
-}
-
-.matter-button-unelevated:hover:focus::before {
-    opacity: 0.32;
-}
-
-/* Active */
-.matter-button-unelevated:active::after {
-    opacity: 0.32;
-    background-size: 100% 100%;
-    transition: background-size 0s;
-}
-
-/* Disabled */
-.matter-button-unelevated:disabled {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.12);
-    cursor: initial;
-}
-
-.matter-button-unelevated:disabled::before,
-.matter-button-unelevated:disabled::after {
-    opacity: 0;
-}
-
 .matter-link {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-bg);
     --matter-helper-safari1: rgba(var(--matter-helper-theme), 0.12);
     border-radius: 4px;
     color: rgb(var(--matter-helper-theme));
@@ -517,11 +460,12 @@
 
 /* Hover */
 .matter-link:hover {
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 /* Focus */
 .matter-link:focus {
+    --matter-helper-safari1: rgba(var(--matter-helper-theme), 0.12);
     background-color: var(--matter-helper-safari1);
     box-shadow: 0 0 0 0.16em var(--matter-helper-safari1);
     outline: none;
@@ -534,7 +478,7 @@
 }
 
 .matter-progress-circular {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-bg);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -550,7 +494,7 @@
     overflow: hidden;
     position: absolute;
     left: 45%;
-    top: 50%;    
+    top: 50%;
 }
 
 .matter-progress-circular::-webkit-progress-bar {
@@ -672,7 +616,7 @@
 }
 
 .matter-progress-linear {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-bg);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -777,13 +721,13 @@
 }
 
 .matter-checkbox {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
-    --matter-helper-ontheme: var(--matter-ontheme-rgb, var(--matter-onprimary-rgb, 255, 255, 255));
+    --matter-helper-theme: var(--matter-primary-bg);
+    --matter-helper-ontheme: var(--matter-primary-fg);
     z-index: 0;
     position: relative;
     display: inline-block;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    color: rgba(var(--matter-onsurface-rgb), 0.87);
+    font-family: var(--matter-font-family);
     font-size: 16px;
     line-height: 1.5;
 }
@@ -800,7 +744,7 @@
     margin: 3px 1px;
     border: solid 2px;
     /* Safari */
-    border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    border-color: rgba(var(--matter-onsurface-rgb), 0.6);
     border-radius: 2px;
     width: 18px;
     height: 18px;
@@ -828,7 +772,7 @@
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    background-color: rgb(var(--matter-onsurface-rgb, 0, 0, 0));
+    background-color: rgb(var(--matter-onsurface-rgb));
     opacity: 0;
     transform: scale(1);
     pointer-events: none;
@@ -897,7 +841,7 @@
 
 .matter-checkbox:active>input:checked {
     border-color: transparent;
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.6);
 }
 
 .matter-checkbox:active>input+span::before {
@@ -908,18 +852,18 @@
 
 /* Disabled */
 .matter-checkbox>input:disabled {
-    border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    border-color: rgba(var(--matter-onsurface-rgb), 0.38);
     cursor: initial;
 }
 
 .matter-checkbox>input:checked:disabled,
 .matter-checkbox>input:indeterminate:disabled {
     border-color: transparent;
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.38);
 }
 
 .matter-checkbox>input:disabled+span {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
     cursor: initial;
 }
 
@@ -929,12 +873,12 @@
 }
 
 .matter-radio {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-bg);
     z-index: 0;
     position: relative;
     display: inline-block;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    color: rgba(var(--matter-onsurface-rgb), 0.87);
+    font-family: var(--matter-font-family);
     font-size: 16px;
     line-height: 1.5;
 }
@@ -951,7 +895,7 @@
     margin: 2px 0;
     border: solid 2px;
     /* Safari */
-    border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    border-color: rgba(var(--matter-onsurface-rgb), 0.6);
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -979,7 +923,7 @@
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    background-color: rgb(var(--matter-onsurface-rgb, 0, 0, 0));
+    background-color: rgb(var(--matter-onsurface-rgb));
     opacity: 0;
     transform: scale(0);
     pointer-events: none;
@@ -1044,12 +988,12 @@
 
 /* Disabled */
 .matter-radio>input:disabled {
-    border-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    border-color: rgba(var(--matter-onsurface-rgb), 0.38);
     cursor: initial;
 }
 
 .matter-radio>input:disabled+span {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
     cursor: initial;
 }
 
@@ -1063,12 +1007,12 @@
 }
 
 .matter-switch {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-bg);
     z-index: 0;
     position: relative;
     display: inline-block;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    color: rgba(var(--matter-onsurface-rgb), 0.87);
+    font-family: var(--matter-font-family);
     font-size: 16px;
     line-height: 1.5;
 }
@@ -1088,7 +1032,7 @@
     width: 46px;
     height: 24px;
     background-clip: padding-box;
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.38);
     outline: none;
     cursor: pointer;
     transition: background-color 0.2s, opacity 0.2s;
@@ -1114,7 +1058,7 @@
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    background-color: rgb(var(--matter-onsurface-rgb, 0, 0, 0));
+    background-color: rgb(var(--matter-onsurface-rgb));
     opacity: 0;
     transform: scale(1);
     pointer-events: none;
@@ -1171,7 +1115,7 @@
 }
 
 .matter-switch:active>input:checked {
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.38);
 }
 
 .matter-switch:active>input+span::before {
@@ -1182,7 +1126,7 @@
 
 /* Disabled */
 .matter-switch>input:disabled {
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.38);
     opacity: 0.38;
     cursor: default;
 }
@@ -1192,7 +1136,7 @@
 }
 
 .matter-switch>input:disabled+span {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0, 0.38));
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
     cursor: default;
 }
 
@@ -1201,7 +1145,7 @@
     margin: 10px;
     width: 20px;
     height: 20px;
-    background-color: rgb(var(--matter-surface-rgb, 255, 255, 255));
+    background-color: rgb(var(--matter-surface-rgb));
     transform: scale(1);
     opacity: 1;
     transition: none;
@@ -1212,10 +1156,10 @@
 }
 
 .matter-textfield-standard {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-bg);
     position: relative;
     display: inline-block;
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 16px;
     line-height: 1.5;
 }
@@ -1228,11 +1172,11 @@
     margin: 0;
     border: none;
     border-top: solid 24px transparent;
-    border-bottom: solid 1px rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    border-bottom: solid 1px rgba(var(--matter-onsurface-rgb), 0.6);
     padding: 0 0 7px;
     width: 100%;
     height: inherit;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
+    color: rgba(var(--matter-onsurface-rgb), 0.87);
     -webkit-text-fill-color: currentColor;
     /* Safari */
     background-color: transparent;
@@ -1256,7 +1200,7 @@
     display: block;
     box-sizing: border-box;
     padding: 7px 0 0;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    color: rgba(var(--matter-onsurface-rgb), 0.6);
     font-size: 75%;
     line-height: 18px;
     pointer-events: none;
@@ -1282,7 +1226,7 @@
 /* Hover */
 .matter-textfield-standard:hover>input,
 .matter-textfield-standard:hover>textarea {
-    border-bottom-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
+    border-bottom-color: rgba(var(--matter-onsurface-rgb), 0.87);
 }
 
 /* Placeholder-shown */
@@ -1311,13 +1255,13 @@
 /* Disabled */
 .matter-textfield-standard>input:disabled,
 .matter-textfield-standard>textarea:disabled {
-    border-bottom-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    border-bottom-color: rgba(var(--matter-onsurface-rgb), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
 }
 
 .matter-textfield-standard>input:disabled+span,
 .matter-textfield-standard>textarea:disabled+span {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
 }
 
 /* Faster transition in Safari for less noticable fractional font-size issue */
@@ -1336,10 +1280,10 @@
 }
 
 .matter-textfield-filled {
-    --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+    --matter-helper-theme: var(--matter-primary-bg);
     position: relative;
     display: inline-block;
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 16px;
     line-height: 1.5;
 }
@@ -1352,15 +1296,15 @@
     margin: 0;
     border: none;
     border-top: solid 24px transparent;
-    border-bottom: solid 1px rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    border-bottom: solid 1px rgba(var(--matter-onsurface-rgb), 0.6);
     border-radius: 4px 4px 0 0;
     padding: 0 12px 7px;
     width: 100%;
     height: inherit;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
+    color: rgba(var(--matter-onsurface-rgb), 0.87);
     -webkit-text-fill-color: currentColor;
     /* Safari */
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.04);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.04);
     box-shadow: none;
     /* Firefox */
     font-family: inherit;
@@ -1381,7 +1325,7 @@
     display: block;
     box-sizing: border-box;
     padding: 7px 12px 0;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    color: rgba(var(--matter-onsurface-rgb), 0.6);
     font-size: 75%;
     line-height: 18px;
     pointer-events: none;
@@ -1407,8 +1351,8 @@
 /* Hover */
 .matter-textfield-filled:hover>input,
 .matter-textfield-filled:hover>textarea {
-    border-bottom-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.08);
+    border-bottom-color: rgba(var(--matter-onsurface-rgb), 0.87);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.08);
 }
 
 /* Placeholder-shown */
@@ -1437,14 +1381,14 @@
 /* Disabled */
 .matter-textfield-filled>input:disabled,
 .matter-textfield-filled>textarea:disabled {
-    border-bottom-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.24);
+    border-bottom-color: rgba(var(--matter-onsurface-rgb), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.24);
 }
 
 .matter-textfield-filled>input:disabled+span,
 .matter-textfield-filled>textarea:disabled+span {
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
 }
 
 /* Faster transition in Safari for less noticable fractional font-size issue */
@@ -1463,14 +1407,14 @@
 }
 
 .matter-textfield-outlined {
-    --matter-helper-theme: rgb(var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243)));
-    --matter-helper-safari1: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
-    --matter-helper-safari2: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
-    --matter-helper-safari3: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
+    --matter-helper-theme: rgb(var(--matter-primary-bg));
+    --matter-helper-safari1: rgba(var(--matter-onsurface-rgb), 0.38);
+    --matter-helper-safari2: rgba(var(--matter-onsurface-rgb), 0.6);
+    --matter-helper-safari3: rgba(var(--matter-onsurface-rgb), 0.87);
     position: relative;
     display: inline-block;
     padding-top: 6px;
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 16px;
     line-height: 1.5;
 }
@@ -1487,7 +1431,7 @@
     padding: 15px 13px 15px;
     width: 100%;
     height: inherit;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.87);
+    color: rgba(var(--matter-onsurface-rgb), 0.87);
     -webkit-text-fill-color: currentColor;
     /* Safari */
     background-color: transparent;
@@ -1513,7 +1457,7 @@
     display: flex;
     width: 100%;
     max-height: 100%;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.6);
+    color: rgba(var(--matter-onsurface-rgb), 0.6);
     font-size: 75%;
     line-height: 15px;
     cursor: text;
@@ -1610,7 +1554,7 @@
 .matter-textfield-outlined>textarea:disabled,
 .matter-textfield-outlined>textarea:disabled+span {
     border-color: transparent var(--matter-helper-safari1) var(--matter-helper-safari1) !important;
-    color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.38);
+    color: rgba(var(--matter-onsurface-rgb), 0.38);
     pointer-events: none;
 }
 
@@ -1658,7 +1602,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    font-family: var(--matter-font-family, "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system);
+    font-family: var(--matter-font-family);
     font-size: 10px;
     font-weight: 400;
     line-height: 16px;
@@ -1691,7 +1635,7 @@
     color: rgb(var(--matter-surface-rgb, 255, 255, 255));
     background-clip: padding-box;
     background-image: linear-gradient(rgba(var(--matter-surface-rgb, 255, 255, 255), 0.34), rgba(var(--matter-surface-rgb, 255, 255, 255), 0.34));
-    background-color: rgba(var(--matter-onsurface-rgb, 0, 0, 0), 0.85);
+    background-color: rgba(var(--matter-onsurface-rgb), 0.85);
     transform: scale(0);
     opacity: 0;
     pointer-events: auto;
@@ -1736,4 +1680,51 @@
     .matter-tooltip-top>span {
         padding: 6px 16px;
     }
+}
+
+.matter-block {
+    display: block;
+    font-size: 16px;
+    color: rgb(var(--matter-primary-fg));
+    background-color: rgb(var(--matter-primary-bg));
+    width: 100%;
+    z-index: 1001;
+    display: inline-block;
+}
+
+.matter-menubar {
+    display: inline-block;
+    height: 32px;
+    cursor: pointer;
+}
+
+.matter-menubar ul {
+    display: block;
+    padding: 0;
+    margin: 0;
+}
+
+.matter-menubar li {
+    display: inline;
+    float: left;
+    padding: 8px 16px;
+}
+
+
+.matter-menubar svg {
+    fill: rgb(var(--matter-primary-fg));
+    margin: 8px 16px;
+    height: 32px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.matter-menubar svg:hover {
+    fill: rgb(var(--matter-primary-fg), 0.5);
+    cursor: pointer;
+}
+
+.matter-menubar svg:active {
+    fill: rgb(var(--matter-primary-fg));
 }
