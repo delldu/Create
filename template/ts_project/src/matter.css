@@ -1,18 +1,19 @@
 /* White/Black Mode */
 :root {
-    --matter-primary-fg: 255, 0, 255;
-    /*    --matter-primary-bg: 48, 48, 48; */
-    --matter-primary-bg: 33, 150, 243;
-
+    --matter-primary-fg: 240, 240, 240;
+    --matter-primary-bg: 40, 40, 40;
+/*     --matter-primary-bg: 33, 150, 243; 
+*/
     --matter-font-family: "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system;
     --matter-onsurface-rgb: 0, 0, 0;
+    --matter-surface-rgb: 255, 255, 255;
 
     /* More solution for designers, default useless ! */
     --matter-primary-fg-dark: 127, 127, 127;
     --matter-primary-fg-bright: 255, 255, 255;
 
-    --matter-secondary-fg: 0, 0, 255;
-    --matter-secondary-bg: 0, 0, 128;
+    --matter-secondary-fg: 255, 255, 255;
+    --matter-secondary-bg: 33, 150, 243;
 }
 
 * {
@@ -24,9 +25,11 @@ a {
 }
 
 body {
-    min-width: 200px;
-    padding: 0;
+    min-width: 256px;
+    padding: 0 0;
     margin: 0;
+    color: rgb(var(--matter-primary-fg));
+    background-color: rgba(var(--matter-primary-bg), 0.80);
     font-family: var(--matter-font-family);
 }
 
@@ -59,7 +62,7 @@ body {
     font-family: var(--matter-font-family);
     font-size: 34px;
     font-weight: 400;
-    letter-spacing: 0.25px;
+    letter-spacing: 1px;
     line-height: 48px;
 }
 
@@ -75,7 +78,7 @@ body {
     font-family: var(--matter-font-family);
     font-size: 20px;
     font-weight: 500;
-    letter-spacing: 0.15px;
+    letter-spacing: 1px;
     line-height: 28px;
 }
 
@@ -83,7 +86,7 @@ body {
     font-family: var(--matter-font-family);
     font-size: 16px;
     font-weight: 400;
-    letter-spacing: 0.15px;
+    letter-spacing: 1px;
     line-height: 24px;
 }
 
@@ -91,7 +94,7 @@ body {
     font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 500;
-    letter-spacing: 0.1px;
+    letter-spacing: 1px;
     line-height: 20px;
 }
 
@@ -99,7 +102,7 @@ body {
     font-family: var(--matter-font-family);
     font-size: 16px;
     font-weight: 400;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     line-height: 24px;
 }
 
@@ -107,7 +110,7 @@ body {
     font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 400;
-    letter-spacing: 0.25px;
+    letter-spacing: 1px;
     line-height: 20px;
 }
 
@@ -115,7 +118,7 @@ body {
     font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 500;
-    letter-spacing: 1.25px;
+    letter-spacing: 1px;
     text-transform: uppercase;
     line-height: 20px;
 }
@@ -124,7 +127,7 @@ body {
     font-family: var(--matter-font-family);
     font-size: 12px;
     font-weight: 400;
-    letter-spacing: 0.4px;
+    letter-spacing: 1px;
     line-height: 20px;
 }
 
@@ -132,25 +135,25 @@ body {
     font-family: var(--matter-font-family);
     font-size: 10px;
     font-weight: 400;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     text-transform: uppercase;
     line-height: 16px;
 }
 
 /* Color*/
 .matter-primary {
-    background-color: rgb(var(--matter-primary-bg, 33, 150, 243));
-    color: rgb(var(--matter-primary-fg, 255, 255, 255));
+    background-color: rgb(var(--matter-primary-bg));
+    color: rgb(var(--matter-primary-fg));
 }
 
 .matter-secondary {
-    background-color: rgb(var(--matter-secondary-bg, 102, 0, 238));
-    color: rgb(var(--matter-secondary-fg, 255, 255, 255));
+    background-color: rgb(var(--matter-secondary-bg));
+    color: rgb(var(--matter-secondary-fg));
 }
 
 .matter-error {
     background-color: rgb(var(--matter-error-rgb, 238, 0, 0));
-    color: rgb(var(--matter-error-rgb, 255, 255, 255));
+    color: rgb(var(--matter-onerror-rgb, 255, 255, 255));
 }
 
 .matter-warning {
@@ -165,11 +168,11 @@ body {
 
 /* Text */
 .matter-primary-text {
-    color: rgb(var(--matter-primary-fg, 33, 150, 243));
+    color: rgb(var(--matter-primary-fg));
 }
 
 .matter-secondary-text {
-    color: rgb(var(--matter-secondary-fg, 102, 0, 238));
+    color: rgb(var(--matter-secondary-fg));
 }
 
 .matter-error-text {
@@ -285,9 +288,7 @@ body {
     display: inline-block;
     box-sizing: border-box;
     margin: 0;
-    border: solid 1px;
-    /* Safari */
-    border-color: rgba(var(--matter-onsurface-rgb), 0.24);
+    border: solid 1px rgba(var(--matter-onsurface-rgb), 0.24);;
     border-radius: 4px;
     padding: 0 16px;
     min-width: 64px;
@@ -369,25 +370,22 @@ body {
     --matter-helper-theme: var(--matter-primary-fg);
     position: relative;
     display: inline-block;
-    box-sizing: border-box;
+    /*box-sizing: border-box;*/
     margin: 0;
     border: none;
     border-radius: 4px;
     padding: 0 8px;
-    min-width: 64px;
     height: 36px;
     vertical-align: middle;
     text-align: center;
     text-overflow: ellipsis;
     color: rgb(var(--matter-helper-theme));
     background-color: rgb(var(--matter-primary-bg));
-    /* transparent; */
     font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 500;
     line-height: 36px;
     outline: none;
-    cursor: pointer;
 }
 
 .matter-button-text::-moz-focus-inner {
@@ -478,7 +476,7 @@ body {
 }
 
 .matter-progress-circular {
-    --matter-helper-theme: var(--matter-primary-bg);
+    --matter-helper-theme: var(--matter-primary-fg);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -506,7 +504,7 @@ body {
     animation: matter-progress-circular 6s infinite cubic-bezier(0.3, 0.6, 1, 1);
 }
 
-:-ms-lang(x),
+/*:-ms-lang(x),*/
 .matter-progress-circular:indeterminate {
     animation: none;
 }
@@ -522,7 +520,7 @@ body {
     width: 100% !important;
     height: 100%;
     background-color: transparent;
-    -webkit-clip-path: polygon(50% 50%, 37% 0, 50% 0, 50% 0, 50% 0, 50% 0);
+    /*-webkit-clip-path: polygon(50% 50%, 37% 0, 50% 0, 50% 0, 50% 0, 50% 0);*/
     clip-path: polygon(50% 50%, 37% 0, 50% 0, 50% 0, 50% 0, 50% 0);
     animation: matter-progress-circular-pseudo 0.75s infinite linear alternate;
     animation-play-state: inherit;
@@ -590,33 +588,33 @@ body {
 
 @keyframes matter-progress-circular-pseudo {
     0% {
-        -webkit-clip-path: polygon(50% 50%, 37% 0, 50% 0, 50% 0, 50% 0, 50% 0);
+        /*-webkit-clip-path: polygon(50% 50%, 37% 0, 50% 0, 50% 0, 50% 0, 50% 0);*/
         clip-path: polygon(50% 50%, 37% 0, 50% 0, 50% 0, 50% 0, 50% 0);
     }
 
     18% {
-        -webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 0, 100% 0, 100% 0);
+        /*-webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 0, 100% 0, 100% 0);*/
         clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 0, 100% 0, 100% 0);
     }
 
     53% {
-        -webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%);
+        /*-webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%);*/
         clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%);
     }
 
     88% {
-        -webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 100%);
+        /*-webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 100%);*/
         clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 100%);
     }
 
     100% {
-        -webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 63%);
+        /*-webkit-clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 63%);*/
         clip-path: polygon(50% 50%, 37% 0, 100% 0, 100% 100%, 0 100%, 0 63%);
     }
 }
 
 .matter-progress-linear {
-    --matter-helper-theme: var(--matter-primary-bg);
+    --matter-helper-theme: var(--matter-primary-fg);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -625,7 +623,7 @@ body {
     height: 16px;
     vertical-align: middle;
     color: rgb(var(--matter-helper-theme));
-    background-color: rgba(var(--matter-helper-theme), 0.12);
+    background-color: rgba(var(--matter-primary-bg), 0.5);
     position: absolute;
     left: 35%;
     top: 65%;
@@ -742,9 +740,7 @@ body {
     display: block;
     box-sizing: border-box;
     margin: 3px 1px;
-    border: solid 2px;
-    /* Safari */
-    border-color: rgba(var(--matter-onsurface-rgb), 0.6);
+    border: solid 2px rgba(var(--matter-onsurface-rgb), 0.6);;
     border-radius: 2px;
     width: 18px;
     height: 18px;
@@ -812,7 +808,7 @@ body {
 
 .matter-checkbox>input:checked+span::after,
 .matter-checkbox>input:indeterminate+span::after {
-    border-color: rgb(var(--matter-helper-ontheme, 255, 255, 255));
+    border-color: rgb(var(--matter-helper-ontheme));
 }
 
 .matter-checkbox>input:indeterminate+span::after {
@@ -893,9 +889,7 @@ body {
     display: block;
     box-sizing: border-box;
     margin: 2px 0;
-    border: solid 2px;
-    /* Safari */
-    border-color: rgba(var(--matter-onsurface-rgb), 0.6);
+    border: solid 2px rgba(var(--matter-onsurface-rgb), 0.6);;
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -915,7 +909,7 @@ body {
 
 /* Highlight */
 .matter-radio>input+span::before {
-    content: "";
+    /*content: "";*/
     position: absolute;
     left: -10px;
     top: -8px;
@@ -1075,7 +1069,7 @@ body {
     border-radius: 50%;
     width: 20px;
     height: 20px;
-    background-color: rgb(var(--matter-surface-rgb, 255, 255, 255));
+    background-color: rgb(var(--matter-surface-rgb));
     box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
     pointer-events: none;
     transition: background-color 0.2s, transform 0.2s;
@@ -1264,7 +1258,7 @@ body {
     color: rgba(var(--matter-onsurface-rgb), 0.38);
 }
 
-/* Faster transition in Safari for less noticable fractional font-size issue */
+/* Faster transition in Safari for less fractional font-size issue */
 @media not all and (min-resolution:.001dpcm) {
     @supports (-webkit-appearance: none) {
 
@@ -1335,7 +1329,7 @@ body {
 /* Underline */
 .matter-textfield-filled>input+span::after,
 .matter-textfield-filled>textarea+span::after {
-    content: "";
+    /*content: "";*/
     position: absolute;
     left: 0;
     bottom: 0;
@@ -1391,7 +1385,7 @@ body {
     color: rgba(var(--matter-onsurface-rgb), 0.38);
 }
 
-/* Faster transition in Safari for less noticable fractional font-size issue */
+/* Faster transition in Safari for less fractional font-size issue */
 @media not all and (min-resolution:.001dpcm) {
     @supports (-webkit-appearance: none) {
 
@@ -1435,7 +1429,7 @@ body {
     -webkit-text-fill-color: currentColor;
     /* Safari */
     background-color: transparent;
-    box-shadow: inset 1px 0 transparent, inset -1px 0 transparent, inset 0 -1px transparent;
+    box-shadow: inset 1px 0 transparent, inset 1px 0 transparent, inset 0 1px transparent;
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
@@ -1531,7 +1525,7 @@ body {
 .matter-textfield-outlined>input:focus,
 .matter-textfield-outlined>textarea:focus {
     border-color: transparent var(--matter-helper-theme) var(--matter-helper-theme);
-    box-shadow: inset 1px 0 var(--matter-helper-theme), inset -1px 0 var(--matter-helper-theme), inset 0 -1px var(--matter-helper-theme);
+    box-shadow: inset 1px 0 var(--matter-helper-theme), inset 1px 0 var(--matter-helper-theme), inset 0 1px var(--matter-helper-theme);
     outline: none;
 }
 
@@ -1579,7 +1573,7 @@ body {
     border-top-color: transparent !important;
 }
 
-/* Faster transition in Safari for less noticable fractional font-size issue */
+/* Faster transition in Safari for less fractional font-size issue */
 @media not all and (min-resolution:.001dpcm) {
     @supports (-webkit-appearance: none) {
 
@@ -1632,9 +1626,9 @@ body {
     border: solid 8px transparent;
     border-radius: 12px;
     padding: 4px 8px;
-    color: rgb(var(--matter-surface-rgb, 255, 255, 255));
+    color: rgb(var(--matter-surface-rgb));
     background-clip: padding-box;
-    background-image: linear-gradient(rgba(var(--matter-surface-rgb, 255, 255, 255), 0.34), rgba(var(--matter-surface-rgb, 255, 255, 255), 0.34));
+    background-image: linear-gradient(rgba(var(--matter-surface-rgb), 0.34), rgba(var(--matter-surface-rgb), 0.34));
     background-color: rgba(var(--matter-onsurface-rgb), 0.85);
     transform: scale(0);
     opacity: 0;
@@ -1683,7 +1677,7 @@ body {
 }
 
 .matter-block {
-    display: block;
+    /*display: block;*/
     font-size: 16px;
     color: rgb(var(--matter-primary-fg));
     background-color: rgb(var(--matter-primary-bg));
@@ -1693,8 +1687,9 @@ body {
 }
 
 .matter-menubar {
+    padding: 0;
     display: inline-block;
-    height: 32px;
+    height: 16px;
     cursor: pointer;
 }
 
@@ -1707,13 +1702,12 @@ body {
 .matter-menubar li {
     display: inline;
     float: left;
-    padding: 8px 16px;
+    padding: 0 16px;
 }
-
 
 .matter-menubar svg {
     fill: rgb(var(--matter-primary-fg));
-    margin: 8px 16px;
+    margin: 0 16px;
     height: 32px;
     -moz-user-select: none;
     -webkit-user-select: none;
