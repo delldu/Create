@@ -153,7 +153,7 @@ textarea {
     fill: white;
 }
 
-/* Middle panel: containing leftsidebar, workspace */
+/* Middle panel: containing left side bar, workspace */
 .middle_panel {
     display: table;
     table-layout: fixed;
@@ -177,7 +177,7 @@ textarea {
     vertical-align: top;
 }
 
-/* Bottom pannel */
+/* Bottom panel */
 
 
 /* progress bar, message bar ... */
@@ -186,11 +186,11 @@ textarea {
 .messagebar {
     display: inline;
     margin: auto;
-    font - size: small;
+    font-size: small;
     overflow: scroll;
-    line - height: 2 rem;
-    padding: 0.5 rem 2 rem;
-    z - index: 9999;
+    line-height: 2rem;
+    padding: 0.5rem 2rem;
+    z-index: 9999;
     position: absolute;
     left: 80%;
     top: 90%;

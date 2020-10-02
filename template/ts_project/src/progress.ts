@@ -12,7 +12,7 @@ class Progress {
     element: HTMLElement;
 
     constructor(i:number) {
-        this.element = document.getElementsByTagName("progress")[0];
+        this.element = document.getElementsByTagName("progress")[i];
     }
 
     update(v: number) {

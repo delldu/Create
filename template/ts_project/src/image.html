@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>New Image</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="index.css">
+    <script type="text/javascript">
+    function previewFiles() {
+        var preview = document.querySelector('#preview');
+        var files = document.querySelector('input[type=file]').files;
+
+        function readAndPreview(file) {
+            if (/\.(jpe?g|png|gif)$/i.test(file.name)) {
+                var reader = new FileReader();
+
+                reader.addEventListener("load", function() {
+                    var image = new Image();
+                    // image.height = 256;
+                    image.title = file.name;
+                    image.src = this.result;
+                    preview.appendChild(image);
+                }, false);
+
+                reader.readAsDataURL(file);
+            }
+        }
+
+        if (files)
+            [].forEach.call(files, readAndPreview);
+    }
+    </script>
+</head>
+
+<body>
+    <input type="file" onchange="previewFiles()" enctype="multipart/form-data">
+    <div id="preview"></div>
+</body>
+
+</html>

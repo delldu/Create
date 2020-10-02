@@ -8,7 +8,7 @@
     --matter-onsurface-rgb: 0, 0, 0;
     --matter-surface-rgb: 255, 255, 255;
 
-    /* More solution for designers, default useless ! */
+    /* More option for designers, default useless ! */
     --matter-primary-fg-dark: 127, 127, 127;
     --matter-primary-fg-bright: 255, 255, 255;
 
@@ -37,15 +37,15 @@ body {
 .matter-h1 {
     font-family: var(--matter-font-family);
     font-size: 96px;
-    font-weight: 300;
+    font-weight: 200;
     letter-spacing: -1.5px;
     line-height: 120px;
 }
 
 .matter-h2 {
     font-family: var(--matter-font-family);
-    font-size: 60px;
-    font-weight: 300;
+    font-size: 64px;
+    font-weight: 200;
     letter-spacing: -0.5px;
     line-height: 80px;
 }
@@ -53,15 +53,15 @@ body {
 .matter-h3 {
     font-family: var(--matter-font-family);
     font-size: 48px;
-    font-weight: 400;
+    font-weight: 200;
     letter-spacing: 0;
     line-height: 64px;
 }
 
 .matter-h4 {
     font-family: var(--matter-font-family);
-    font-size: 34px;
-    font-weight: 400;
+    font-size: 32px;
+    font-weight: 200;
     letter-spacing: 1px;
     line-height: 48px;
 }
@@ -69,7 +69,7 @@ body {
 .matter-h5 {
     font-family: var(--matter-font-family);
     font-size: 24px;
-    font-weight: 400;
+    font-weight: 200;
     letter-spacing: 0;
     line-height: 36px;
 }
@@ -77,7 +77,7 @@ body {
 .matter-h6 {
     font-family: var(--matter-font-family);
     font-size: 20px;
-    font-weight: 500;
+    font-weight: 200;
     letter-spacing: 1px;
     line-height: 28px;
 }
@@ -85,7 +85,7 @@ body {
 .matter-subtitle1 {
     font-family: var(--matter-font-family);
     font-size: 16px;
-    font-weight: 400;
+    font-weight: 200;
     letter-spacing: 1px;
     line-height: 24px;
 }
@@ -93,7 +93,7 @@ body {
 .matter-subtitle2 {
     font-family: var(--matter-font-family);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 200;
     letter-spacing: 1px;
     line-height: 20px;
 }
@@ -101,7 +101,7 @@ body {
 .matter-body1 {
     font-family: var(--matter-font-family);
     font-size: 16px;
-    font-weight: 400;
+    font-weight: 200;
     letter-spacing: 1px;
     line-height: 24px;
 }
@@ -109,15 +109,15 @@ body {
 .matter-body2 {
     font-family: var(--matter-font-family);
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 200;
     letter-spacing: 1px;
     line-height: 20px;
 }
 
 .matter-button {
     font-family: var(--matter-font-family);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 200;
     letter-spacing: 1px;
     text-transform: uppercase;
     line-height: 20px;
@@ -126,7 +126,7 @@ body {
 .matter-caption {
     font-family: var(--matter-font-family);
     font-size: 12px;
-    font-weight: 400;
+    font-weight: 200;
     letter-spacing: 1px;
     line-height: 20px;
 }
@@ -134,7 +134,7 @@ body {
 .matter-overline {
     font-family: var(--matter-font-family);
     font-size: 10px;
-    font-weight: 400;
+    font-weight: 200;
     letter-spacing: 1px;
     text-transform: uppercase;
     line-height: 16px;
@@ -195,7 +195,7 @@ body {
     box-sizing: border-box;
     border: none;
     border-radius: 4px;
-    padding: 0 16px;
+    padding: 0 10px;
     min-width: 64px;
     height: 36px;
     vertical-align: middle;
@@ -205,8 +205,8 @@ body {
     background-color: rgb(var(--matter-helper-theme));
     box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
     font-family: var(--matter-font-family);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 200;
     line-height: 36px;
     outline: none;
     cursor: pointer;
@@ -300,8 +300,8 @@ body {
     background-color: rgb(var(--matter-primary-bg));
     /*transparent; */
     font-family: var(--matter-font-family);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 200;
     line-height: 34px;
     outline: none;
     cursor: pointer;
@@ -382,8 +382,8 @@ body {
     color: rgb(var(--matter-helper-theme));
     background-color: rgb(var(--matter-primary-bg));
     font-family: var(--matter-font-family);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 200;
     line-height: 36px;
     outline: none;
 }
@@ -1597,8 +1597,8 @@ body {
     left: 0;
     right: 0;
     font-family: var(--matter-font-family);
-    font-size: 10px;
-    font-weight: 400;
+    font-size: 12px;
+    font-weight: 200;
     line-height: 16px;
     white-space: nowrap;
     text-transform: none;
@@ -1677,12 +1677,11 @@ body {
 }
 
 .matter-block {
-    /*display: block;*/
-    font-size: 16px;
     color: rgb(var(--matter-primary-fg));
     background-color: rgb(var(--matter-primary-bg));
     width: 100%;
     z-index: 1001;
+    line-height: 32px;
     display: inline-block;
 }
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <title>New Image</title>
@@ -39,12 +39,11 @@
         // canvas.setBackground("canvas_background");
         // choiceBackgroundImage();
 
-        // document.getElementById("choice_" + canvas.id + "_bgfile").click();
         canvas.redraw(); // Draw rectangle ?
     }
 
     function ChoiceFile(file) {
-        // set file to buffer ... canvas_background_image element 
+        // set file to buffer ... canvas_background_image element
         if (file.files && file.files[0]) {
             var img = document.getElementById("canvas_background_image");
             var reader = new FileReader();
@@ -75,11 +74,11 @@
     <p>Test Progress Class ...</p>
     <progress value="0" max="100">Progress Bar>Progress Bar</progress>
     <p>Test Canvas Class ...</p>
-    <input type="file" onchange="ChoiceFile(this);" title="Change Backgroud.">
+    <input type="file" onchange="ChoiceFile(this);" title="Change Background.">
 
     <canvas id="canvas" width="640" height="480" style="border:1px solid #c3c3c3;">
     </canvas>
- 
+
     <p>Test Uploader Class ...</p>
     <p>Test Downloader Class ...</p>
     <p>Test Workspace Class ...</p>

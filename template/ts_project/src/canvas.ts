@@ -24,8 +24,7 @@ class Point {
     }
 
     clone(): Point {
-        let b = new Point(this.x, this.y);
-        return b;
+        return new Point(this.x, this.y);
     }
 
     offset(deltaX: number, deltaY: number) {
@@ -68,14 +67,13 @@ class Box {
         this.h = h;
     }
 
-    valid():boolean {
+    valid(): boolean {
         // console.log("Too small blob, give up.");
         return (this.w >= MOUSE_DISTANCE_THRESHOLD * 4 && this.h >= MOUSE_DISTANCE_THRESHOLD * 4);
     }
 
     clone(): Box {
-        let c = new Box(this.x, this.y, this.w, this.h);
-        return c;
+        return new Box(this.x, this.y, this.w, this.h);
     }
 
     offset(deltaX: number, deltaY: number) {
@@ -104,9 +102,13 @@ class Box {
     // is there intersect between this and box ?
     intersect(box: Box): boolean {
         // box1 == this, box2 == box
-        if (this.x + this.w < box.x || this.x > box.x + box.w)
+        if (box.x > this.x + this.w)
             return false;
-        if (this.y + this.h < box.y || this.y > box.y + box.h)
+        if (this.x > box.x + box.w)
+            return false;
+        if (box.y > this.y + this.h)
+            return false;
+        if (this.y > box.y + box.h)
             return false;
         return true;
     }
@@ -213,7 +215,7 @@ class Shape {
     }
 
     push(p: Point) {
-        this.points.push(new Point(p.x, p.y)); // Dot share, or will be disater !!!
+        this.points.push(new Point(p.x, p.y)); // Dot share, or will be disaster !!!
     }
 
     insert(index: number, p: Point) {
@@ -247,8 +249,7 @@ class Shape {
             if (y2 < this.points[i].y)
                 y2 = this.points[i].y;
         }
-        let box = new Box(x1, y1, x2 - x1, y2 - y1);
-        return box;
+        return new Box(x1, y1, x2 - x1, y2 - y1);
     }
 
     // p is inside of polygon ?
@@ -344,7 +345,7 @@ class Shape {
         brush.restore();
     }
 
-    dragingDraw(brush: CanvasRenderingContext2D) {
+    draggingDraw(brush: CanvasRenderingContext2D) {
         let n = this.points.length;
         if (n < 1)
             return;
@@ -456,7 +457,7 @@ class ShapeBlobs {
     }
 
     // if return true -- need redraw, else skip
-    clicked(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D): boolean {
+    clicked(ctrl: boolean, m: Mouse): boolean {
         // vertex be clicked ?
         let [v_index, v_sub_index] = this.findVertex(m.start);
         if (v_index >= 0 && v_sub_index >= 0) {
@@ -486,7 +487,7 @@ class ShapeBlobs {
             return false;
         }
 
-        // whold blob be clicked ?
+        // whole blob be clicked ?
         let b_index = this.findBlob(m.start);
         if (b_index >= 0) {
             // Selected/remove selected flag
@@ -501,10 +502,10 @@ class ShapeBlobs {
     }
 
     // no need any redraw for using save/restore methods
-    draging(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D, image_stack: ImageStack) {
-        // vertex could be draged ?
+    dragging(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D, image_stack: ImageStack) {
+        // vertex could be dragged ?
 
-        // draging vertex ?
+        // drag vertex ?
         let [v_index, v_sub_index] = this.findVertex(m.start);
         if (v_index >= 0 && v_sub_index >= 0) {
             let n = this.blobs[v_index].points.length;
@@ -516,19 +517,19 @@ class ShapeBlobs {
             blob.push(m.moving);
 
             let rect = blob.bbox();
-            if (! rect.valid())
+            if (!rect.valid())
                 return;
 
             image_stack.restore(brush);
             rect.extend(BRUSH_LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.dragingDraw(brush);
+            blob.draggingDraw(brush);
 
             return;
         }
 
-        // draging whold blob ?
+        // drag whole blob ?
         let b_index = this.findBlob(m.start);
         if (b_index >= 0) {
             let deltaX = m.moving.x - m.start.x;
@@ -537,19 +538,19 @@ class ShapeBlobs {
             blob.offset(deltaX, deltaY);
 
             let rect = blob.bbox();
-            if (! rect.valid())
+            if (!rect.valid())
                 return;
 
             image_stack.restore(brush);
             rect.extend(BRUSH_LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.dragingDraw(brush);
+            blob.draggingDraw(brush);
             return;
         } else {
             // Add new blob
             let box = m.mbbox();
-            if (! box.valid())
+            if (!box.valid())
                 return;
 
             let blob = new Shape();
@@ -570,20 +571,20 @@ class ShapeBlobs {
             }
 
             let rect = blob.bbox();
-            if (! rect.valid())
+            if (!rect.valid())
                 return;
 
             image_stack.restore(brush);
             rect.extend(BRUSH_LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.dragingDraw(brush);
+            blob.draggingDraw(brush);
             return;
-        } // end of b_index 
+        } // end of b_index
     }
 
     // return true -- need redraw, else false
-    draged(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D): boolean {
+    draged(ctrl: boolean, m: Mouse): boolean {
         // vertex could be draged ? this will change blob
         let [v_index, v_sub_index] = this.findVertex(m.start);
         if (v_index >= 0 && v_sub_index >= 0) {
@@ -594,12 +595,12 @@ class ShapeBlobs {
                 this.blobs[v_index].points[v_sub_index].y += deltaY;
                 return true;
             } else {
-                console.log("Do you want draging vertex ? please press ctrl key and drag vertex.")
+                console.log("Do you want dragging vertex ? please press ctrl key and drag vertex.")
             }
             return false;
         }
 
-        // whold blob could be draged ?
+        // whole blob could be draged ?
         let b_index = this.findBlob(m.start);
         if (b_index >= 0) {
             let deltaX = m.stop.x - m.start.x;
@@ -608,7 +609,7 @@ class ShapeBlobs {
         } else {
             // Add new blob
             let box = m.bbox();
-            if (! box.valid())
+            if (!box.valid())
                 return false;
 
             let blob = new Shape();
@@ -628,11 +629,11 @@ class ShapeBlobs {
                 blob.push(new Point(box.x + box.w, box.y));
             }
             box = blob.bbox();
-            if (! box.valid())
+            if (!box.valid())
                 return false;
 
             this.push(blob);
-        } // end of b_index 
+        } // end of b_index
         return true;
     } // end of draged
 }
@@ -650,10 +651,6 @@ class ShapeStack {
 
     pop(): Shape {
         return this.stack.pop() as Shape;
-    }
-
-    reset() {
-        this.stack.length = 0;
     }
 }
 
@@ -756,12 +753,12 @@ class Canvas {
 
     private viewModeMouseUpHandler(e: MouseEvent) {
         if (!this.mouse.isclick() && this.mouse.pressed) {
-            console.log("draging ..., which src object ? moving background ?");
+            console.log("dragging ..., which src object ? moving background ?");
         }
     }
 
     private editModeMouseDownHandler(e: MouseEvent) {
-        // Start:  On selected vertext, On selected Edge, Inside, Blank area
+        // Start:  On selected vertex, On selected Edge, Inside, Blank area
         // e.ctrlKey, e.altKey -- boolean
 
         this.image_stack.reset();
@@ -770,7 +767,7 @@ class Canvas {
     private editModeMouseMoveHandler(e: MouseEvent) {
         if (this.mouse.pressed) {
             this.canvas.style.cursor = "pointer";
-            this.shape_blobs.draging(e.ctrlKey, this.mouse, this.brush, this.image_stack);
+            this.shape_blobs.dragging(e.ctrlKey, this.mouse, this.brush, this.image_stack);
         } else {
             this.canvas.style.cursor = "default";
         }
@@ -779,13 +776,13 @@ class Canvas {
     private editModeMouseUpHandler(e: MouseEvent) {
         // Clicking
         if (this.mouse.isclick()) {
-            if (this.shape_blobs.clicked(e.ctrlKey, this.mouse, this.brush))
+            if (this.shape_blobs.clicked(e.ctrlKey, this.mouse))
                 this.redraw();
             return;
         }
 
         if (!this.mouse.isclick() && this.mouse.pressed) {
-            if (this.shape_blobs.draged(e.ctrlKey, this.mouse, this.brush))
+            if (this.shape_blobs.draged(e.ctrlKey, this.mouse))
                 this.redraw();
             return;
         }
@@ -898,7 +895,7 @@ class Canvas {
         //     this.mouse.moving.y = e.offsetY;
         // }, false);
 
-        // Handle keyboard 
+        // Handle keyboard
         this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
             console.log("window.addEventListener keydown ...", e);
             if (e.key == 'Shift') {
