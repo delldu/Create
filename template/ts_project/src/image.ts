@@ -60,12 +60,12 @@ class NiImage {
         }
 
         let e = document.createElement('img');
-        if (! e) {
+        if (!e) {
             console.log("Create element error.");
             return;
         }
         let image_reader = new FileReader();
-        if (! image_reader) {
+        if (!image_reader) {
             console.log("Create FileReader error.");
             return;
         }
@@ -195,4 +195,19 @@ class NiImage {
     upload(image: ImageData, url: string) {
 
     }
+}
+
+
+
+function loadXMLDoc() {
+    let xmlhttp = new XMLHttpRequest();
+
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            // document.getElementById("myDiv").innerHTML = xmlhttp.responseText;
+        }
+    }
+    xmlhttp.open("POST", "/ajax/demo_post2.asp", true);
+    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xmlhttp.send("fname=Bill&lname=Gates");
 }
