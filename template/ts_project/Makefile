@@ -28,4 +28,16 @@ dist/index.css: src/index.css
 
 clean:
 	rm -rf dist/*.js dist/*.html dist/*.css
+
+
+test:
+	mkdir -p dist/upload
+	cp src/image.html dist
+	cp src/index.css dist
+	cp src/image.py dist
+	tsc src/image.ts -lib es2015,dom --strict --removeComments --outDir dist
+
+
+
+
 	

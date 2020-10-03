@@ -25,7 +25,7 @@ class NiImage {
 
     constructor(id: string) {
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
-        this.canvas.tabIndex = -1; // Support keyboard event
+        this.canvas.tabIndex = 1001; // Support keyboard event
 
         this.image_list = new Array < string > ();
         this.image_index = -1;
@@ -47,36 +47,55 @@ class NiImage {
             }
             e.preventDefault();
         }, false);
+
+        this.canvas.addEventListener('mouseover', (e: MouseEvent) => {
+            this.redraw();
+        }, false);
     }
 
     addImage(file: File) {
-        if (file) {
-            let e = document.createElement('img');
-            let image_reader = new FileReader();
-
-            image_reader.addEventListener("error", function() {
-                //@todo
-            }, false);
-
-            image_reader.addEventListener("load", () => {
-                e.src = image_reader.result;
-                let id = file.name; // spark..., md5sum
-                if (this.findImage(id) >= 0)    // duplicate ...
-                    return;
-                
-                e.setAttribute('id', id);
-                e.setAttribute('title', '[' + file.name + ']');
-                let p = document.getElementById(this.canvas.id);
-                if (p) {
-                    p.appendChild(e);
-                    this.image_list.push(id);
-                    this.image_index = this.image_list.length - 1;
-                    this.redraw();
-                }
-            }, false);
-
-            image_reader.readAsDataURL(file);
+        if (!file) {
+            console.log("file is null");
+            return;
         }
+
+        let e = document.createElement('img');
+        if (! e) {
+            console.log("Create element error.");
+            return;
+        }
+        let image_reader = new FileReader();
+        if (! image_reader) {
+            console.log("Create FileReader error.");
+            return;
+        }
+
+        image_reader.addEventListener("error", function() {
+            console.log("Reading file " + file.name + " error.");
+            //@todo
+        }, false);
+
+        image_reader.addEventListener("load", () => {
+            e.src = image_reader.result;
+            let id = file.name; // spark..., md5sum
+            if (this.findImage(id) >= 0) {
+                console.log("file is duplicate, id = ", id);
+                return;
+            }
+
+            e.setAttribute('id', id);
+            e.setAttribute('title', file.name);
+            e.setAttribute('display', 'block');
+            this.canvas.appendChild(e);
+
+            this.image_list.push(id);
+            this.image_index = this.image_list.length - 1;
+            this.canvas.focus();
+
+            this.redraw();
+        }, false);
+
+        image_reader.readAsDataURL(file);
     }
 
     deleteImage(id: string) {
@@ -102,27 +121,26 @@ class NiImage {
 
     redraw() {
         let brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-        if (!brush)
+        if (!brush) {
+            console.log("Canvas brush is null");
             return;
+        }
 
         brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
         // Draw image ...
 
-        // console.log("image -- ", this.image_index, this.image_list);
         if (this.image_index >= 0 && this.image_index < this.image_list.length) {
             let e = document.getElementById(this.image_list[this.image_index]);
             if (!e) {
-                // console.log("e === null, this is error !!!");
+                console.log("e is null, this is system error !");
                 return;
             }
             let background = (e as HTMLImageElement);
             if (background) {
                 brush.drawImage(background, 0, 0);
             } else {
-                console.log("background === null, this is error !!!");
+                console.log("background is null, this is system error !");
             }
-        } else {
-            console.log("What's wrong ? image -- ", this.image_index, this.image_list);
         }
     }
 

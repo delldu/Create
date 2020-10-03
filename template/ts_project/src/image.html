@@ -5,14 +5,19 @@
     <title>New Image</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="index.css">
-    <script src="../dist/image.js"></script>
+    <script src="image.js"></script>
 </head>
 
 <body onload="init()">
-    <input type="file" onchange="add_file(this)" accept='image/*' multiple="multiple">
-    <canvas id="canvas" height="480px" width="640px" style="border: 1px solid">
-
+    <input type="file" onchange="add_file(this)" accept='image/*' action="/upload">
+    <!--     <input type=submit value=upload>
+ --> <canvas id="canvas" height="480px" width="640px" style="border: 1px solid">
     </canvas>
+    <!--     <form method=post enctype=multipart/form-data action="/upload">
+      <input type=file name=file>
+      <input type=submit value=upload>
+    </form>
+ -->
 </body>
 <script type="text/javascript">
 var canvas;
@@ -23,11 +28,12 @@ function init() {
 
 function add_file(th) {
     if (th && th.files) {
-        for (i = 0; i < th.files.length; i++)
+        for (i = 0; i < th.files.length; i++) {
+            console.log("Add file.", th.files[i].name);
             canvas.addImage(th.files[i]);
+        }
     }
 }
-
 </script>
 
 </html>
