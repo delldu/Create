@@ -46,7 +46,14 @@ let URI = "data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAA
 //     }
 // }
 
-class TensorHead {
+enum NImageOpcode {
+    Clean = 2,
+    Zoom = 4,
+    Color = 6,
+    Patch = 8
+};
+
+class NImageHead {
     // CxHxW
     c: number; // 2 bytes
     h: number; // 2 bytes
@@ -122,14 +129,14 @@ class TensorHead {
     }
 }
 
-type TensorData = Uint8ClampedArray;
+type NImageData = Uint8ClampedArray;
 
-class Tensor {
-    head: TensorHead;
-    data: TensorData; // For RGBA, channel is 4 ...
+class NImage {
+    head: NImageHead;
+    data: NImageData; // For RGBA, channel is 4 ...
 
     constructor() {
-        this.head = new TensorHead();
+        this.head = new NImageHead();
         this.data = new Uint8ClampedArray(0);
     }
 
@@ -161,11 +168,11 @@ class Tensor {
     }
 }
 
-function TensorPerformance() {
+function NImagePerformance() {
     let start_time = (new Date()).getTime();
     for (let i = 0; i < 1000; i++) {
-        let x = new Tensor();
-        x.head = new TensorHead();
+        let x = new NImage();
+        x.head = new NImageHead();
         x.head.setSize(3, 2048, 4096);
         // h.setSize(3, 1024, 2048);
         x.head.opcode = 12;
@@ -173,7 +180,7 @@ function TensorPerformance() {
 
         let p = x.encode();
 
-        let y = new Tensor();
+        let y = new NImage();
         let ok = y.decode(p);
 
         if (i % 100 == 0)
@@ -183,7 +190,7 @@ function TensorPerformance() {
     console.log("Spend time: ", stop_time - start_time, "ms");
 }
 
-// TensorPerformance();
+// NImagePerformance();
 
 
 
@@ -193,7 +200,7 @@ function TensorPerformance() {
 // let d = h.decode(e);
 // console.log("d:", d, "h: ", h);
 
-// let data = new TensorData(256, 256);
+// let data = new NImageData(256, 256);
 // console.log("data: ", data);
 // let a = new Uint8ClampedArray(data.data);
 // console.log("Uint8Array: ", a);
@@ -217,7 +224,7 @@ function TensorPerformance() {
 // img.src = URI;
 // console.log("What's is image? ", img);
 
-class TensorClient {
+class NImageClient {
     wsurl: string;
     socket: WebSocket;
 
@@ -247,7 +254,7 @@ class TensorClient {
         this.socket.binaryType = "arraybuffer";
     }
 
-    echo_start(x: Tensor) {
+    private echo_start(x: NImage) {
         return new Promise((resolve: (value: ArrayBuffer) => void, reject: (value: string) => void) => {
             if (!x.valid()) {
                 return reject("Invalid input tensor.");
@@ -277,9 +284,10 @@ class TensorClient {
         });
     }
 
-    echo_stop(x: Tensor): [boolean, Tensor] {
+    // Call echo service via websocket
+    echoService(x: NImage): [boolean, NImage] {
         let ok = false;
-        let y = new Tensor();
+        let y = new NImage();
         this.echo_start(x).then(
             (buffer: ArrayBuffer) => {
                 // receive is valid tensor ?
@@ -292,12 +300,32 @@ class TensorClient {
         return [ok, y];
     }
 
+    clean(x: NImage): [boolean, NImage] {
+        x.head.opcode = NImageOpcode.Clean;
+        return this.echoService(x);
+    }
+
+    zoom(x: NImage): [boolean, NImage] {
+        x.head.opcode = NImageOpcode.Zoom;
+        return this.echoService(x);
+    }
+
+    color(x: NImage): [boolean, NImage] {
+        x.head.opcode = NImageOpcode.Color;
+        return this.echoService(x);
+    }
+
+    patch(x: NImage): [boolean, NImage] {
+        x.head.opcode = NImageOpcode.Patch;
+        return this.echoService(x);
+    }
+
     close() {
         this.socket.close();
     }
 }
 
-let client = new TensorClient("socket://localhost:8080");
+let client = new NImageClient("socket://localhost:8080");
 
 
 
