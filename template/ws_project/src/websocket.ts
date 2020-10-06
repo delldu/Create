@@ -6,6 +6,136 @@
 // ***
 // ***********************************************************************************
 
+// Decode dataURL OK ?
+let startDataURLToImage = (url: string) => {
+    return new Promise(function(resolve, reject) {
+        if (url == null)
+            return reject();
+        let image = new Image();
+        image.addEventListener('load', function() {
+            resolve();
+        }, false);
+        image.addEventListener('abort', function() {
+            reject();
+        }, false);
+        image.addEventListener('error', function() {
+            reject();
+        }, false);
+        image.src = url;
+    });
+}
+
+// convertURIToImageData(URI).then(function(imageData) {
+//     // Here you can use imageData
+//     console.log(imageData);
+// });
+
+class ImageProjectItem {
+    name: string;
+    size: number;
+    dataurl: string; // RFC 2397
+    blobs: string;
+
+    constructor(name: string, size: number, dataurl: string, blobs: string) {
+        this.name = name;
+        this.size = size;
+        this.dataurl = dataurl;
+        this.blobs = blobs;
+    }
+}
+
+class ImageProject {
+    name: string;
+    create: Date;
+    items: Array < ImageProjectItem > ;
+
+    decode_ok_count: number;
+    decode_err_count: number;
+
+    constructor(name: string) {
+        this.name = name;
+        this.create = new Date();
+        this.items = new Array < ImageProjectItem > ();
+
+        // Statics
+        this.decode_ok_count = 0;
+        this.decode_err_count = 0;
+    }
+
+    load(file: File) {
+        if (file instanceof File) {
+            let reader = new FileReader();
+            reader.addEventListener("error", () => {
+                this.decode_err_count++;
+            }, false);
+            reader.addEventListener("load", () => {
+                // reader.result ok ?
+                startDataURLToImage(reader.result).then(() => {
+                    let unit = new ImageProjectItem(file.name, file.size, reader.result, "");
+                    this.items.push(unit);
+                    this.decode_ok_count++;
+                }, () => {
+                    this.decode_err_count++;
+                });
+            }, false);
+            reader.readAsDataURL(file);
+        } else {
+            this.decode_err_count++;
+        }
+    }
+
+    show(index: number, id: string) {
+        // Wait loading finish ?
+        setTimeout(() => {
+            let e = document.getElementById(id) as HTMLImageElement;
+            if (e)
+                e.src = this.items[index].dataurl;
+        }, 20); // 20 ms is reasonable for human bings
+    }
+
+    image(index: number): HTMLImageElement {
+        let image = new Image();
+        image.src = this.items[index].dataurl;
+        return image as HTMLImageElement;
+    }
+
+    // JSON string
+    json(): string {
+        return "";
+    }
+
+    listHtml(): string {
+        return "";
+    }
+
+    gridHtml(): string {
+        return "";
+    }
+
+    // JSON format file
+    open(file: File) {
+
+    }
+
+    // JSON format
+    save(filename: string) {
+
+    }
+
+    info(): string {
+        let decode_total = this.decode_ok_count + this.decode_err_count;
+        return "Project name: " + this.name +
+            ", create time: " + this.create +
+            ", decode " + this.decode_ok_count + " OK" +
+            ", " + this.decode_err_count + " error" +
+            ", total: " + decode_total + ".";
+    }
+}
+
+let project = new ImageProject("Demo");
+console.log(project.info());
+
+
 function convertURIToImageData(URI: string) {
     return new Promise(function(resolve, reject) {
         if (URI == null)
@@ -48,9 +178,9 @@ let URI = "data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAA
 
 enum NImageOpcode {
     Clean = 2,
-    Zoom = 4,
-    Color = 6,
-    Patch = 8
+        Zoom = 4,
+        Color = 6,
+        Patch = 8
 };
 
 class NImageHead {
@@ -231,7 +361,8 @@ class NImageClient {
     constructor(wsurl: string) {
         this.wsurl = wsurl;
         this.socket = new WebSocket(wsurl);
-        // this.registerHandlers();
+
+        this.registerHandlers();
     }
 
     registerHandlers() {
@@ -325,7 +456,7 @@ class NImageClient {
     }
 }
 
-let client = new NImageClient("socket://localhost:8080");
+// let client = new NImageClient("socket://localhost:8080");
 
 
 

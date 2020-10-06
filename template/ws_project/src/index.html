@@ -11,15 +11,32 @@
 
     }
 
+    var project = new ImageProject("Demo");
+
     function ChoiceFile(file) {
         // set file to buffer ... canvas_background_image element
         if (file.files && file.files[0]) {
-            var img = document.getElementById("canvas_background_image");
-            var reader = new FileReader();
-            reader.onload = function(evt) {
-                img.src = evt.target.result;
-            }
-            reader.readAsDataURL(file.files[0]);
+            project.load(file.files[0]);
+            console.log(project.info());
+            console.log(project);
+            project.show(0, "background");
+
+            var context = document.getElementById("canvas").getContext('2d');
+                context.drawImage(project.image(0), 0, 0);
+            
+            // setTimeout(() => {
+            //     context.drawImage(project.image(0), 0, 0);
+            // }, 50);
+            // var e = document.getElementById("background");
+            // if (e)
+            //     e.src = project.items[0].dataurl;
+
+            // var img = document.getElementById("canvas_background_image");
+            // var reader = new FileReader();
+            // reader.onload = function(evt) {
+            //     img.src = evt.target.result;
+            // }
+            // reader.readAsDataURL(file.files[0]);
         }
     }
     </script>
@@ -27,9 +44,9 @@
 
 <body onload="test()">
     <input type="file" onchange="ChoiceFile(this);" title="Change Background.">
-
     <canvas id="canvas" width="640" height="480" style="border:1px solid #c3c3c3;">
     </canvas>
+    <img id="background" src="" style="border:1px solid red;" />
 </body>
 
 </html>
