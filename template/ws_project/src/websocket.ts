@@ -47,7 +47,7 @@ const loadDataURL = (file: File) => {
             }, false);
             reader.addEventListener("load", () => {
                 // reader ok ?
-                resolve(reader.result); // throw dataURL data
+                resolve(reader.result as string); // throw dataURL data
             }, false);
         }
     });
@@ -466,7 +466,7 @@ function NImagePerformance() {
 // var a = document.getElementById("h");
 // a.download = "helloworld.txt";
 // a.href = wsurl;
-//   
+//
 
 // let img = new Image();
 // img.src = URI;

@@ -11,7 +11,7 @@
 class Progress {
     element: HTMLElement;
 
-    constructor(i:number) {
+    constructor(i: number) {
         this.element = document.getElementsByTagName("progress")[i];
     }
 
@@ -19,11 +19,11 @@ class Progress {
         this.element.setAttribute('value', v.toString());
     }
 
-    startDemo(value:number) {
+    startDemo(value: number) {
         value = value + 1;
         this.update(value);
         if (value < 100) {
-            setTimeout(()=>{this.startDemo(value);}, 20);
+            setTimeout(() => { this.startDemo(value); }, 20);
         }
     }
 }
