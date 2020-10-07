@@ -81,7 +81,7 @@ class ImageProject {
     name: string;
     create: Date;
     private items: Array < ImageProjectItem > ;
-    private image_index: number;
+    private selected_index: number;
 
     decode_ok_count: number;
     decode_err_count: number;
@@ -90,59 +90,59 @@ class ImageProject {
         this.name = name;
         this.create = new Date();
         this.items = new Array < ImageProjectItem > ();
-        this.image_index = -1;
+        this.selected_index = -1;
 
         // Statics
         this.decode_ok_count = 0;
         this.decode_err_count = 0;
     }
 
-    count():number {
+    count(): number {
         return this.items.length;
     }
 
     first() {
-        this.image_index = 0;
+        this.selected_index = 0;
     }
 
     prev() {
-        if (this.image_index > 0)
-            this.image_index--;
+        if (this.selected_index > 0)
+            this.selected_index--;
         else
-            this.image_index = this.items.length - 1;
-        indexCalibrate();
+            this.selected_index = this.items.length - 1;
+        this.indexCalibrate();
     }
 
     next() {
-        if (this.image_index < this.items.len - 1)
-            this.image_index++;
+        if (this.selected_index < this.items.length - 1)
+            this.selected_index++;
         else
-            this.image_index = 0;
-        indexCalibrate();
+            this.selected_index = 0;
+        this.indexCalibrate();
     }
 
     last() {
-        this.image_index = this.items.length - 1;
+        this.selected_index = this.items.length - 1;
     }
 
-    index():number {
-        return this.image_index;
+    index(): number {
+        return this.selected_index;
     }
 
     // move index to safe range ? ...
     private indexCalibrate() {
-        if (this.image_index > this.items.length - 1)
-            this.image_index = this.items.length - 1;
-        if (this.image_index < 0)
-            this.image_index = 0;
+        if (this.selected_index > this.items.length - 1)
+            this.selected_index = this.items.length - 1;
+        if (this.selected_index < 0)
+            this.selected_index = 0;
     }
 
-    goto(index:number):boolean {
+    goto(index: number): boolean {
         if (index >= 0 && index < this.items.length - 1) {
-            this.image_index = index;
+            this.selected_index = index;
             return true;
         }
-        this.image_index = index;
+        this.selected_index = index;
         this.indexCalibrate();
         return false;
     }
@@ -196,7 +196,7 @@ class ImageProject {
     info(): string {
         let decode_total = this.decode_ok_count + this.decode_err_count;
         return "Project name: " + this.name +
-            ", version: " + ImageProject.version + 
+            ", version: " + ImageProject.version +
             ", create time: " + this.create +
             ", decode " + this.decode_ok_count + " OK" +
             ", " + this.decode_err_count + " error" +
@@ -209,34 +209,32 @@ console.log(project.info());
 
 
 class CheckPanel {
-    panels: Array<string>;
+    panels: Array < string > ;
 
     constructor() {
-        this.panels = new Array<string>();
+        this.panels = new Array < string > ();
     }
 
     add(id: string) {
         this.panels.push(id);
     }
 
-    click(id:string) {
+    click(id: string) {
         for (let e of this.panels) {
-            element = document.getElementById(e);
-            if (! element)
+            let element = document.getElementById(e);
+            if (!element)
                 continue;
             if (e == id)
-                element.display = "block";
+                element.style.display = "block";
             else
-                element.display = "none";
+                element.style.display = "none";
         }
     }
 
-    clicked():string {
+    clicked(): string {
         for (let e of this.panels) {
-            element = document.getElementById(e);
-            if (! element)
-                continue;
-            if element.display != "none"
+            let element = document.getElementById(e);
+            if (element && element.style.display != "none")
                 return e;
         }
         return "";
@@ -359,7 +357,7 @@ class NImageHead {
             for (let j = 0; j < 8; j++) {
                 odd = crc & 0x80;
                 crc = crc << 1;
-                crc = (odd)? (crc ^ 0x07 % 256) : (crc % 256);
+                crc = (odd) ? (crc ^ 0x07 % 256) : (crc % 256);
             }
         }
 
