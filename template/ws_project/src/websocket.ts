@@ -9,8 +9,8 @@
 const sleep = (time: number) => {
     return new Promise(resolve => setTimeout(resolve, time));
 }
-// sleep(1000).then(() => {
-//     console.log(1);
+// sleep(2000).then(() => {
+//     console.log("2 seconds passed.");
 // })
 
 // Decode dataURL to HTMLImageElement
@@ -20,6 +20,7 @@ const dataURLDecode = (url: string, e: HTMLImageElement) => {
         if (url == null) {
             reject();
         }
+        e.src = url;
         e.addEventListener('load', function() {
             resolve();
         }, false);
@@ -29,7 +30,6 @@ const dataURLDecode = (url: string, e: HTMLImageElement) => {
         e.addEventListener('error', function() {
             reject();
         }, false);
-        e.src = url;
     });
 }
 
@@ -40,6 +40,8 @@ const loadDataURL = (file: File) => {
             reject();
         else {
             let reader = new FileReader();
+            reader.readAsDataURL(file);
+
             reader.addEventListener("error", () => {
                 reject();
             }, false);
@@ -47,7 +49,6 @@ const loadDataURL = (file: File) => {
                 // reader ok ?
                 resolve(reader.result); // throw dataURL data
             }, false);
-            reader.readAsDataURL(file);
         }
     });
 }
@@ -81,93 +82,88 @@ class ImageProject {
     name: string;
     create: Date;
     private items: Array < ImageProjectItem > ;
-    private selected_index: number;
 
-    decode_ok_count: number;
-    decode_err_count: number;
+    // Current item
+    private current_index: number;
+    private current_image: HTMLImageElement;
+
+    // Statics
+    image_loading: number;
+    image_load_ok: number;
+    image_load_err: number;
 
     constructor(name: string) {
         this.name = name;
         this.create = new Date();
         this.items = new Array < ImageProjectItem > ();
-        this.selected_index = -1;
 
-        // Statics
-        this.decode_ok_count = 0;
-        this.decode_err_count = 0;
+        this.current_index = -1;
+        this.current_image = new Image() as HTMLImageElement;
+
+        this.image_loading = 0;
+        this.image_load_ok = 0;
+        this.image_load_err = 0;
     }
 
     count(): number {
         return this.items.length;
     }
 
-    first() {
-        this.selected_index = 0;
+    empty(): boolean {
+        return this.items.length < 1;
     }
 
-    prev() {
-        if (this.selected_index > 0)
-            this.selected_index--;
-        else
-            this.selected_index = this.items.length - 1;
-        this.indexCalibrate();
-    }
-
-    next() {
-        if (this.selected_index < this.items.length - 1)
-            this.selected_index++;
-        else
-            this.selected_index = 0;
-        this.indexCalibrate();
-    }
-
-    last() {
-        this.selected_index = this.items.length - 1;
-    }
-
-    index(): number {
-        return this.selected_index;
-    }
-
-    // move index to safe range ? ...
-    private indexCalibrate() {
-        if (this.selected_index > this.items.length - 1)
-            this.selected_index = this.items.length - 1;
-        if (this.selected_index < 0)
-            this.selected_index = 0;
-    }
-
-    goto(index: number): boolean {
-        if (index >= 0 && index < this.items.length - 1) {
-            this.selected_index = index;
-            return true;
+    // ONLY Current Write Interface
+    go(index: number): boolean {
+        if (index < 0 || index >= this.items.length)
+            return false;
+        if (this.current_index != index) {
+            this.current_index = index;
+            this.current_image.src = this.items[index].data;
         }
-        this.selected_index = index;
-        this.indexCalibrate();
-        return false;
+        return true;
+    }
+
+    // ONLY Current Read Interface
+    current(): [HTMLImageElement, number] {
+        return [this.current_image, this.current_index];
+    }
+
+    goFirst(): boolean {
+        return this.go(0);
+    }
+
+    goPrev(): boolean {
+        return this.go(this.current_index - 1);
+    }
+
+    goNext(): boolean {
+        return this.go(this.current_index + 1);
+    }
+
+    goLast(): boolean {
+        return this.go(this.items.length - 1);
     }
 
     load(file: File) {
+        this.image_loading++;
         loadDataURL(file).then((url: string) => {
             // dataURL ok ?
             let img = new Image() as HTMLImageElement;
             dataURLDecode(url, img).then(() => {
                 let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
                 this.items.push(unit);
-                this.indexCalibrate();
+                // Goto first item
+                if (this.current_index < 0 || this.current_index >= this.items.length)
+                    this.go(0);
+                this.image_load_ok++;
+                this.image_loading--;
             }, () => {
-                this.decode_err_count++;
+                this.image_load_err++;
+                this.image_loading--;
             });
             // Decode end
         }); // loadDataURL end
-    }
-
-    // Decode dataURL-index to image
-    image(index: number): HTMLImageElement {
-        let img = new Image() as HTMLImageElement;
-        if (index >= 0 && index < this.items.length - 1)
-            img.src = this.items[index].data;
-        return img;
     }
 
     // JSON string
@@ -194,21 +190,19 @@ class ImageProject {
     }
 
     info(): string {
-        let decode_total = this.decode_ok_count + this.decode_err_count;
-        return "Project name: " + this.name +
+        return "Project " + this.name +
             ", version: " + ImageProject.version +
             ", create time: " + this.create +
-            ", decode " + this.decode_ok_count + " OK" +
-            ", " + this.decode_err_count + " error" +
-            ", total: " + decode_total + ".";
+            ", load: " + this.image_load_ok + " ok" +
+            ", " + this.image_load_err + " error" +
+            ", " + this.image_loading + " going.";
     }
 }
 
 let project = new ImageProject("Demo");
 console.log(project.info());
 
-
-class CheckPanel {
+class ShiftPanel {
     panels: Array < string > ;
 
     constructor() {
@@ -216,28 +210,46 @@ class CheckPanel {
     }
 
     add(id: string) {
+        let element = document.getElementById(id);
+        if (!element) {
+            console.log("not valid element id: ", id, element);
+            return;
+        }
         this.panels.push(id);
-    }
-
-    click(id: string) {
-        for (let e of this.panels) {
-            let element = document.getElementById(e);
-            if (!element)
-                continue;
-            if (e == id)
-                element.style.display = "block";
-            else
-                element.style.display = "none";
+        // Switch method
+        if (this.panels.length == 1) {
+            window.addEventListener("keydown", (e: KeyboardEvent) => {
+                if (e.key == 'Shift')
+                    this.shift();
+                e.preventDefault();
+            }, false);
         }
     }
 
-    clicked(): string {
-        for (let e of this.panels) {
-            let element = document.getElementById(e);
+    clicked(): number {
+        for (let i = 0; i < this.panels.length; i++) {
+            // add make sure valid element, but compiler donot know !
+            let element = document.getElementById(this.panels[i]);
             if (element && element.style.display != "none")
-                return e;
+                return i;
         }
-        return "";
+        return -1;
+    }
+
+    shift() {
+        if (this.panels.length < 1)
+            return;
+
+        let index = this.clicked();
+        index = (index < 0) ? 0 : index + 1;
+        if (index > this.panels.length - 1)
+            index = 0;
+        for (let i = 0; i < this.panels.length; i++) {
+            // add make sure valid element, but compiler donot know !
+            let element = document.getElementById(this.panels[i]);
+            if (element)
+                element.style.display = (i == index) ? "block" : "none";
+        }
     }
 }
 
