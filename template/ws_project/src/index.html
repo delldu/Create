@@ -19,10 +19,15 @@
             project.load(file.files[0]);
             console.log(project.info());
             console.log(project);
-            project.show(0, "background");
 
-            var context = document.getElementById("canvas").getContext('2d');
-                context.drawImage(project.image(0), 0, 0);
+            // Wait loading finish? 20~50 ms is reasonable for human beings
+            sleep(50).then(()=> {
+                var bg = document.getElementById("background");
+                bg.src = project.image(0).src;
+
+                var context = document.getElementById("canvas").getContext('2d');
+                context.drawImage(project.image(project.items.length - 1), 0, 0);
+            });
             
             // setTimeout(() => {
             //     context.drawImage(project.image(0), 0, 0);

@@ -6,24 +6,52 @@
 // ***
 // ***********************************************************************************
 
-// Decode dataURL OK ?
-let startDataURLToImage = (url: string) => {
+const sleep = (time: number) => {
+    return new Promise(resolve => setTimeout(resolve, time));
+}
+// sleep(1000).then(() => {
+//     console.log(1);
+// })
+
+// Decode dataURL to HTMLImageElement
+const dataURLDecode = (url: string, e: HTMLImageElement) => {
     return new Promise(function(resolve, reject) {
-        if (url == null)
-            return reject();
-        let image = new Image();
-        image.addEventListener('load', function() {
+        // Promise excutor ...
+        if (url == null) {
+            reject();
+        }
+        e.addEventListener('load', function() {
             resolve();
         }, false);
-        image.addEventListener('abort', function() {
+        e.addEventListener('abort', function() {
             reject();
         }, false);
-        image.addEventListener('error', function() {
+        e.addEventListener('error', function() {
             reject();
         }, false);
-        image.src = url;
+        e.src = url;
     });
 }
+
+// Load dataURL from file
+const loadDataURL = (file: File) => {
+    return new Promise(function(resolve: (value: string) => void, reject) {
+        if (!(file instanceof File))
+            reject();
+        else {
+            let reader = new FileReader();
+            reader.addEventListener("error", () => {
+                reject();
+            }, false);
+            reader.addEventListener("load", () => {
+                // reader ok ?
+                resolve(reader.result); // throw dataURL data
+            }, false);
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
 
 // convertURIToImageData(URI).then(function(imageData) {
 //     // Here you can use imageData
@@ -32,22 +60,28 @@ let startDataURLToImage = (url: string) => {
 
 class ImageProjectItem {
     name: string;
-    size: number;
-    dataurl: string; // RFC 2397
+    readonly size: number;
+    readonly height: number;
+    readonly width: number;
+    readonly data: string; // dataURL format: RFC 2397
     blobs: string;
 
-    constructor(name: string, size: number, dataurl: string, blobs: string) {
+    constructor(name: string, size: number, height: number, width: number, data: string, blobs: string) {
         this.name = name;
         this.size = size;
-        this.dataurl = dataurl;
+        this.height = height;
+        this.width = width;
+        this.data = data;
         this.blobs = blobs;
     }
 }
 
 class ImageProject {
+    static version = "1.0.0";
     name: string;
     create: Date;
-    items: Array < ImageProjectItem > ;
+    private items: Array < ImageProjectItem > ;
+    private image_index: number;
 
     decode_ok_count: number;
     decode_err_count: number;
@@ -56,47 +90,84 @@ class ImageProject {
         this.name = name;
         this.create = new Date();
         this.items = new Array < ImageProjectItem > ();
+        this.image_index = -1;
 
         // Statics
         this.decode_ok_count = 0;
         this.decode_err_count = 0;
     }
 
-    load(file: File) {
-        if (file instanceof File) {
-            let reader = new FileReader();
-            reader.addEventListener("error", () => {
-                this.decode_err_count++;
-            }, false);
-            reader.addEventListener("load", () => {
-                // reader.result ok ?
-                startDataURLToImage(reader.result).then(() => {
-                    let unit = new ImageProjectItem(file.name, file.size, reader.result, "");
-                    this.items.push(unit);
-                    this.decode_ok_count++;
-                }, () => {
-                    this.decode_err_count++;
-                });
-            }, false);
-            reader.readAsDataURL(file);
-        } else {
-            this.decode_err_count++;
+    count():number {
+        return this.items.length;
+    }
+
+    first() {
+        this.image_index = 0;
+    }
+
+    prev() {
+        if (this.image_index > 0)
+            this.image_index--;
+        else
+            this.image_index = this.items.length - 1;
+        indexCalibrate();
+    }
+
+    next() {
+        if (this.image_index < this.items.len - 1)
+            this.image_index++;
+        else
+            this.image_index = 0;
+        indexCalibrate();
+    }
+
+    last() {
+        this.image_index = this.items.length - 1;
+    }
+
+    index():number {
+        return this.image_index;
+    }
+
+    // move index to safe range ? ...
+    private indexCalibrate() {
+        if (this.image_index > this.items.length - 1)
+            this.image_index = this.items.length - 1;
+        if (this.image_index < 0)
+            this.image_index = 0;
+    }
+
+    goto(index:number):boolean {
+        if (index >= 0 && index < this.items.length - 1) {
+            this.image_index = index;
+            return true;
         }
+        this.image_index = index;
+        this.indexCalibrate();
+        return false;
     }
 
-    show(index: number, id: string) {
-        // Wait loading finish ?
-        setTimeout(() => {
-            let e = document.getElementById(id) as HTMLImageElement;
-            if (e)
-                e.src = this.items[index].dataurl;
-        }, 20); // 20 ms is reasonable for human bings
+    load(file: File) {
+        loadDataURL(file).then((url: string) => {
+            // dataURL ok ?
+            let img = new Image() as HTMLImageElement;
+            dataURLDecode(url, img).then(() => {
+                let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
+                this.items.push(unit);
+                this.indexCalibrate();
+            }, () => {
+                this.decode_err_count++;
+            });
+            // Decode end
+        }); // loadDataURL end
     }
 
+    // Decode dataURL-index to image
     image(index: number): HTMLImageElement {
-        let image = new Image();
-        image.src = this.items[index].dataurl;
-        return image as HTMLImageElement;
+        let img = new Image() as HTMLImageElement;
+        if (index >= 0 && index < this.items.length - 1)
+            img.src = this.items[index].data;
+        return img;
     }
 
     // JSON string
@@ -125,6 +196,7 @@ class ImageProject {
     info(): string {
         let decode_total = this.decode_ok_count + this.decode_err_count;
         return "Project name: " + this.name +
+            ", version: " + ImageProject.version + 
             ", create time: " + this.create +
             ", decode " + this.decode_ok_count + " OK" +
             ", " + this.decode_err_count + " error" +
@@ -134,6 +206,52 @@ class ImageProject {
 
 let project = new ImageProject("Demo");
 console.log(project.info());
+
+
+class CheckPanel {
+    panels: Array<string>;
+
+    constructor() {
+        this.panels = new Array<string>();
+    }
+
+    add(id: string) {
+        this.panels.push(id);
+    }
+
+    click(id:string) {
+        for (let e of this.panels) {
+            element = document.getElementById(e);
+            if (! element)
+                continue;
+            if (e == id)
+                element.display = "block";
+            else
+                element.display = "none";
+        }
+    }
+
+    clicked():string {
+        for (let e of this.panels) {
+            element = document.getElementById(e);
+            if (! element)
+                continue;
+            if element.display != "none"
+                return e;
+        }
+        return "";
+    }
+}
+
+// function Render() {
+//     let users = "A, B, C";
+//     let html = `
+// <div>
+//     <Table data=${users} columns={columns}/>
+// </div>`;
+//     return html;
+// }
+// console.log(Render());
 
 
 function convertURIToImageData(URI: string) {
@@ -185,7 +303,7 @@ enum NImageOpcode {
 
 class NImageHead {
     // CxHxW
-    c: number; // 2 bytes
+    c: number; // 2 bytes, general == 4 for RGBA
     h: number; // 2 bytes
     w: number; // 2 bytes
     opcode: number; // opcode, 1 byte
@@ -213,8 +331,6 @@ class NImageHead {
         c[6] = this.opcode & 0xff;
         c[7] = this.crc8(c, 7);
 
-        // console.log("encode array:", c);
-        // console.log("encode crc:", c[7]);
         return p;
     }
 
@@ -227,9 +343,6 @@ class NImageHead {
         this.w = b[2];
         this.opcode = c[6];
 
-        // console.log("decode array:", c);
-        // console.log("decode raw crc:", c[7]);
-        // console.log("decode cal crc:", this.crc8(c, 7));
         return (c[7] == this.crc8(c, 7));
     }
 
@@ -243,15 +356,10 @@ class NImageHead {
 
         for (let i = 0; i < n; i++) {
             crc = crc ^ b[i];
-
             for (let j = 0; j < 8; j++) {
                 odd = crc & 0x80;
                 crc = crc << 1;
-                if (odd) {
-                    crc = crc ^ 0x07 % 256;
-                } else {
-                    crc = crc % 256;
-                }
+                crc = (odd)? (crc ^ 0x07 % 256) : (crc % 256);
             }
         }
 
