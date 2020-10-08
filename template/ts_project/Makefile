@@ -9,6 +9,7 @@ TS_SOURCE_FILES := \
 	src/progress.ts \
 	src/keyboard.ts \
 	src/mouse.ts \
+	src/panel.ts \
 	src/uploader.ts \
 	src/downloader.ts \
 
