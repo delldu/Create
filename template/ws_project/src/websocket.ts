@@ -6,6 +6,8 @@
 // ***
 // ***********************************************************************************
 
+// dataURL specification: RFC 2397
+
 const sleep = (time: number) => {
     return new Promise(resolve => setTimeout(resolve, time));
 }
@@ -14,15 +16,15 @@ const sleep = (time: number) => {
 // })
 
 // Decode dataURL to HTMLImageElement
-const dataURLDecode = (url: string, e: HTMLImageElement) => {
-    return new Promise(function(resolve, reject) {
+const dataURLToImage = (url: string) => {
+    let e = new Image() as HTMLImageElement;
+    return new Promise(function(resolve: (value: HTMLImageElement) => void, reject) {
         // Promise excutor ...
         if (url == null) {
             reject();
         }
-        e.src = url;
         e.addEventListener('load', function() {
-            resolve();
+            resolve(e);
         }, false);
         e.addEventListener('abort', function() {
             reject();
@@ -30,18 +32,43 @@ const dataURLDecode = (url: string, e: HTMLImageElement) => {
         e.addEventListener('error', function() {
             reject();
         }, false);
+        e.src = url;
     });
 }
 
+// Convert dataURL to ImageData (ArrayBuffer)
+// This is useful for NImage ...
+const dateURLToImageData = (url: string) => {
+    return new Promise(function(resolve, reject) {
+        if (url == null)
+            return reject();
+        let canvas = document.createElement('canvas'),
+            context = canvas.getContext('2d'),
+            image = new Image();
+        image.addEventListener('load', function() {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            if (context) {
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                resolve(context.getImageData(0, 0, canvas.width, canvas.height));
+            }
+        }, false);
+        image.src = url;
+    });
+}
+
+// dateURLToImageData(URI).then((imageData) => {
+//     // Here you can use ImageData
+//     console.log(imageData);
+// });
+
 // Load dataURL from file
-const loadDataURL = (file: File) => {
+const loadDataURLFromFile = (file: File) => {
     return new Promise(function(resolve: (value: string) => void, reject) {
         if (!(file instanceof File))
             reject();
         else {
             let reader = new FileReader();
-            reader.readAsDataURL(file);
-
             reader.addEventListener("error", () => {
                 reject();
             }, false);
@@ -49,15 +76,10 @@ const loadDataURL = (file: File) => {
                 // reader ok ?
                 resolve(reader.result as string); // throw dataURL data
             }, false);
+            reader.readAsDataURL(file);
         }
     });
 }
-
-
-// convertURIToImageData(URI).then(function(imageData) {
-//     // Here you can use imageData
-//     console.log(imageData);
-// });
 
 class ImageProjectItem {
     name: string;
@@ -147,10 +169,9 @@ class ImageProject {
 
     load(file: File) {
         this.image_loading++;
-        loadDataURL(file).then((url: string) => {
+        loadDataURLFromFile(file).then((url: string) => {
             // dataURL ok ?
-            let img = new Image() as HTMLImageElement;
-            dataURLDecode(url, img).then(() => {
+            dataURLToImage(url).then((img:HTMLImageElement) => {
                 let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
                 this.items.push(unit);
                 // Goto first item
@@ -163,7 +184,7 @@ class ImageProject {
                 this.image_loading--;
             });
             // Decode end
-        }); // loadDataURL end
+        }); // loadDataURLFromFile end
     }
 
     // JSON string
@@ -199,9 +220,6 @@ class ImageProject {
     }
 }
 
-let project = new ImageProject("Demo");
-console.log(project.info());
-
 class ShiftPanel {
     panels: Array < string > ;
 
@@ -210,19 +228,24 @@ class ShiftPanel {
     }
 
     add(id: string) {
+        if (this.panels.findIndex(e => e == id) >= 0) {
+            console.log("ShiftPanel: Duplicate id", id);
+            return;
+        }
         let element = document.getElementById(id);
         if (!element) {
-            console.log("not valid element id: ", id, element);
+            console.log("ShiftPanel: Invalid element id ", id);
             return;
         }
         this.panels.push(id);
-        // Switch method
-        if (this.panels.length == 1) {
-            window.addEventListener("keydown", (e: KeyboardEvent) => {
-                if (e.key == 'Shift')
-                    this.shift();
-                e.preventDefault();
-            }, false);
+    }
+
+    click(id: string) {
+        for (let i = 0; i < this.panels.length; i++) {
+            // add make sure valid element, but compiler donot know !
+            let element = document.getElementById(this.panels[i]);
+            if (element)
+                element.style.display = (id == this.panels[i]) ? "" : "none";
         }
     }
 
@@ -248,67 +271,26 @@ class ShiftPanel {
             // add make sure valid element, but compiler donot know !
             let element = document.getElementById(this.panels[i]);
             if (element)
-                element.style.display = (i == index) ? "block" : "none";
+                element.style.display = (i == index) ? "" : "none";
         }
+    }
+
+    test() {
+        // define switch method
+        console.log("ShiftPanel: press shift key for test.");
+        window.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (e.key == 'Shift')
+                this.shift();
+            e.preventDefault();
+        }, false);
     }
 }
 
-// function Render() {
-//     let users = "A, B, C";
-//     let html = `
-// <div>
-//     <Table data=${users} columns={columns}/>
-// </div>`;
-//     return html;
-// }
-// console.log(Render());
-
-
-function convertURIToImageData(URI: string) {
-    return new Promise(function(resolve, reject) {
-        if (URI == null)
-            return reject();
-        let canvas = document.createElement('canvas'),
-            context = canvas.getContext('2d'),
-            image = new Image();
-        image.addEventListener('load', function() {
-            canvas.width = image.width;
-            canvas.height = image.height;
-            if (context) {
-                context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                resolve(context.getImageData(0, 0, canvas.width, canvas.height));
-            }
-        }, false);
-        image.src = URI;
-    });
-}
-let URI = "data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAABMLAAATCwAAAAAAAAAAAABsiqb/bIqm/2yKpv9siqb/bIqm/2yKpv9siqb/iKC3/2yKpv9siqb/bIqm/2yKpv9siqb/bIqm/2yKpv9siqb/bIqm/2yKpv9siqb/bIqm/2yKpv9siqb/2uLp///////R2uP/dZGs/2yKpv9siqb/bIqm/2yKpv9siqb/bIqm/2yKpv9siqb/bIqm/2yKpv9siqb/bIqm/////////////////+3w9P+IoLf/bIqm/2yKpv9siqb/bIqm/2yKpv9siqb/bIqm/2yKpv9siqb/bIqm/2yKpv///////////+3w9P+tvc3/dZGs/2yKpv9siqb/bIqm/2yKpv9siqb/TZbB/02Wwf9NlsH/TZbB/02Wwf9NlsH////////////0+Pv/erDR/02Wwf9NlsH/TZbB/02Wwf9NlsH/TZbB/02Wwf9NlsH/TZbB/02Wwf9NlsH/TZbB//////////////////////96sNH/TZbB/02Wwf9NlsH/TZbB/02Wwf9NlsH/TZbB/02Wwf9NlsH/TZbB/02Wwf////////////////+Ft9T/TZbB/02Wwf9NlsH/TZbB/02Wwf9NlsH/E4zV/xOM1f8TjNX/E4zV/yKT2P/T6ff/////////////////4fH6/z+i3f8TjNX/E4zV/xOM1f8TjNX/E4zV/xOM1f8TjNX/E4zV/xOM1f+m1O/////////////////////////////w+Pz/IpPY/xOM1f8TjNX/E4zV/xOM1f8TjNX/E4zV/xOM1f8TjNX////////////T6ff/Tqng/6bU7////////////3u/5/8TjNX/E4zV/xOM1f8TjNX/AIv//wCL//8Ai///AIv/////////////gMX//wCL//8gmv////////////+Axf//AIv//wCL//8Ai///AIv//wCL//8Ai///AIv//wCL///v+P///////+/4//+Axf//z+n/////////////YLf//wCL//8Ai///AIv//wCL//8Ai///AIv//wCL//8Ai///gMX/////////////////////////////z+n//wCL//8Ai///AIv//wCL//8Ai///AHr//wB6//8Aev//AHr//wB6//+Avf//7/f/////////////v97//xCC//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AHr//wB6//8Aev//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
-// convertURIToImageData(URI).then(function(imageData) {
-//     // Here you can use imageData
-//     console.log(imageData);
-// });
-
-// export class RotateImageFileProcessor implements ImageFileProcessor {
-//     async process(dataURL: string): Promise < string > {
-//         const canvas = document.createElement('canvas');
-//         const image = await createImageFromDataUrl(dataURL);
-//         canvas.width = image.height;
-//         canvas.height = image.width;
-//         const ctx = canvas.getContext("2d");
-//         ctx.save();
-//         ctx.translate(canvas.width / 2, canvas.height / 2);
-//         ctx.rotate(Math.PI / 2);
-//         ctx.drawImage(image, -image.width / 2, -image.height / 2);
-//         ctx.restore();
-//         return canvas.toDataURL(getImageTypeFromDataUrl(dataURL));
-//     }
-// }
-
 enum NImageOpcode {
-    Clean = 2,
-        Zoom = 4,
-        Color = 6,
-        Patch = 8
+    Clean,
+    Zoom,
+    Color,
+    Patch
 };
 
 class NImageHead {
@@ -416,14 +398,15 @@ class NImage {
     }
 }
 
+// NImagePerformance
 function NImagePerformance() {
     let start_time = (new Date()).getTime();
     for (let i = 0; i < 1000; i++) {
         let x = new NImage();
         x.head = new NImageHead();
-        x.head.setSize(3, 2048, 4096);
-        // h.setSize(3, 1024, 2048);
-        x.head.opcode = 12;
+        x.head.setSize(4, 2048, 4096);  // 8K Image
+        // h.setSize(4, 1024, 2048);
+        x.head.opcode = NImageOpcode.Patch;
         x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
 
         let p = x.encode();
@@ -439,38 +422,6 @@ function NImagePerformance() {
 }
 
 // NImagePerformance();
-
-
-
-// console.log("h:", h);
-// let e = h.encode();
-// console.log("e:", e);
-// let d = h.decode(e);
-// console.log("d:", d, "h: ", h);
-
-// let data = new NImageData(256, 256);
-// console.log("data: ", data);
-// let a = new Uint8ClampedArray(data.data);
-// console.log("Uint8Array: ", a);
-// for (let i = 0; i < a.length; i++) {
-//     a[i] = data.data[i];
-// }
-
-// for (let i = 0; i < data.data.length; i++) {
-//     a[i] = data.data[i];
-// }
-
-
-// var blob = new Blob(["Hello World"]);
-// var wsurl = window.URL.createObjectURL(blob);
-// var a = document.getElementById("h");
-// a.download = "helloworld.txt";
-// a.href = wsurl;
-//
-
-// let img = new Image();
-// img.src = URI;
-// console.log("What's is image? ", img);
 
 class NImageClient {
     wsurl: string;
@@ -493,10 +444,6 @@ class NImageClient {
         }, false);
 
         this.socket.addEventListener('close', (event: CloseEvent) => {
-            // var code = event.code;
-            // var reason = event.reason;
-            // var wasClean = event.wasClean;
-            // handle close event
             console.log("WebSocket closed for " + event.reason + "(" + event.code + ")");
         }, false);
 
@@ -575,30 +522,3 @@ class NImageClient {
 }
 
 // let client = new NImageClient("socket://localhost:8080");
-
-
-
-// let wsurl = "socket://localhost:8080";
-
-
-
-// socket.readyState == WebSocket.OPEN
-// socket.binaryType = "arraybuffer";
-// socket.send(buffer);
-
-// socket.onmessage = function(event) {
-//     if (event.data instanceof String) {
-//         console.log("Received data string");
-//     }
-
-//     if (event.data instanceof ArrayBuffer) {
-//         var buffer = event.data;
-//         console.log("Received arraybuffer");
-//     }
-
-//     console.log("Received Message: " + event.data);
-// };
-
-// socket.onerror = function(event) {
-//     // handle error event
-// };
