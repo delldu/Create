@@ -20,14 +20,14 @@
 var canvas;
 
 function init() {
-    canvas = new NiImage("canvas");
+    canvas = new NImage("canvas");
 }
 
 function add_file(th) {
     if (th && th.files) {
         for (i = 0; i < th.files.length; i++) {
             console.log("Add file.", th.files[i].name);
-            canvas.addImage(th.files[i]);
+            // canvas.addImage(th.files[i]);
         }
     }
 }
