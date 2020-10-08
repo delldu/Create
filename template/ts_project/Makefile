@@ -4,9 +4,11 @@ TARGET := \
 	dist/index.css
 
 TS_SOURCE_FILES := \
+	src/canvas.ts \
 	src/message.ts \
 	src/progress.ts \
-	src/canvas.ts \
+	src/keyboard.ts \
+	src/mouse.ts \
 	src/uploader.ts \
 	src/downloader.ts \
 

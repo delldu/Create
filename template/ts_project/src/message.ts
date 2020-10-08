@@ -6,8 +6,6 @@
 // ***
 // ***********************************************************************************
 
-// "use strict";
-
 class Message {
     timer: number;
     element: HTMLElement; // message element
@@ -18,13 +16,17 @@ class Message {
         this.element.addEventListener('dblclick', function() {
             this.style.display = 'none';
         }, false);
+
+        console.log("Message: double click hidden messgae.");
     }
 
+    // show message for t micro seconds
     show(msg: string, t: number) {
         if (this.timer) {
             clearTimeout(this.timer);
         }
         this.element.innerHTML = msg;
+        this.element.style.display = "";    // Show
         this.timer = setTimeout(() => {
             this.element.style.display = 'none';
         }, t);

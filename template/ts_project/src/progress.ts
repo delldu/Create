@@ -6,13 +6,15 @@
 // ***
 // ***********************************************************************************
 
-// "use strict";
-
 class Progress {
     element: HTMLElement;
 
     constructor(i: number) {
         this.element = document.getElementsByTagName("progress")[i];
+    }
+
+    show(yes: boolean) {
+        this.element.style.display = (yes) ? "" : "none";
     }
 
     update(v: number) {
