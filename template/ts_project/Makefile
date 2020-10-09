@@ -5,6 +5,7 @@ TARGET := \
 
 TS_SOURCE_FILES := \
 	src/canvas.ts \
+	src/image.ts \
 	src/message.ts \
 	src/progress.ts \
 	src/keyboard.ts \
@@ -30,7 +31,7 @@ dist/index.css: src/index.css
 	cp src/index.css dist/index.css
 
 clean:
-	rm -rf dist/*.js dist/*.html dist/*.css
+	rm -rf src/index.ts dist/*.js dist/*.html dist/*.css
 
 
 test:
@@ -38,9 +39,3 @@ test:
 	cp src/image.html dist
 	cp src/index.css dist
 	cp src/image.py dist
-	tsc src/image.ts -lib es2015,dom --strict --removeComments --outDir dist
-
-
-
-
-	

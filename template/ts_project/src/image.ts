@@ -392,7 +392,7 @@ class NImageClient {
     }
 
     private echo_start(x: NImage):Promise<ArrayBuffer> {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             if (!x.valid())
                 reject("NImageClient: Invalid input tensor.");
 

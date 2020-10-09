@@ -98,7 +98,8 @@ function ajaxPostFormData(url: string, data: FormData): Promise < string > {
     return new Promise(function(resolve, reject) {
         let xhr = new XMLHttpRequest();
         // xhr.timeout = 10 * 1000;
-    	
+		// xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+
         xhr.open("POST", url, true); // true is async
         xhr.addEventListener("progress", (event: ProgressEvent) => {
             console.log("ajaxPostFormData: loaded", event.loaded, "bytes, total", event.total, "bytes.");
@@ -118,8 +119,11 @@ function ajaxPostFormData(url: string, data: FormData): Promise < string > {
 
 function ajaxPostFiles(url: string, files: FileList): Promise < string > {
     let formData = new FormData();
-    for (let i = 0; i < files.length; i++)
-        formData.append('files[]', files[i]);
+    // formData.append(name, value, filename);
+	for (let i = 0; i < files.length;i++)
+　　　　formData.append('file[]', files[i]);
+    console.log("Files Formdata -------- ", formData);
+
     return ajaxPostFormData(url, formData);
 }
 

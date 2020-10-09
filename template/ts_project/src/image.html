@@ -5,12 +5,12 @@
     <title>New Image</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="index.css">
-    <script src="image.js"></script>
+    <script src="index.js"></script>
 </head>
 
 <body onload="init()">
     <form method=post enctype=multipart/form-data action="/upload">
-        <input type="file" name="file" onchange="add_file(this)" accept='image/*'>
+        <input type="file" name="file[]" onchange="add_file(this)" multiple="multiple" accept='image/*'>
         <input type=submit value=upload>
     </form>
     <canvas id="canvas" height="480px" width="640px" style="border: 1px solid">
@@ -20,15 +20,23 @@
 var canvas;
 
 function init() {
-    canvas = new NImage("canvas");
+    // canvas = new NImage("canvas");
 }
 
 function add_file(th) {
     if (th && th.files) {
-        for (i = 0; i < th.files.length; i++) {
-            console.log("Add file.", th.files[i].name);
-            // canvas.addImage(th.files[i]);
-        }
+        console.log(th.files);
+            // Wait loading finish? 50~1000 ms is reasonable for human beings
+            sleep(200).then(() => {
+                ajaxPostFiles(location.origin + "/upload",th.files).then((result) => {
+                    console.log("Post Files Result:", result);
+                },
+                (errmsg)=>{
+                    console.log("Post Files Error:", errmsg);
+                });
+
+            });
+
     }
 }
 </script>
