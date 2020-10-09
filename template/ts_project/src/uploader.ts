@@ -7,16 +7,16 @@
 // ***********************************************************************************
 
 function loadXMLDoc() {
-    let xmlhttp = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
 
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            // document.getElementById("myDiv").innerHTML = xmlhttp.responseText;
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            // document.getElementById("myDiv").innerHTML = xhr.responseText;
         }
     }
-    xmlhttp.open("POST", "/ajax/demo_post2.asp", true);
-    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xmlhttp.send("fname=Bill&lname=Gates");
+    xhr.open("POST", "/ajax/demo_post2.asp", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.send("fname=Bill&lname=Gates");
 }
 
 // mime -- MIME(Multipurpose Internet Mail Extensions)
@@ -41,49 +41,86 @@ function selectFiles(mime: string): Promise < FileList > {
     });
 }
 
-class AJax {
-    xhr: XMLHttpRequest;
+// AJAX = Asynchronous JavaScript and XML
+function ajaxGet(url: string): Promise < string > {
+    return new Promise(function(resolve, reject) {
+        let xhr = new XMLHttpRequest();
+        // xhr.timeout = 10 * 1000;
 
-    constructor() {
-        this.xhr = new XMLHttpRequest();
-    }
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-    // post, get, ...
-    // text/binary/image ... ?
-
-    get(url: string) {
-
-    }
-
-    post(url: string, file: File) {
-        let form = new FormData();
-        form.append("file", file);
-
-        this.xhr.open("post", url, true); // true is async
-
-        this.xhr.addEventListener("progress", (event: ProgressEvent) => {
-            // ProgressEvent.loaded ， ProgressEvent.total
-            console.log(event.loaded);
+        xhr.open("GET", url, true); // true is async
+        xhr.addEventListener("progress", (event: ProgressEvent) => {
+            console.log("ajaxGet: loaded", event.loaded, "bytes, total", event.total, "bytes.");
         }, false);
-
-        this.xhr.addEventListener("load", (event: Event) => {
-            console.log(this.xhr.responseText);
+        xhr.addEventListener("load", (event: Event) => {
+            resolve(xhr.responseText); // xhr.statusText == 200 OK ?
         }, false);
-
-        this.xhr.addEventListener("error", (event: Event) => {
-            console.log("Upload failed.")
+        xhr.addEventListener("error", (event: Event) => {
+            reject("ajaxGet: error.");
         }, false);
-
-        this.xhr.addEventListener("abort", (event: Event) => {
-            console.log("Abort.");
+        xhr.addEventListener("abort", (event: Event) => {
+            reject("ajaxGet: abort."); // timeout etc ...
         }, false);
+        xhr.send();
+    });
+}
 
-        this.xhr.send(form);
-    }
+// Post ArrayBuffer, receive ArrayBuffer ...
+function ajaxPostArrayBuffer(url: string, data: ArrayBuffer): Promise < ArrayBuffer > {
+    return new Promise(function(resolve, reject) {
+        let xhr = new XMLHttpRequest();
+        // xhr.timeout = 10 * 1000;
 
-    cancle() {
-        this.xhr.abort();
-    }
+        xhr.responseType = "arraybuffer";
+        xhr.open("POST", url, true); // true is async
+        xhr.addEventListener("progress", (event: ProgressEvent) => {
+            console.log("ajaxPostArrayBuffer: loaded", event.loaded, "bytes, total", event.total, "bytes.");
+        }, false);
+        xhr.addEventListener("load", (event: Event) => {
+            resolve(xhr.response as ArrayBuffer); // xhr.statusText == 200 OK ?
+        }, false);
+        xhr.addEventListener("error", (event: Event) => {
+            reject("ajaxPostArrayBuffer: error.");
+        }, false);
+        xhr.addEventListener("abort", (event: Event) => {
+            reject("ajaxPostArrayBuffer: abort."); // timeout etc ...
+        }, false);
+        xhr.send(data);
+    });
+}
+
+// Create form data like ajaxPostFiles:
+// 	let data = new FormData();
+// 	data.append("username", "Bill");
+// 	data.append("age", 60);
+function ajaxPostFormData(url: string, data: FormData): Promise < string > {
+    return new Promise(function(resolve, reject) {
+        let xhr = new XMLHttpRequest();
+        // xhr.timeout = 10 * 1000;
+    	
+        xhr.open("POST", url, true); // true is async
+        xhr.addEventListener("progress", (event: ProgressEvent) => {
+            console.log("ajaxPostFormData: loaded", event.loaded, "bytes, total", event.total, "bytes.");
+        }, false);
+        xhr.addEventListener("load", (event: Event) => {
+            resolve(xhr.responseText); // xhr.statusText == 200 OK ?
+        }, false);
+        xhr.addEventListener("error", (event: Event) => {
+            reject("ajaxPostFormData: error.");
+        }, false);
+        xhr.addEventListener("abort", (event: Event) => {
+            reject("ajaxPostFormData: abort."); // timeout etc ...
+        }, false);
+        xhr.send(data);
+    });
+}
+
+function ajaxPostFiles(url: string, files: FileList): Promise < string > {
+    let formData = new FormData();
+    for (let i = 0; i < files.length; i++)
+        formData.append('files[]', files[i]);
+    return ajaxPostFormData(url, formData);
 }
 
 // <body>
