@@ -11,7 +11,7 @@ TS_SOURCE_FILES := \
 	src/mouse.ts \
 	src/panel.ts \
 	src/uploader.ts \
-	src/downloader.ts \
+	src/download.ts \
 
 #	src/workspace.ts
 

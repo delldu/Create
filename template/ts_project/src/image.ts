@@ -24,32 +24,31 @@ const sleep = (time: number) => {
 // })
 
 // Decode dataURL to HTMLImageElement
-const dataURLToImage = (url: string) => {
-    let e = new Image() as HTMLImageElement;
-    return new Promise(function(resolve: (value: HTMLImageElement) => void, reject) {
+function dataURLToImage(url: string): Promise < HTMLImageElement > {
+    return new Promise(function(resolve, reject) {
         // Promise excutor ...
         if (url == null) {
-            reject();
+            reject("dataURLToImage: url == null");
         }
-        e.addEventListener('load', function() {
+        let e = new Image() as HTMLImageElement;
+        e.addEventListener('load', () => {
             resolve(e);
         }, false);
-        e.addEventListener('abort', function() {
-            reject();
+        e.addEventListener('abort', () => {
+            reject("dataURLToImage: abort");
         }, false);
-        e.addEventListener('error', function() {
-            reject();
+        e.addEventListener('error', () => {
+            reject("dataURLToImage: error");
         }, false);
         e.src = url;
     });
 }
 
 // Convert dataURL to ImageData (ArrayBuffer)
-// This is useful for NImage ...
-const dateURLToImageData = (url: string) => {
+function dateURLToImageData(url: string): Promise < ImageData > {
     return new Promise(function(resolve, reject) {
         if (url == null)
-            return reject();
+            reject("dateURLToImageData: url == null");
         let canvas = document.createElement('canvas'),
             context = canvas.getContext('2d'),
             image = new Image();
@@ -71,14 +70,14 @@ const dateURLToImageData = (url: string) => {
 // });
 
 // Load dataURL from file
-const loadDataURLFromFile = (file: File) => {
-    return new Promise(function(resolve: (value: string) => void, reject) {
+function loadDataURLFromFile(file: File): Promise<string> {
+    return new Promise(function(resolve, reject) {
         if (!(file instanceof File))
-            reject();
+            reject("loadDataURLFromFile: input is not File object.");
         else {
             let reader = new FileReader();
             reader.addEventListener("error", () => {
-                reject();
+                reject("loadDataURLFromFile: file read error.");
             }, false);
             reader.addEventListener("load", () => {
                 // reader ok ?
@@ -179,7 +178,7 @@ class ImageProject {
         this.image_loading++;
         loadDataURLFromFile(file).then((url: string) => {
             // dataURL ok ?
-            dataURLToImage(url).then((img:HTMLImageElement) => {
+            dataURLToImage(url).then((img: HTMLImageElement) => {
                 let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
                 this.items.push(unit);
                 // Goto first item
@@ -346,7 +345,7 @@ function NImagePerformance() {
     for (let i = 0; i < 1000; i++) {
         let x = new NImage();
         x.head = new NImageHead();
-        x.head.setSize(4, 2048, 4096);  // 8K Image
+        x.head.setSize(4, 2048, 4096); // 8K Image
         // h.setSize(4, 1024, 2048);
         x.head.opcode = NImageOpcode.Patch;
         x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
@@ -392,30 +391,29 @@ class NImageClient {
         this.socket.binaryType = "arraybuffer";
     }
 
-    private echo_start(x: NImage) {
-        return new Promise((resolve: (value: ArrayBuffer) => void, reject: (value: string) => void) => {
-            if (!x.valid()) {
-                return reject("Invalid input tensor.");
-            }
+    private echo_start(x: NImage):Promise<ArrayBuffer> {
+        return new Promise(function(resolve, reject) {
+            if (!x.valid())
+                reject("NImageClient: Invalid input tensor.");
 
             this.socket.addEventListener('message', (event: MessageEvent) => {
                 if (event.data instanceof String) {
-                    console.log("Received data string");
+                    console.log("NImageClient: Received data string");
                 }
 
                 if (event.data instanceof ArrayBuffer) {
-                    console.log("Received arraybuffer");
+                    console.log("NImageClient: Received arraybuffer");
                     resolve(event.data);
                 }
             }, false);
 
             this.socket.addEventListener('error', (event: Event) => {
-                return reject("WebSocket open error.")
+                reject("NImageClient: WebSocket open error.")
                 // handle error event
             }, false);
 
             if (this.socket.readyState != WebSocket.OPEN) {
-                return reject("WebSocket not opened.");
+                reject("NImageClient: WebSocket not opened.");
             }
 
             this.socket.send(x.encode());

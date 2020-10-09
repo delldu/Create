@@ -52,7 +52,7 @@ class Box {
     constructor(public x: number, public y: number, public w: number, public h: number) {}
 
     valid(): boolean {
-        // console.log("Too small blob, give up.");
+        // console.log("Canvas: too small blob, give up.");
         return (this.w >= MOUSE_DISTANCE_THRESHOLD * 4 && this.h >= MOUSE_DISTANCE_THRESHOLD * 4);
     }
 
@@ -214,7 +214,7 @@ class Shape {
 
     // dump vertex for debug
     dump() {
-        console.log("Dump vertex ...");
+        console.log("Canvas: dump vertex ...");
         let n = this.points.length;
         for (let i = 0; i < n; i++) {
             console.log("  i:", i, this.points[i]);
@@ -382,7 +382,7 @@ class ShapeBlobs {
                     this.delete(v_index);
                 return true;
             } else {
-                console.log("Do you want to delete vertex ? please press ctrl key and click vertex.")
+                console.log("Canvas: do you want to delete vertex ? please press ctrl key and click vertex.")
             }
             return false;
         }
@@ -395,7 +395,7 @@ class ShapeBlobs {
                 this.blobs[e_index].insert(e_sub_index + 1, m.start);
                 return true;
             } else {
-                console.log("Do you want to add vertex ? please press ctrl key and click edge.")
+                console.log("Canvas: do you want to add vertex ? please press ctrl key and click edge.")
             }
             return false;
         }
@@ -508,7 +508,7 @@ class ShapeBlobs {
                 this.blobs[v_index].points[v_sub_index].y += deltaY;
                 return true;
             } else {
-                console.log("Do you want dragging vertex ? please press ctrl key and drag vertex.")
+                console.log("Canvas: do you want dragging vertex ? please press ctrl key and drag vertex.")
             }
             return false;
         }
@@ -640,7 +640,7 @@ class Canvas {
             index = 1;
         index = index % 2;
         this.mode_index = index;
-        console.log("Set mode:", this.mode_index);
+        console.log("Canvas: set mode:", this.mode_index);
     }
 
     getMode(): number {
@@ -666,7 +666,7 @@ class Canvas {
 
     private viewModeMouseUpHandler(e: MouseEvent) {
         if (!this.mouse.isclick() && this.mouse.pressed) {
-            console.log("dragging ..., which src object ? moving background ?");
+            console.log("Canvas: dragging ..., which src object ? moving background ?");
         }
     }
 
@@ -724,17 +724,15 @@ class Canvas {
 
 
     private editModeKeyDownHandler(e: KeyboardEvent) {
-        console.log("editModeKeyDown ...", e.key);
+        console.log("Canvas: editModeKeyDown ...", e.key);
     }
 
     private editModeKeyUpHandler(e: KeyboardEvent) {
-        console.log("editModeKeyUpHandler ...", e.key);
+        console.log("Canvas: editModeKeyUpHandler ...", e.key);
         if (e.key === "d") {
             if (this.shape_blobs.selected_index >= 0) {
-                console.log("We will delete blob:", this.shape_blobs.selected_index);
-                console.log("Delete before:", this.shape_blobs);
+                console.log("Canvas: delete blob:", this.shape_blobs.selected_index);
                 this.shape_blobs.delete(this.shape_blobs.selected_index);
-                console.log("Delete after:", this.shape_blobs);
                 this.shape_blobs.selected_index = -1;
                 this.redraw();
             }
@@ -810,7 +808,7 @@ class Canvas {
 
         // Handle keyboard
         this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
-            console.log("window.addEventListener keydown ...", e);
+            console.log("Canvas: addEventListener keydown ...", e);
             if (e.key == 'Shift') {
                 this.setMode(this.mode_index + 1);
                 return;
@@ -824,7 +822,7 @@ class Canvas {
         }, false);
 
         this.canvas.addEventListener('keyup', (e: KeyboardEvent) => {
-            console.log("window.addEventListener keyup ...", e);
+            console.log("Canvas: addEventListener keyup ...", e);
             if (this.isEditMode())
                 this.editModeKeyUpHandler(e);
             else
@@ -844,7 +842,7 @@ class Canvas {
         this.brush.scale(ZOOM_LEVELS[this.zoom_index], ZOOM_LEVELS[this.zoom_index]);
         this.redraw();
 
-        console.log("Set Zoom: index = ", index, "scale: ", ZOOM_LEVELS[index]);
+        console.log("Canvas: set zoom: index = ", index, "scale: ", ZOOM_LEVELS[index]);
     }
 
     redraw() {

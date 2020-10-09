@@ -19,20 +19,19 @@ function loadXMLDoc() {
     xmlhttp.send("fname=Bill&lname=Gates");
 }
 
-function createInputFile(): HTMLInputElement {
-    let input = document.createElement('input') as HTMLInputElement;
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.multiple = true;
+// mime -- MIME(Multipurpose Internet Mail Extensions)
+function selectFiles(mime: string): Promise < FileList > {
+    return new Promise((resolve, reject) => {
+        let input = document.createElement('input') as HTMLInputElement;
+        input.type = 'file';
+        input.accept = mime; // 'image/*';
+        input.multiple = true;
 
-    return input;
-}
-
-function selectFiles() {
-    return new Promise(function(resolve: (value: FileList | null) => void, reject) {
-        let input = createInputFile();
         input.addEventListener('change', () => {
-            resolve(input.files || null);
+            if (input.files != undefined)
+                resolve(input.files);
+            else
+                reject("selectFiles: NO file selected.");
         }, false);
 
         setTimeout(() => {
@@ -42,16 +41,21 @@ function selectFiles() {
     });
 }
 
-class uploadFile {
+class AJax {
     xhr: XMLHttpRequest;
 
     constructor() {
         this.xhr = new XMLHttpRequest();
     }
 
-    public start(file: File) {
-        let url = "http://upload.lwio.me";
+    // post, get, ...
+    // text/binary/image ... ?
 
+    get(url: string) {
+
+    }
+
+    post(url: string, file: File) {
         let form = new FormData();
         form.append("file", file);
 
@@ -77,7 +81,7 @@ class uploadFile {
         this.xhr.send(form);
     }
 
-    public cancle() {
+    cancle() {
         this.xhr.abort();
     }
 }
@@ -87,9 +91,9 @@ class uploadFile {
 //        <span id="percentage"></span>
 //        <span id="time"></span>
 //        <br><br>
-//        <input type="file" id="files" class="upload-input" onchange="uploadFile.prototype.showUploadInfo(this.files)" multiple />
-//        <div class="upload-button" onclick="uploadFile.prototype.postFile()">upload</div>
-//        <div class="upload-button" onclick="uploadFile.prototype.cancleUploadFile()">cancel</div>
+//        <input type="file" id="files" class="upload-input" onchange="AJax.prototype.showUploadInfo(this.files)" multiple />
+//        <div class="upload-button" onclick="AJax.prototype.postFile()">upload</div>
+//        <div class="upload-button" onclick="AJax.prototype.cancleUploadFile()">cancel</div>
 //        <output id="list"></output>
 //    </body>
 //

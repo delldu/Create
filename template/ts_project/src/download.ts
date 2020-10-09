@@ -5,7 +5,7 @@
 // *** File Author: Dell, 2020-09-15 18:09:40
 // ***
 // ***********************************************************************************
-function Download(href: string, filename: string) {
+function download(href: string, filename: string) {
     let a = document.createElement('a');
     a.href = href;
     a.target = '_blank';
@@ -21,34 +21,35 @@ function Download(href: string, filename: string) {
     a.dispatchEvent(event);
 }
 
-function SaveTextAsFile(text: string, filename: string) {
+function saveTextAsFile(text: string, filename: string) {
     let href = URL.createObjectURL(text);
-    Download(href, filename);
+    download(href, filename);
 }
 
 
-function SaveDataURLAsImage(dataurl: string, filename: string) {
-    let img_mime = 'image/png';
+function saveDataURLAsImage(dataurl: string, filename: string) {
+    // mime --  MIME(Multipurpose Internet Mail Extensions)
+    let mime = 'image/png';
 
     if (dataurl.startsWith('data:')) {
         let c1 = dataurl.indexOf(':', 0);
         let c2 = dataurl.indexOf(';', c1);
-        img_mime = dataurl.substring(c1 + 1, c2);
+        mime = dataurl.substring(c1 + 1, c2);
     }
 
-    dataurl.replace(img_mime, "image/octet-stream");
-    Download(dataurl, filename);
+    dataurl.replace(mime, "image/octet-stream");
+    download(dataurl, filename);
 }
 
-function SaveCanvasAsImage(id: string, filename: string) {
+function saveCanvasAsImage(id: string, filename: string) {
     let canvas = document.getElementById(id) as HTMLCanvasElement;
     if (!canvas) {
-        console.log("Canvas not exist? id is ", id);
+        console.log("saveCanvasAsImage: Canvas not exist? id is ", id);
         return;
     }
 
     // extract image data from canvas
-    let img_mime = 'image/png';
-    let dataurl = canvas.toDataURL(img_mime);
-    SaveDataURLAsImage(dataurl, filename);
+    let mime = 'image/png';
+    let dataurl = canvas.toDataURL(mime);
+    saveDataURLAsImage(dataurl, filename);
 }
