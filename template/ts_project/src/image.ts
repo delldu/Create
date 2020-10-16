@@ -1,4 +1,3 @@
-
 // ***********************************************************************************
 // ***
 // *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
@@ -71,7 +70,7 @@ function dateURLToImageData(url: string): Promise < ImageData > {
 // });
 
 // Load dataURL from file
-function loadDataURLFromFile(file: File): Promise<string> {
+function loadDataURLFromFile(file: File): Promise < string > {
     return new Promise(function(resolve, reject) {
         if (!(file instanceof File))
             reject("loadDataURLFromFile: input is not File object.");
@@ -294,7 +293,7 @@ class NImageHead {
             crc = crc ^ (b[i] << 8);
             for (let j = 0; j < 8; j++) {
                 if (crc & 0x8000)
-                    crc = (crc << 1)^CRC_CCITT_POLY;
+                    crc = (crc << 1) ^ CRC_CCITT_POLY;
                 else
                     crc = crc << 1;
             }
@@ -367,6 +366,42 @@ function NImagePerformance() {
 }
 
 // NImagePerformance();
+interface ImageTransformer {
+    x: NImage;
+    t: string;
+    y: NImage;
+    running: boolean;
+    ok: boolean;
+}
+
+const image_clean_trans: ImageTransformer = {
+    x: new NImage(),
+    t: "clean",
+    y: new NImage(),
+    running: false,
+    ok: false
+};
+const image_color_trans: ImageTransformer = {
+    x: new NImage(),
+    t: "color",
+    y: new NImage(),
+    running: false,
+    ok: false
+};
+const image_zoom_trans: ImageTransformer = {
+    x: new NImage(),
+    t: "zoom",
+    y: new NImage(),
+    running: false,
+    ok: false
+};
+const image_patch_trans: ImageTransformer = {
+    x: new NImage(),
+    t: "patch",
+    y: new NImage(),
+    running: false,
+    ok: false
+};
 
 class NImageClient {
     wsurl: string;
@@ -396,10 +431,10 @@ class NImageClient {
         this.socket.binaryType = "arraybuffer";
     }
 
-    private echo_start(x: NImage):Promise<ArrayBuffer> {
+    private echo_start(x: NImage): Promise < ArrayBuffer > {
         return new Promise((resolve, reject) => {
             if (!x.valid()) {
-                reject("NImageClient: Invalid input tensor.");
+                reject("NImageClient: Invalid input image.");
             }
 
             this.socket.addEventListener('message', (event: MessageEvent) => {
@@ -423,42 +458,48 @@ class NImageClient {
             this.socket.send(x.encode());
         });
     }
-
+ 
     // Call echo service via websocket
-    echoService(x: NImage): [boolean, NImage] {
-        let ok = false;
-        let y = new NImage();
+    echoService(x: NImage, t: ImageTransformer) {
+        t.x = x;
+        t.y = new NImage();
+        t.ok = false;
+        t.running = true;
+        let start_time = (new Date()).getTime();
         this.echo_start(x).then(
             (buffer: ArrayBuffer) => {
                 console.log("Received from server ", buffer.byteLength + " bytes.");
-                // receive is valid tensor ?
-                if (y.decode(buffer))
-                    ok = true;
+                // received is valid image data ?
+                if (t.y.decode(buffer)) {
+                    t.ok = true;
+                    console.log("Spend time: ", (new Date()).getTime() - start_time, "ms")
+                }
+                t.running = false;
             },
             (err_reason: string) => {
-                ok = false;
+                t.ok = false;
+                t.running = false;
             });
-        return [ok, y];
     }
 
-    clean(x: NImage): [boolean, NImage] {
+    clean(x: NImage) {
         x.head.opc = NImageOpcode.Clean;
-        return this.echoService(x);
+        this.echoService(x, image_clean_trans);
     }
 
-    zoom(x: NImage): [boolean, NImage] {
+    zoom(x: NImage) {
         x.head.opc = NImageOpcode.Zoom;
-        return this.echoService(x);
+        this.echoService(x, image_zoom_trans);
     }
 
-    color(x: NImage): [boolean, NImage] {
+    color(x: NImage) {
         x.head.opc = NImageOpcode.Color;
-        return this.echoService(x);
+        this.echoService(x, image_color_trans);
     }
 
-    patch(x: NImage): [boolean, NImage] {
+    patch(x: NImage) {
         x.head.opc = NImageOpcode.Patch;
-        return this.echoService(x);
+        this.echoService(x, image_patch_trans);
     }
 
     close() {
@@ -476,4 +517,3 @@ class NImageClient {
 // let [ok, y] = client.color(x);
 
 // console.log("OK: ", ok, y.h, y.w, y.opc, y.crc.toString(16));
-

@@ -23,7 +23,7 @@ const (
 	writeWait = 10 * time.Second
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 24 * 1024 * 1024
+	maxMessageSize = 64 * 1024 * 1024
 
 	// Time allowed to read the next pong message from the peer.
 	pongWait = 60 * time.Second
@@ -69,7 +69,7 @@ func pumpStdout(ws *websocket.Conn, r io.Reader, done chan struct{}) {
 	// }
 	s := bufio.NewReader(r)
 	for {
-		buf := make([]byte, 4*1024*1024)
+		buf := make([]byte, 64*1024*1024)
 		n, err := s.Read(buf)
 		if err != nil {
 			if err == io.EOF {

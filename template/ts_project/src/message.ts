@@ -26,7 +26,7 @@ class Message {
             clearTimeout(this.timer);
         }
         this.element.innerHTML = msg;
-        this.element.style.display = "";    // Show
+        this.element.style.display = ""; // Show
         this.timer = setTimeout(() => {
             this.element.style.display = 'none';
         }, t);
@@ -39,3 +39,4 @@ class Message {
 //     msgbar = new Message("message_id");
 //     msgbar.show("This is a message ........................", 10000); // 10 s
 // }
+

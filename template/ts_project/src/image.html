@@ -29,15 +29,10 @@ function add_file(th) {
 
     var x = new NImage();
     x.head = new NImageHead();
-    x.head.setSize(256, 256); // 8K Image ?
+    x.head.setSize(4096, 2048); // 4K Image ?
     x.head.opc = NImageOpcode.Patch;
     x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
-    let [ok, y] = client.color(x);
-    if (ok) {
-        console.log("OK: ", ok, y.h, y.w, y.opc, y.crc.toString(16));
-    } else {
-        console.log("Receive from server fail:", client.wsurl);
-    }
+    client.color(x);
 
     if (th && th.files) {
         console.log(th.files);
