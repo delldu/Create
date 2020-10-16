@@ -1,3 +1,4 @@
+
 // ***********************************************************************************
 // ***
 // *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
@@ -235,21 +236,20 @@ enum NImageOpcode {
 };
 
 class NImageHead {
-    // CxHxW
-    c: number; // 2 bytes, general == 4 for RGBA
+    // 4xHxW
     h: number; // 2 bytes
     w: number; // 2 bytes
-    opcode: number; // opcode, 1 byte
+    opc: number; // opcode, 2 byte
+    crc: number;
 
     constructor() {
-        this.c = 0;
         this.h = 0;
         this.w = 0;
-        this.opcode = 0;
+        this.opc = 0;
+        this.crc = 0;
     }
 
-    setSize(c: number, h: number, w: number) {
-        this.c = (c & 0xffff);
+    setSize(h: number, w: number) {
         this.h = (h & 0xffff);
         this.w = (w & 0xffff);
     }
@@ -258,11 +258,10 @@ class NImageHead {
         let p = new ArrayBuffer(8);
         let c = new Uint8Array(p);
         let b = new Uint16Array(p);
-        b[0] = this.c & 0xffff;
-        b[1] = this.h & 0xffff;
-        b[2] = this.w & 0xffff;
-        c[6] = this.opcode & 0xff;
-        c[7] = this.crc8(c, 7);
+        b[0] = this.h & 0xffff;
+        b[1] = this.w & 0xffff;
+        b[2] = this.opc & 0xffff;
+        b[3] = this.crc16(c, 6);
 
         return p;
     }
@@ -271,32 +270,36 @@ class NImageHead {
         let b = new Uint16Array(p);
         let c = new Uint8Array(p);
 
-        this.c = b[0];
-        this.h = b[1];
-        this.w = b[2];
-        this.opcode = c[6];
+        this.h = b[0];
+        this.w = b[1];
+        this.opc = b[2];
+        this.crc = b[3];
 
-        return (c[7] == this.crc8(c, 7));
+        console.log("Decode ........................");
+        console.log("c === ", c);
+        console.log("this.crc = ", this.crc);
+        console.log("this.crc16() = ", this.crc16(c, 6));
+
+        return (this.crc == this.crc16(c, 6));
     }
 
     dataSize(): number {
-        return this.c * this.h * this.w;
+        return 4 * this.h * this.w;
     }
 
-    crc8(b: Uint8Array, n: number): number {
+    crc16(b: Uint8Array, n: number): number {
         let crc = 0;
-        let odd;
-
+        let CRC_CCITT_POLY = 0x1021;
         for (let i = 0; i < n; i++) {
-            crc = crc ^ b[i];
+            crc = crc ^ (b[i] << 8);
             for (let j = 0; j < 8; j++) {
-                odd = crc & 0x80;
-                crc = crc << 1;
-                crc = (odd) ? (crc ^ 0x07 % 256) : (crc % 256);
+                if (crc & 0x8000)
+                    crc = (crc << 1)^CRC_CCITT_POLY;
+                else
+                    crc = crc << 1;
             }
         }
-
-        return crc & 0xff;
+        return crc & 0xffff;
     }
 }
 
@@ -321,6 +324,7 @@ class NImage {
         c1.set(h);
         // copy data
         c2.set(this.data);
+        console.log("head ---------", h);
 
         return p;
     }
@@ -345,9 +349,9 @@ function NImagePerformance() {
     for (let i = 0; i < 1000; i++) {
         let x = new NImage();
         x.head = new NImageHead();
-        x.head.setSize(4, 2048, 4096); // 8K Image
+        x.head.setSize(2048, 4096); // 8K Image
         // h.setSize(4, 1024, 2048);
-        x.head.opcode = NImageOpcode.Patch;
+        x.head.opc = NImageOpcode.Patch;
         x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
 
         let p = x.encode();
@@ -371,6 +375,7 @@ class NImageClient {
     constructor(wsurl: string) {
         this.wsurl = wsurl;
         this.socket = new WebSocket(wsurl);
+        this.socket.binaryType = "arraybuffer";
 
         this.registerHandlers();
     }
@@ -393,16 +398,16 @@ class NImageClient {
 
     private echo_start(x: NImage):Promise<ArrayBuffer> {
         return new Promise((resolve, reject) => {
-            if (!x.valid())
+            if (!x.valid()) {
                 reject("NImageClient: Invalid input tensor.");
+            }
 
             this.socket.addEventListener('message', (event: MessageEvent) => {
                 if (event.data instanceof String) {
-                    console.log("NImageClient: Received data string");
+                    console.log("Received string data ... ", event.data);
                 }
-
                 if (event.data instanceof ArrayBuffer) {
-                    console.log("NImageClient: Received arraybuffer");
+                    console.log("Received ArrayBuffer ... ", event.data);
                     resolve(event.data);
                 }
             }, false);
@@ -415,7 +420,6 @@ class NImageClient {
             if (this.socket.readyState != WebSocket.OPEN) {
                 reject("NImageClient: WebSocket not opened.");
             }
-
             this.socket.send(x.encode());
         });
     }
@@ -426,6 +430,7 @@ class NImageClient {
         let y = new NImage();
         this.echo_start(x).then(
             (buffer: ArrayBuffer) => {
+                console.log("Received from server ", buffer.byteLength + " bytes.");
                 // receive is valid tensor ?
                 if (y.decode(buffer))
                     ok = true;
@@ -437,22 +442,22 @@ class NImageClient {
     }
 
     clean(x: NImage): [boolean, NImage] {
-        x.head.opcode = NImageOpcode.Clean;
+        x.head.opc = NImageOpcode.Clean;
         return this.echoService(x);
     }
 
     zoom(x: NImage): [boolean, NImage] {
-        x.head.opcode = NImageOpcode.Zoom;
+        x.head.opc = NImageOpcode.Zoom;
         return this.echoService(x);
     }
 
     color(x: NImage): [boolean, NImage] {
-        x.head.opcode = NImageOpcode.Color;
+        x.head.opc = NImageOpcode.Color;
         return this.echoService(x);
     }
 
     patch(x: NImage): [boolean, NImage] {
-        x.head.opcode = NImageOpcode.Patch;
+        x.head.opc = NImageOpcode.Patch;
         return this.echoService(x);
     }
 
@@ -462,3 +467,13 @@ class NImageClient {
 }
 
 // let client = new NImageClient("socket://localhost:8080");
+// let x = new NImage();
+// x.head = new NImageHead();
+// x.head.setSize(2048, 4096); // 8K Image
+// // h.setSize(4, 1024, 2048);
+// x.head.opc = NImageOpcode.Patch;
+// x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
+// let [ok, y] = client.color(x);
+
+// console.log("OK: ", ok, y.h, y.w, y.opc, y.crc.toString(16));
+

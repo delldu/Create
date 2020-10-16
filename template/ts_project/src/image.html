@@ -18,25 +18,46 @@
 </body>
 <script type="text/javascript">
 var canvas;
+var client = new NImageClient("ws://localhost:8080/ws");
 
 function init() {
     // canvas = new NImage("canvas");
 }
 
 function add_file(th) {
+    console.log("Start test websocker ...");
+
+    var x = new NImage();
+    x.head = new NImageHead();
+    x.head.setSize(256, 256); // 8K Image ?
+    x.head.opc = NImageOpcode.Patch;
+    x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
+    let [ok, y] = client.color(x);
+    if (ok) {
+        console.log("OK: ", ok, y.h, y.w, y.opc, y.crc.toString(16));
+    } else {
+        console.log("Receive from server fail:", client.wsurl);
+    }
+
     if (th && th.files) {
         console.log(th.files);
-            // Wait loading finish? 50~1000 ms is reasonable for human beings
-            sleep(200).then(() => {
-                ajaxPostFiles(location.origin + "/upload",th.files).then((result) => {
-                    console.log("Post Files Result:", result);
-                },
-                (errmsg)=>{
-                    console.log("Post Files Error:", errmsg);
-                });
+        // ajaxPostFiles(location.origin + "/upload", th.files).then((result) => {
+        //         console.log("Upload files:", result);
+        //     },
+        //     (errmsg) => {
+        //         console.log("Post Files Error:", errmsg);
+        //     });
 
-            });
+        // Wait loading finish? 50~1000 ms is reasonable for human beings
+        // sleep(200).then(() => {
+        //     ajaxPostFiles(location.origin + "/upload",th.files).then((result) => {
+        //         console.log("Post Files Result:", result);
+        //     },
+        //     (errmsg)=>{
+        //         console.log("Post Files Error:", errmsg);
+        //     });
 
+        // });
     }
 }
 </script>

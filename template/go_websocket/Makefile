@@ -1,3 +1,4 @@
+# export GOPROXY=https://mirrors.aliyun.com/goproxy/
 all:
 	go build -o websocket main.go
 

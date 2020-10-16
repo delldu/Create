@@ -48,7 +48,7 @@ func pumpStdin(ws *websocket.Conn, w io.Writer) {
 		if err != nil {
 			break
 		}
-		message = append(message, '\n')
+		// message = append(message, '\n') 	// BinaryMessage donot append '\n' !!!
 		if _, err := w.Write(message); err != nil {
 			break
 		}
@@ -56,17 +56,37 @@ func pumpStdin(ws *websocket.Conn, w io.Writer) {
 }
 
 func pumpStdout(ws *websocket.Conn, r io.Reader, done chan struct{}) {
-	s := bufio.NewScanner(r)
-	for s.Scan() {
-		ws.SetWriteDeadline(time.Now().Add(writeWait))
-		if err := ws.WriteMessage(websocket.TextMessage, s.Bytes()); err != nil {
-			ws.Close()
-			break
+	// s := bufio.NewScanner(r)
+	// for s.Scan() {
+	// 	ws.SetWriteDeadline(time.Now().Add(writeWait))
+	// 	// if err := ws.WriteMessage(websocket.TextMessage, s.Bytes()); err != nil {
+	// 		ws.Close()
+	// 		break
+	// 	}
+	// }
+	// if s.Err() != nil {
+	// 	log.Println("Scan error:", s.Err())
+	// }
+	s := bufio.NewReader(r)
+	for {
+		buf := make([]byte, 4*1024*1024)
+		n, err := s.Read(buf)
+		if err != nil {
+			if err == io.EOF {
+				break;
+			} else {
+				log.Println("Reader error.");
+			}
+		} else {
+			buf = buf[:n]
+			ws.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := ws.WriteMessage(websocket.BinaryMessage, buf); err != nil {
+				ws.Close()
+				break
+			}
 		}
 	}
-	if s.Err() != nil {
-		log.Println("scan:", s.Err())
-	}
+
 	close(done)
 
 	ws.SetWriteDeadline(time.Now().Add(writeWait))
@@ -96,7 +116,11 @@ func websocketError(ws *websocket.Conn, msg string, err error) {
 }
 
 func handleWebSocketService(w http.ResponseWriter, r *http.Request) {
-	upgrader := websocket.Upgrader{}
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
