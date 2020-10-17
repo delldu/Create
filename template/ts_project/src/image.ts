@@ -23,6 +23,21 @@ const sleep = (time: number) => {
 //     console.log("2 seconds passed.");
 // })
 
+const crc16 = (b: Uint8Array, n: number): number => {
+    let crc = 0;
+    let CRC_CCITT_POLY = 0x1021;
+    for (let i = 0; i < n; i++) {
+        crc = crc ^ (b[i] << 8);
+        for (let j = 0; j < 8; j++) {
+            if (crc & 0x8000)
+                crc = (crc << 1) ^ CRC_CCITT_POLY;
+            else
+                crc = crc << 1;
+        }
+    }
+    return crc & 0xffff;
+}
+
 // Decode dataURL to HTMLImageElement
 function dataURLToImage(url: string): Promise < HTMLImageElement > {
     return new Promise(function(resolve, reject) {
@@ -234,6 +249,45 @@ enum NImageOpcode {
     Patch
 };
 
+class AbHead {
+    // CPU: 0x12345678, Storage: [12,34,56,78], Little Endian
+
+    t: string;      // 2 bytes, Message type
+    len: number;    // 4 bytes, Message length
+    crc: number;    // 2 bytes, CRC16
+
+    constructor() {
+        this.t = "ab";    // charCodeAt() ?
+        this.len = 0;
+        this.crc = 0;
+    }
+
+    encode(): ArrayBuffer {
+        let p = new ArrayBuffer(8);
+        let c = new Uint8Array(p);
+        let dv = new DataView(p);
+
+        c[0] = this.t.charCodeAt(0);
+        c[1] = this.t.charCodeAt(1);
+        dv.setUint32(2, this.len, false);
+        dv.setUint16(6, crc16(c, 6), false);
+
+        return p;
+    }
+
+    decode(p: ArrayBuffer): boolean {
+        let c = new Uint8Array(p);
+        let dv = new DataView(p);
+
+        this.t = String.fromCharCode(c[0]) + String.fromCharCode(c[1]);
+        this.len = dv.getUint32(2, false);
+        this.crc = dv.getUint16(6, false);
+        let crc = crc16(c, 6);
+
+        return this.crc == crc;
+    }
+}
+
 class NImageHead {
     // 4xHxW
     h: number; // 2 bytes
@@ -260,7 +314,7 @@ class NImageHead {
         b[0] = this.h & 0xffff;
         b[1] = this.w & 0xffff;
         b[2] = this.opc & 0xffff;
-        b[3] = this.crc16(c, 6);
+        b[3] = crc16(c, 6);
 
         return p;
     }
@@ -277,28 +331,13 @@ class NImageHead {
         console.log("Decode ........................");
         console.log("c === ", c);
         console.log("this.crc = ", this.crc);
-        console.log("this.crc16() = ", this.crc16(c, 6));
+        console.log("this.crc16() = ", crc16(c, 6));
 
-        return (this.crc == this.crc16(c, 6));
+        return (this.crc == crc16(c, 6));
     }
 
     dataSize(): number {
         return 4 * this.h * this.w;
-    }
-
-    crc16(b: Uint8Array, n: number): number {
-        let crc = 0;
-        let CRC_CCITT_POLY = 0x1021;
-        for (let i = 0; i < n; i++) {
-            crc = crc ^ (b[i] << 8);
-            for (let j = 0; j < 8; j++) {
-                if (crc & 0x8000)
-                    crc = (crc << 1) ^ CRC_CCITT_POLY;
-                else
-                    crc = crc << 1;
-            }
-        }
-        return crc & 0xffff;
     }
 }
 
@@ -416,7 +455,7 @@ class NImageClient {
     }
 
     registerHandlers() {
-        if (!this.socket)
+        if (! this.socket)
             return;
 
         // Register event message ?
@@ -433,7 +472,7 @@ class NImageClient {
 
     private echo_start(x: NImage): Promise < ArrayBuffer > {
         return new Promise((resolve, reject) => {
-            if (!x.valid()) {
+            if (! x.valid()) {
                 reject("NImageClient: Invalid input image.");
             }
 
