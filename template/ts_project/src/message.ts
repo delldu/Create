@@ -40,45 +40,7 @@ class Message {
 //     msgbar.show("This is a message ........................", 10000); // 10 s
 // }
 
-
-
-// wsab_start, wsab_stop, ws + ab
-const ab_stop = function(time: number): Promise < number > {
-    return new Promise(function(resolve, reject) {
-        setTimeout(function() {
-            resolve(1024);
-        }, time);
-    })
-};
-
-async function ab_start() {
-    console.log('start');
-    let result = await ab_stop(1000);
-    console.log(result);
-
-    console.log('end');
-};
-
-ab_start();
-
-
-// const demo = async (ws: WsClient, x: ArrayBuffer) => {
-//     await ws.open();
-//     const y = await ws.send(x);
-// }
-
-// let ws = new WsClient("ws://127.0.0.1:8080");
-// demo(ws, x);
-// ws.close();
-
-// WebSocket.CONNECTING    0
-// WebSocket.OPEN  1
-// WebSocket.CLOSING   2
-// WebSocket.CLOSED 3
-
-
-
-const DEFAULT_RECONNECT_INTERVAL = 5000; // 5s
+const DEFAULT_RECONNECT_INTERVAL = 30*1000; // 30s
 
 class AbClient {
     private address: string;
@@ -88,17 +50,26 @@ class AbClient {
 
     constructor(address: string) {
         this.address = address;
-
-        this.status = WebSocket.CLOSED;
-        this.timer = setInterval(() => {
-            this.open();
-        }, DEFAULT_RECONNECT_INTERVAL);
         this.socket = null;
+        // Define status for socket.readyState could not be used(socket == null)
+        this.status = WebSocket.CLOSED;
+        this.timer = 0; // Re-connect timer
+
+        this.open();
     }
 
     open() {
-        if (this.status == WebSocket.CONNECTING || this.status == WebSocket.OPEN)
+        // console.log("Start re-connect timer...");
+        if (this.timer <= 0) {
+            this.timer = setInterval(() => {
+                this.open();
+            }, DEFAULT_RECONNECT_INTERVAL);
+        }
+
+        if (this.status == WebSocket.CONNECTING || this.status == WebSocket.OPEN) {
+            console.log("WebSocket is going on ...");
             return;
+        }
 
         this.socket = new WebSocket(this.address);
         this.socket.binaryType = "arraybuffer";
@@ -109,6 +80,7 @@ class AbClient {
         }, false);
 
         this.socket.addEventListener('close', (event: CloseEvent) => {
+            this.status = WebSocket.CLOSING;
             console.log("WebSocket closed for " + event.reason + "(" + event.code + ")");
             this.status = WebSocket.CLOSED;
         }, false);

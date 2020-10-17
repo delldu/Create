@@ -18,7 +18,7 @@
 </body>
 <script type="text/javascript">
 var canvas;
-var client = new NImageClient("ws://localhost:8080/ws");
+var client = new AbClient("ws://localhost:8080/ws");
 
 function init() {
     // canvas = new NImage("canvas");
@@ -32,7 +32,13 @@ function add_file(th) {
     x.head.setSize(4096, 2048); // 4K Image ?
     x.head.opc = NImageOpcode.Patch;
     x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
-    client.color(x);
+    // client.color(x);
+    client.send([x.head.encode(), x.data]).then((result)=>{
+        console.log(result);
+    })
+    .catch((error)=>{
+        console.log("error ......", error);
+    });
 
     if (th && th.files) {
         console.log(th.files);
