@@ -26,7 +26,6 @@ function saveTextAsFile(text: string, filename: string) {
     download(href, filename);
 }
 
-
 function saveDataURLAsImage(dataurl: string, filename: string) {
     // mime --  MIME(Multipurpose Internet Mail Extensions)
     let mime = 'image/png';

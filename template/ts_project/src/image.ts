@@ -52,7 +52,7 @@ function dataURLToImage(url: string): Promise < HTMLImageElement > {
 }
 
 // Convert dataURL to ImageData (ArrayBuffer)
-function dataURLToImageData(url: string): Promise <[number, number, ImageData] > {
+function dataURLToImageData(url: string): Promise < [number, number, ImageData] > {
     return new Promise(function(resolve, reject) {
         if (url == null)
             reject("dataURLToImageData: url == null");
@@ -66,6 +66,9 @@ function dataURLToImageData(url: string): Promise <[number, number, ImageData] >
                 context.drawImage(image, 0, 0, canvas.width, canvas.height);
                 resolve([canvas.height, canvas.width, context.getImageData(0, 0, canvas.width, canvas.height)]);
             }
+        }, false);
+        image.addEventListener('load', function() {
+            reject("dataURLToImageData: error.");
         }, false);
         image.src = url;
     });
@@ -188,10 +191,14 @@ class ImageProject {
                 dataURLToImage(url).then((img: HTMLImageElement) => {
                     let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
                     this.items.push(unit);
-                    // Goto first item
+                    // Goto first ?
                     if (this.current_index < 0 || this.current_index >= this.items.length)
                         this.go(0);
                     this.image_load_ok++;
+                    this.image_loading--;
+                })
+                .catch((error) => {
+                    this.image_load_err++;
                     this.image_loading--;
                 });
                 // Decode end
@@ -295,16 +302,16 @@ class ImageHead {
     constructor() {
         this.h = 0;
         this.w = 0;
-        this.c = 0;
+        this.c = 4; // Channel
         this.opc = 0;
     }
 
     encode(): ArrayBuffer {
         let p = new ArrayBuffer(8);
         let b = new Uint16Array(p);
-        b[0] = this.c & 0xffff;
-        b[1] = this.h & 0xffff;
-        b[2] = this.w & 0xffff;
+        b[0] = this.h & 0xffff;
+        b[1] = this.w & 0xffff;
+        b[2] = this.c & 0xffff;
         b[3] = this.opc & 0xffff;
 
         return p;
@@ -412,22 +419,22 @@ class AbClient {
         return this.send([abhead.encode(), head.encode(), data]);
     }
 
-    clean(head: ImageHead, data: ArrayBuffer) {
+    clean(head: ImageHead, data: ArrayBuffer): Promise < ArrayBuffer > {
         head.opc = ImageOpcode.Clean;
         return this.sendImage(head, data);
     }
 
-    zoom(head: ImageHead, data: ArrayBuffer) {
+    zoom(head: ImageHead, data: ArrayBuffer): Promise < ArrayBuffer > {
         head.opc = ImageOpcode.Zoom;
         return this.sendImage(head, data);
     }
 
-    color(head: ImageHead, data: ArrayBuffer) {
+    color(head: ImageHead, data: ArrayBuffer): Promise < ArrayBuffer > {
         head.opc = ImageOpcode.Color;
         return this.sendImage(head, data);
     }
 
-    patch(head: ImageHead, data: ArrayBuffer) {
+    patch(head: ImageHead, data: ArrayBuffer): Promise < ArrayBuffer > {
         head.opc = ImageOpcode.Patch;
         return this.sendImage(head, data);
     }
@@ -444,9 +451,6 @@ class AbClient {
 }
 
 // Demo:
-// new AbClient("ws://locahost:8080").send([a, b, c])
-// .then((ab:ArrayBuffer)=>{ console.log(ab); })
-// .catch((error)=>{ console.log("error."); });
 //
 // head.dataSize() == data.byteLength
 // new AbClient("ws://localhost:8080").sendImage(head, data)

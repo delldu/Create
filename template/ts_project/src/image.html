@@ -27,18 +27,16 @@ function init() {
 function add_file(th) {
     console.log("Start test websocker ...");
 
-    var x = new NImage();
-    x.head = new NImageHead();
-    x.head.setSize(4096, 2048); // 4K Image ?
-    x.head.opc = NImageOpcode.Patch;
-    x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
-    // client.color(x);
-    client.send([x.head.encode(), x.data]).then((result)=>{
-        console.log(result);
-    })
-    .catch((error)=>{
-        console.log("error ......", error);
-    });
+    head = new ImageHead();
+    head.h = 2048;
+    head.w = 4096; // 4K Image ?
+    data = new Uint8ClampedArray(new ArrayBuffer(head.dataSize()));
+    client.color(x).then((result) => {
+            console.log(result);
+        })
+        .catch((error) => {
+            console.log("error ......", error);
+        });
 
     if (th && th.files) {
         console.log(th.files);
