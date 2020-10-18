@@ -343,7 +343,7 @@ class AbClient {
     private socket: any; // WebSocket;
     private status: number;
     private timer: number; // Timer
-    evhandler_registed: boolean;
+    evthandler_registed: boolean;
 
     constructor(address: string) {
         this.address = address;
@@ -351,7 +351,7 @@ class AbClient {
         // Define status for socket.readyState could not be used(because socket == null)
         this.status = WebSocket.CLOSED;
         this.timer = 0; // Re-connect timer
-        this.evhandler_registed = false;
+        this.evthandler_registed = false;
 
         this.open();
     }
@@ -371,7 +371,7 @@ class AbClient {
 
         this.socket = new WebSocket(this.address);
         this.socket.binaryType = "arraybuffer";
-        this.evhandler_registed = false;
+        this.evthandler_registed = false;
 
         this.socket.addEventListener('open', (event: Event) => {
             console.log("WebSocket open on " + this.socket.url + " ...");
@@ -391,9 +391,8 @@ class AbClient {
             if (this.status != WebSocket.OPEN) {
                 reject("WebSocket not opened.");
             }
-
-            if (! this.evhandler_registed) {
-                this.evhandler_registed = true;
+            if (! this.evthandler_registed) {
+                this.evthandler_registed = true;
 
                 this.socket.addEventListener('message', (event: MessageEvent) => {
                     if (event.data instanceof String) {
@@ -402,7 +401,6 @@ class AbClient {
                     if (event.data instanceof ArrayBuffer) {
                         console.log("Received ArrayBuffer ... ", event.data);
                         if (isAbMessage(event.data)) {
-                            console.log("Now: ", new Date(), "start_time:",  start_time)
                             console.log("Spend", (new Date()).getTime() - start_time.getTime(), "ms for transform.");
                             resolve(event.data);
                         } else {
@@ -419,7 +417,6 @@ class AbClient {
             for (let x of ablist) {
                 this.socket.send(x);
             }
-            start_time = new Date();
         });
     }
 
