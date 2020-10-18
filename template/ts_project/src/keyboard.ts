@@ -7,16 +7,12 @@
 // ***********************************************************************************
 
 // TsKey -- Key with timestamp
-
-const keyboard_test = true;
 class TsKey {
     time: number;
     key: string;
 
     constructor(key: string) {
         this.time = (new Date()).getTime();
-        if (keyboard_test)
-            this.time += Math.round(11 * parseInt(key)); // only for test
         this.key = key;
     }
 }
@@ -30,10 +26,6 @@ class Keyboard {
         this.duration = duration;
         this.timer = 0;
         this.keys = new Array < TsKey > ();
-
-        if (keyboard_test) {
-            console.log("This is test version, please set keyboard_test = false for production .");
-        }
     }
 
     reset() {
@@ -51,11 +43,6 @@ class Keyboard {
         this.stop();
         this.timer = setInterval(() => {
             this.clean();
-            if (keyboard_test) {
-                console.log(this.getKeys());
-                if (this.keys.length < 1)
-                    this.stop();
-            }
         }, this.duration);
     }
 
@@ -74,14 +61,4 @@ class Keyboard {
         this.keys = this.keys.filter(c => (now - c.time) < this.duration);
         this.start();
     }
-}
-
-if (keyboard_test) {
-    console.log("Testing class Keyboard ...")
-    let kb = new Keyboard(20); // 20 ms
-    for (let k = 0; k < 10; k++) {
-        if (keyboard_test)
-            kb.push((11 * k).toString());
-    }
-    kb.start();
 }

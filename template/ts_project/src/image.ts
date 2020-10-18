@@ -6,14 +6,6 @@
 // ***
 // ***********************************************************************************
 
-// ***********************************************************************************
-// ***
-// *** Copyright 2020 Dell(18588220928@163.com), All Rights Reserved.
-// ***
-// *** File Author: Dell, 2020-09-15 18:09:40
-// ***
-// ***********************************************************************************
-
 // dataURL specification: RFC 2397
 
 const sleep = (time: number) => {
@@ -60,10 +52,10 @@ function dataURLToImage(url: string): Promise < HTMLImageElement > {
 }
 
 // Convert dataURL to ImageData (ArrayBuffer)
-function dateURLToImageData(url: string): Promise < ImageData > {
+function dataURLToImageData(url: string): Promise <[number, number, ImageData] > {
     return new Promise(function(resolve, reject) {
         if (url == null)
-            reject("dateURLToImageData: url == null");
+            reject("dataURLToImageData: url == null");
         let canvas = document.createElement('canvas'),
             context = canvas.getContext('2d'),
             image = new Image();
@@ -72,14 +64,14 @@ function dateURLToImageData(url: string): Promise < ImageData > {
             canvas.height = image.height;
             if (context) {
                 context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                resolve(context.getImageData(0, 0, canvas.width, canvas.height));
+                resolve([canvas.height, canvas.width, context.getImageData(0, 0, canvas.width, canvas.height)]);
             }
         }, false);
         image.src = url;
     });
 }
 
-// dateURLToImageData(URI).then((imageData) => {
+// dataURLToImageData(URI).then((imageData) => {
 //     // Here you can use ImageData
 //     console.log(imageData);
 // });
@@ -192,21 +184,22 @@ class ImageProject {
     load(file: File) {
         this.image_loading++;
         loadDataURLFromFile(file).then((url: string) => {
-            // dataURL ok ?
-            dataURLToImage(url).then((img: HTMLImageElement) => {
-                let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
-                this.items.push(unit);
-                // Goto first item
-                if (this.current_index < 0 || this.current_index >= this.items.length)
-                    this.go(0);
-                this.image_load_ok++;
-                this.image_loading--;
-            }, () => {
+                // dataURL ok ?
+                dataURLToImage(url).then((img: HTMLImageElement) => {
+                    let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
+                    this.items.push(unit);
+                    // Goto first item
+                    if (this.current_index < 0 || this.current_index >= this.items.length)
+                        this.go(0);
+                    this.image_load_ok++;
+                    this.image_loading--;
+                });
+                // Decode end
+            })
+            .catch((error) => {
                 this.image_load_err++;
                 this.image_loading--;
-            });
-            // Decode end
-        }); // loadDataURLFromFile end
+            }); // loadDataURLFromFile end
     }
 
     // JSON string
@@ -242,7 +235,7 @@ class ImageProject {
     }
 }
 
-enum NImageOpcode {
+enum ImageOpcode {
     Clean,
     Zoom,
     Color,
@@ -250,14 +243,13 @@ enum NImageOpcode {
 };
 
 class AbHead {
-    // CPU: 0x12345678, Storage: [12,34,56,78], Little Endian
-
-    t: string;      // 2 bytes, Message type
-    len: number;    // 4 bytes, Message length
-    crc: number;    // 2 bytes, CRC16
+    // CPU: 0x12345678, Storage: [78,56,34,12], Big Endian
+    t: string; // 2 bytes, Message type
+    len: number; // 4 bytes, Message body length
+    crc: number; // 2 bytes, CRC16
 
     constructor() {
-        this.t = "ab";    // charCodeAt() ?
+        this.t = "ab"; // charCodeAt() ?
         this.len = 0;
         this.crc = 0;
     }
@@ -269,8 +261,8 @@ class AbHead {
 
         c[0] = this.t.charCodeAt(0);
         c[1] = this.t.charCodeAt(1);
-        dv.setUint32(2, this.len, false);
-        dv.setUint16(6, crc16(c, 6), false);
+        dv.setUint32(2, this.len, true);
+        dv.setUint16(6, crc16(c, 6), true);
 
         return p;
     }
@@ -280,279 +272,188 @@ class AbHead {
         let dv = new DataView(p);
 
         this.t = String.fromCharCode(c[0]) + String.fromCharCode(c[1]);
-        this.len = dv.getUint32(2, false);
-        this.crc = dv.getUint16(6, false);
+        this.len = dv.getUint32(2, true);
+        this.crc = dv.getUint16(6, true);
         let crc = crc16(c, 6);
 
         return this.crc == crc;
     }
 }
 
-class NImageHead {
-    // 4xHxW
+function isAbMessage(p: ArrayBuffer): boolean {
+    let h = new AbHead();
+    return h.decode(p) && (h.len + 8) == p.byteLength;
+}
+
+class ImageHead {
+    // HxWxC
     h: number; // 2 bytes
     w: number; // 2 bytes
+    c: number; // 2 bytes
     opc: number; // opcode, 2 byte
-    crc: number;
 
     constructor() {
         this.h = 0;
         this.w = 0;
+        this.c = 0;
         this.opc = 0;
-        this.crc = 0;
-    }
-
-    setSize(h: number, w: number) {
-        this.h = (h & 0xffff);
-        this.w = (w & 0xffff);
     }
 
     encode(): ArrayBuffer {
         let p = new ArrayBuffer(8);
-        let c = new Uint8Array(p);
         let b = new Uint16Array(p);
-        b[0] = this.h & 0xffff;
-        b[1] = this.w & 0xffff;
-        b[2] = this.opc & 0xffff;
-        b[3] = crc16(c, 6);
+        b[0] = this.c & 0xffff;
+        b[1] = this.h & 0xffff;
+        b[2] = this.w & 0xffff;
+        b[3] = this.opc & 0xffff;
 
         return p;
     }
 
-    decode(p: ArrayBuffer): boolean {
+    decode(p: ArrayBuffer) {
         let b = new Uint16Array(p);
-        let c = new Uint8Array(p);
-
         this.h = b[0];
         this.w = b[1];
-        this.opc = b[2];
-        this.crc = b[3];
-
-        console.log("Decode ........................");
-        console.log("c === ", c);
-        console.log("this.crc = ", this.crc);
-        console.log("this.crc16() = ", crc16(c, 6));
-
-        return (this.crc == crc16(c, 6));
+        this.c = b[2];
+        this.opc = b[3];
     }
 
     dataSize(): number {
-        return 4 * this.h * this.w;
+        return this.h * this.w * this.c;
     }
 }
 
-type NImageData = Uint8ClampedArray;
+function isImageMessage(p: ArrayBuffer): boolean {
+    let h = new ImageHead();
+    h.decode(p.slice(8, 16));
+    return isAbMessage(p) && (h.dataSize() + 8 + 8) == p.byteLength;
+}
 
-class NImage {
-    head: NImageHead;
-    data: NImageData; // For RGBA, channel is 4 ...
+const DEFAULT_WEBSOCKET_RECONNECT_INTERVAL = 30 * 1000; // 30s
 
-    constructor() {
-        this.head = new NImageHead();
-        this.data = new Uint8ClampedArray(0);
+class AbClient {
+    private address: string;
+    private socket: any; // WebSocket;
+    private status: number;
+    private timer: number; // Timer
+
+    constructor(address: string) {
+        this.address = address;
+        this.socket = null;
+        // Define status for socket.readyState could not be used(because socket == null)
+        this.status = WebSocket.CLOSED;
+        this.timer = 0; // Re-connect timer
+
+        this.open();
     }
 
-    encode(): ArrayBuffer {
-        let h = new Uint8Array(this.head.encode());
-        let p = new ArrayBuffer(8 + this.head.dataSize());
-        let c1 = new Uint8Array(p);
-        let c2 = new Uint8Array(p, 8);
-
-        // copy head
-        c1.set(h);
-        // copy data
-        c2.set(this.data);
-        console.log("head ---------", h);
-
-        return p;
-    }
-
-    decode(p: ArrayBuffer): boolean {
-        let ok = this.head.decode(p);
-        if (ok && p.byteLength == (8 + this.head.dataSize())) {
-            this.data = new Uint8ClampedArray(p, 8);
-            return true;
+    open() {
+        // console.log("Start re-connect timer...");
+        if (this.timer <= 0) {
+            this.timer = setInterval(() => {
+                this.open();
+            }, DEFAULT_WEBSOCKET_RECONNECT_INTERVAL);
         }
-        return false;
-    }
 
-    valid(): boolean {
-        return (this.head.dataSize() == this.data.length);
-    }
-}
+        if (this.status == WebSocket.CONNECTING || this.status == WebSocket.OPEN) {
+            console.log("WebSocket is going on ...");
+            return;
+        }
 
-// NImagePerformance
-function NImagePerformance() {
-    let start_time = (new Date()).getTime();
-    for (let i = 0; i < 1000; i++) {
-        let x = new NImage();
-        x.head = new NImageHead();
-        x.head.setSize(2048, 4096); // 8K Image
-        // h.setSize(4, 1024, 2048);
-        x.head.opc = NImageOpcode.Patch;
-        x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
-
-        let p = x.encode();
-
-        let y = new NImage();
-        let ok = y.decode(p);
-
-        if (i % 100 == 0)
-            console.log("i = ", i, ", encode ok:", x.valid(), ", decode ok:", ok);
-    }
-    let stop_time = (new Date()).getTime();
-    console.log("Spend time: ", stop_time - start_time, "ms");
-}
-
-// NImagePerformance();
-interface ImageTransformer {
-    x: NImage;
-    t: string;
-    y: NImage;
-    running: boolean;
-    ok: boolean;
-}
-
-const image_clean_trans: ImageTransformer = {
-    x: new NImage(),
-    t: "clean",
-    y: new NImage(),
-    running: false,
-    ok: false
-};
-const image_color_trans: ImageTransformer = {
-    x: new NImage(),
-    t: "color",
-    y: new NImage(),
-    running: false,
-    ok: false
-};
-const image_zoom_trans: ImageTransformer = {
-    x: new NImage(),
-    t: "zoom",
-    y: new NImage(),
-    running: false,
-    ok: false
-};
-const image_patch_trans: ImageTransformer = {
-    x: new NImage(),
-    t: "patch",
-    y: new NImage(),
-    running: false,
-    ok: false
-};
-
-class NImageClient {
-    wsurl: string;
-    socket: WebSocket;
-
-    constructor(wsurl: string) {
-        this.wsurl = wsurl;
-        this.socket = new WebSocket(wsurl);
+        this.socket = new WebSocket(this.address);
         this.socket.binaryType = "arraybuffer";
 
-        this.registerHandlers();
-    }
-
-    registerHandlers() {
-        if (! this.socket)
-            return;
-
-        // Register event message ?
         this.socket.addEventListener('open', (event: Event) => {
             console.log("WebSocket open on " + this.socket.url + " ...");
+            this.status = WebSocket.OPEN;
         }, false);
 
         this.socket.addEventListener('close', (event: CloseEvent) => {
+            this.status = WebSocket.CLOSING;
             console.log("WebSocket closed for " + event.reason + "(" + event.code + ")");
+            this.status = WebSocket.CLOSED;
         }, false);
-
-        this.socket.binaryType = "arraybuffer";
     }
 
-    private echo_start(x: NImage): Promise < ArrayBuffer > {
+    send(ablist: Array < ArrayBuffer > ): Promise < ArrayBuffer > {
         return new Promise((resolve, reject) => {
-            if (! x.valid()) {
-                reject("NImageClient: Invalid input image.");
+            if (this.status != WebSocket.OPEN) {
+                reject("WebSocket not opened.");
             }
-
             this.socket.addEventListener('message', (event: MessageEvent) => {
                 if (event.data instanceof String) {
                     console.log("Received string data ... ", event.data);
                 }
                 if (event.data instanceof ArrayBuffer) {
                     console.log("Received ArrayBuffer ... ", event.data);
-                    resolve(event.data);
+                    if (isAbMessage(event.data)) {
+                        resolve(event.data);
+                    } else {
+                        reject("Received data is not valid ArrayBuffer.");
+                    }
                 }
             }, false);
 
             this.socket.addEventListener('error', (event: Event) => {
-                reject("NImageClient: WebSocket open error.")
-                // handle error event
+                reject("WebSocket error.");
             }, false);
 
-            if (this.socket.readyState != WebSocket.OPEN) {
-                reject("NImageClient: WebSocket not opened.");
+            // Send all data in the list of arraybuffer
+            for (let x of ablist) {
+                this.socket.send(x);
             }
-            this.socket.send(x.encode());
         });
     }
- 
-    // Call echo service via websocket
-    echoService(x: NImage, t: ImageTransformer) {
-        t.x = x;
-        t.y = new NImage();
-        t.ok = false;
-        t.running = true;
-        let start_time = (new Date()).getTime();
-        this.echo_start(x).then(
-            (buffer: ArrayBuffer) => {
-                console.log("Received from server ", buffer.byteLength + " bytes.");
-                // received is valid image data ?
-                if (t.y.decode(buffer)) {
-                    t.ok = true;
-                    console.log("Spend time: ", (new Date()).getTime() - start_time, "ms")
-                }
-                t.running = false;
-            },
-            (err_reason: string) => {
-                t.ok = false;
-                t.running = false;
-            });
+
+    sendImage(head: ImageHead, data: ArrayBuffer): Promise < ArrayBuffer > {
+        let abhead = new AbHead();
+        abhead.t = "image";
+        abhead.len = 8 + data.byteLength; // ImageHead size is 8
+        return this.send([abhead.encode(), head.encode(), data]);
     }
 
-    clean(x: NImage) {
-        x.head.opc = NImageOpcode.Clean;
-        this.echoService(x, image_clean_trans);
+    clean(head: ImageHead, data: ArrayBuffer) {
+        head.opc = ImageOpcode.Clean;
+        return this.sendImage(head, data);
     }
 
-    zoom(x: NImage) {
-        x.head.opc = NImageOpcode.Zoom;
-        this.echoService(x, image_zoom_trans);
+    zoom(head: ImageHead, data: ArrayBuffer) {
+        head.opc = ImageOpcode.Zoom;
+        return this.sendImage(head, data);
     }
 
-    color(x: NImage) {
-        x.head.opc = NImageOpcode.Color;
-        this.echoService(x, image_color_trans);
+    color(head: ImageHead, data: ArrayBuffer) {
+        head.opc = ImageOpcode.Color;
+        return this.sendImage(head, data);
     }
 
-    patch(x: NImage) {
-        x.head.opc = NImageOpcode.Patch;
-        this.echoService(x, image_patch_trans);
+    patch(head: ImageHead, data: ArrayBuffer) {
+        head.opc = ImageOpcode.Patch;
+        return this.sendImage(head, data);
     }
 
     close() {
-        this.socket.close();
+        this.status = WebSocket.CLOSING;
+        if (this.timer)
+            window.clearInterval(this.timer);
+        this.timer = 0;
+
+        this.socket.close(1000);
+        this.status = WebSocket.CLOSED;
     }
 }
 
-// let client = new NImageClient("socket://localhost:8080");
-// let x = new NImage();
-// x.head = new NImageHead();
-// x.head.setSize(2048, 4096); // 8K Image
-// // h.setSize(4, 1024, 2048);
-// x.head.opc = NImageOpcode.Patch;
-// x.data = new Uint8ClampedArray(new ArrayBuffer(x.head.dataSize()));
-// let [ok, y] = client.color(x);
-
-// console.log("OK: ", ok, y.h, y.w, y.opc, y.crc.toString(16));
+// Demo:
+// new AbClient("ws://locahost:8080").send([a, b, c])
+// .then((ab:ArrayBuffer)=>{ console.log(ab); })
+// .catch((error)=>{ console.log("error."); });
+//
+// head.dataSize() == data.byteLength
+// new AbClient("ws://localhost:8080").sendImage(head, data)
+// .then((ab:ArrayBuffer) => {
+//      isImageMessage(ab) ?
+//      image_data = new Uint8Array(ab, 8 + 8);
+// })
+// .catch((errmsg) => {
+//      console.log(errmsg);
+// });

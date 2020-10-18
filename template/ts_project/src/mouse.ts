@@ -6,10 +6,6 @@
 // ***
 // ***********************************************************************************
 
-// var kb = require("keyboard.js");
-// const kb = require('keyboard.ts');
-// import Keyboard from "src/keyboard.ts";
-
 class Mouse {
     start: Point;
     moving: Point;

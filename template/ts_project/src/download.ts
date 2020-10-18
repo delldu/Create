@@ -41,15 +41,16 @@ function saveDataURLAsImage(dataurl: string, filename: string) {
     download(dataurl, filename);
 }
 
-function saveCanvasAsImage(id: string, filename: string) {
+function saveCanvasAsImage(id: string, filename: string): boolean {
     let canvas = document.getElementById(id) as HTMLCanvasElement;
     if (!canvas) {
-        console.log("saveCanvasAsImage: Canvas not exist? id is ", id);
-        return;
+        console.log("saveCanvasAsImage: Canvas ", id, " maybe not exist.");
+        return false;
     }
 
     // extract image data from canvas
     let mime = 'image/png';
     let dataurl = canvas.toDataURL(mime);
     saveDataURLAsImage(dataurl, filename);
+    return true;
 }
