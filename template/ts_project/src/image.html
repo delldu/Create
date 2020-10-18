@@ -31,7 +31,7 @@ function add_file(th) {
     head.h = 2048;
     head.w = 4096; // 4K Image ?
     data = new Uint8ClampedArray(new ArrayBuffer(head.dataSize()));
-    client.color(x).then((result) => {
+    client.color(head, data).then((result) => {
             console.log(result);
         })
         .catch((error) => {

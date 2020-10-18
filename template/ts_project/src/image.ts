@@ -189,18 +189,18 @@ class ImageProject {
         loadDataURLFromFile(file).then((url: string) => {
                 // dataURL ok ?
                 dataURLToImage(url).then((img: HTMLImageElement) => {
-                    let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
-                    this.items.push(unit);
-                    // Goto first ?
-                    if (this.current_index < 0 || this.current_index >= this.items.length)
-                        this.go(0);
-                    this.image_load_ok++;
-                    this.image_loading--;
-                })
-                .catch((error) => {
-                    this.image_load_err++;
-                    this.image_loading--;
-                });
+                        let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
+                        this.items.push(unit);
+                        // Goto first ?
+                        if (this.current_index < 0 || this.current_index >= this.items.length)
+                            this.go(0);
+                        this.image_load_ok++;
+                        this.image_loading--;
+                    })
+                    .catch((error) => {
+                        this.image_load_err++;
+                        this.image_loading--;
+                    });
                 // Decode end
             })
             .catch((error) => {
@@ -343,6 +343,7 @@ class AbClient {
     private socket: any; // WebSocket;
     private status: number;
     private timer: number; // Timer
+    evhandler_registed: boolean;
 
     constructor(address: string) {
         this.address = address;
@@ -350,6 +351,7 @@ class AbClient {
         // Define status for socket.readyState could not be used(because socket == null)
         this.status = WebSocket.CLOSED;
         this.timer = 0; // Re-connect timer
+        this.evhandler_registed = false;
 
         this.open();
     }
@@ -369,6 +371,7 @@ class AbClient {
 
         this.socket = new WebSocket(this.address);
         this.socket.binaryType = "arraybuffer";
+        this.evhandler_registed = false;
 
         this.socket.addEventListener('open', (event: Event) => {
             console.log("WebSocket open on " + this.socket.url + " ...");
@@ -384,31 +387,39 @@ class AbClient {
 
     send(ablist: Array < ArrayBuffer > ): Promise < ArrayBuffer > {
         return new Promise((resolve, reject) => {
+            let start_time = new Date();
             if (this.status != WebSocket.OPEN) {
                 reject("WebSocket not opened.");
             }
-            this.socket.addEventListener('message', (event: MessageEvent) => {
-                if (event.data instanceof String) {
-                    console.log("Received string data ... ", event.data);
-                }
-                if (event.data instanceof ArrayBuffer) {
-                    console.log("Received ArrayBuffer ... ", event.data);
-                    if (isAbMessage(event.data)) {
-                        resolve(event.data);
-                    } else {
-                        reject("Received data is not valid ArrayBuffer.");
+
+            if (! this.evhandler_registed) {
+                this.evhandler_registed = true;
+
+                this.socket.addEventListener('message', (event: MessageEvent) => {
+                    if (event.data instanceof String) {
+                        console.log("Received string data ... ", event.data);
                     }
-                }
-            }, false);
+                    if (event.data instanceof ArrayBuffer) {
+                        console.log("Received ArrayBuffer ... ", event.data);
+                        if (isAbMessage(event.data)) {
+                            console.log("Now: ", new Date(), "start_time:",  start_time)
+                            console.log("Spend", (new Date()).getTime() - start_time.getTime(), "ms for transform.");
+                            resolve(event.data);
+                        } else {
+                            reject("Received data is not valid ArrayBuffer.");
+                        }
+                    }
+                }, false);
 
-            this.socket.addEventListener('error', (event: Event) => {
-                reject("WebSocket error.");
-            }, false);
-
+                this.socket.addEventListener('error', (event: Event) => {
+                    reject("WebSocket error.");
+                }, false);
+            }
             // Send all data in the list of arraybuffer
             for (let x of ablist) {
                 this.socket.send(x);
             }
+            start_time = new Date();
         });
     }
 
