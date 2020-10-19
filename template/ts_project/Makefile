@@ -37,5 +37,5 @@ clean:
 test:
 	mkdir -p dist/upload
 	cp src/image.html dist
-	cp src/index.css dist
+	cp src/image.css dist
 	cp src/image.py dist

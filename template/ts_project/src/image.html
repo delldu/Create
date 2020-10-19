@@ -2,63 +2,60 @@
 <html lang="en">
 
 <head>
-    <title>New Image</title>
+    <title>Image</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="image.css">
     <script src="index.js"></script>
 </head>
 
-<body onload="init()">
-    <form method=post enctype=multipart/form-data action="/upload">
-        <input type="file" name="file[]" onchange="add_file(this)" multiple="multiple" accept='image/*'>
-        <input type=submit value=upload>
-    </form>
-    <canvas id="canvas" height="480px" width="640px" style="border: 1px solid">
-    </canvas>
+<body onload="load()">
+    <header class="matter-block">
+        <div class="matter-h4" style="position: absolute;left:10px;top:8px">Image ...</div>
+        <ul class="matter-menubar" style="padding: 0 168px;">
+            <li>
+                <a href="#" class="matter-button-contained" onclick="ClickButton('Loading')">Loading</a>
+            </li>
+            <li>
+                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Cleaning')">Cleaning</a>
+            </li>
+            <li>
+                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Coloring')">Coloring</a>
+            </li>
+            <li>
+                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Zooming')">Zooming</a>
+            </li>
+            <li>
+                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Patching')">Patching</a>
+            </li>
+            <li>
+                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Save')">Save</a>
+            </li>
+        </ul>
+    </header>
+    <main style="position:relative;left:2px;right:2px;top:2px;bottom:2px">
+        <img src="mountain.jpg" style="width: 100%;height: 100%" alt="Image" />
+    </main>
+    <footer>
+        <div id="message_id" class="matter-message" class="matter-h4" style="display:none">message</div>
+        <progress class="matter-progress-linear" value="0" max="100" style="display:none">Cleaning ...</progress>
+    </footer>
 </body>
+
 <script type="text/javascript">
-var canvas;
-var client = new AbClient("ws://localhost:8080/ws");
+"use strict";
 
-function init() {
-    // canvas = new NImage("canvas");
+var message = new Message("message_id");
+var progress = new Progress(0);
+
+function load() {
+    message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
+    progress.startDemo(0); // start 0
 }
 
-function add_file(th) {
-    console.log("Start test websocker ...");
-
-    head = new ImageHead();
-    head.h = 2048;
-    head.w = 4096; // 4K Image ?
-    data = new Uint8ClampedArray(new ArrayBuffer(head.dataSize()));
-    client.color(head, data).then((result) => {
-            console.log(result);
-        })
-        .catch((error) => {
-            console.log("error ......", error);
-        });
-
-    if (th && th.files) {
-        console.log(th.files);
-        // ajaxPostFiles(location.origin + "/upload", th.files).then((result) => {
-        //         console.log("Upload files:", result);
-        //     },
-        //     (errmsg) => {
-        //         console.log("Post Files Error:", errmsg);
-        //     });
-
-        // Wait loading finish? 50~1000 ms is reasonable for human beings
-        // sleep(200).then(() => {
-        //     ajaxPostFiles(location.origin + "/upload",th.files).then((result) => {
-        //         console.log("Post Files Result:", result);
-        //     },
-        //     (errmsg)=>{
-        //         console.log("Post Files Error:", errmsg);
-        //     });
-
-        // });
-    }
+function ClickButton(id) {
+    console.log("PressButton: ", id);
 }
+
 </script>
 
 </html>

@@ -19,13 +19,17 @@ class Progress {
 
     update(v: number) {
         this.element.setAttribute('value', v.toString());
+        if (this.element.style.display == "none")
+            this.element.style.display = "";
     }
 
     startDemo(value: number) {
         value = value + 1;
         this.update(value);
         if (value < 100) {
-            setTimeout(() => { this.startDemo(value); }, 20);
+            setTimeout(() => { this.startDemo(value); }, 100);
+        } else {
+            this.show(false);
         }
     }
 }

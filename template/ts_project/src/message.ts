@@ -20,7 +20,7 @@ class Message {
         console.log("Message: double click hidden messgae.");
     }
 
-    // show message for t micro seconds
+    // show message for t seconds
     show(msg: string, t: number) {
         if (this.timer) {
             clearTimeout(this.timer);
@@ -29,7 +29,7 @@ class Message {
         this.element.style.display = ""; // Show
         this.timer = setTimeout(() => {
             this.element.style.display = 'none';
-        }, t);
+        }, t * 1000);
     }
 }
 
@@ -37,6 +37,6 @@ class Message {
 // <div id="message_id" class="message">Message Bar</div>
 // function load() {
 //     msgbar = new Message("message_id");
-//     msgbar.show("This is a message ........................", 10000); // 10 s
+//     msgbar.show("This is a message ........................", 10); // 10 s
 // }
 
