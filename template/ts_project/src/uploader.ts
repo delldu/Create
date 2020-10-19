@@ -20,12 +20,12 @@ function loadXMLDoc() {
 }
 
 // mime -- MIME(Multipurpose Internet Mail Extensions)
-function selectFiles(mime: string): Promise < FileList > {
+function selectFiles(mime: string, multi: boolean): Promise < FileList > {
     return new Promise((resolve, reject) => {
         let input = document.createElement('input') as HTMLInputElement;
         input.type = 'file';
         input.accept = mime; // 'image/*';
-        input.multiple = true;
+        input.multiple = multi;
 
         input.addEventListener('change', () => {
             if (input.files != undefined)
@@ -91,14 +91,14 @@ function ajaxPostArrayBuffer(url: string, data: ArrayBuffer): Promise < ArrayBuf
 }
 
 // Create form data like ajaxPostFiles:
-// 	let data = new FormData();
-// 	data.append("username", "Bill");
-// 	data.append("age", 60);
+//  let data = new FormData();
+//  data.append("username", "Bill");
+//  data.append("age", 60);
 function ajaxPostFormData(url: string, data: FormData): Promise < string > {
     return new Promise(function(resolve, reject) {
         let xhr = new XMLHttpRequest();
         // xhr.timeout = 10 * 1000;
-		// xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+        // xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 
         xhr.open("POST", url, true); // true is async
         xhr.addEventListener("progress", (event: ProgressEvent) => {
@@ -120,8 +120,8 @@ function ajaxPostFormData(url: string, data: FormData): Promise < string > {
 function ajaxPostFiles(url: string, files: FileList): Promise < string > {
     let formData = new FormData();
     // formData.append(name, value, filename);
-	for (let i = 0; i < files.length;i++)
-　　　　formData.append('file[]', files[i]);
+    for (let i = 0; i < files.length; i++)
+        formData.append('file[]', files[i]);
     console.log("Files Formdata -------- ", formData);
 
     return ajaxPostFormData(url, formData);

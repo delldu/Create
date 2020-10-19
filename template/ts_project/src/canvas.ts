@@ -617,9 +617,11 @@ class Canvas {
         this.image_stack = new ImageStack();
     }
 
-    private loadingBackground() {
+    private loadBackground(file: File) {
         this.background_loaded = false;
-        this.background.onload = () => {
+        let reader = new FileReader();
+        reader.addEventListener("load", () => {
+            this.background.src = reader.result;
             this.background_loaded = true;
             if (this.canvas.width < this.background.naturalWidth)
                 this.canvas.width = this.background.naturalWidth;
@@ -627,7 +629,8 @@ class Canvas {
                 this.canvas.height = this.background.naturalHeight;
 
             this.setZoom(DEFAULT_ZOOM_LEVEL);
-        }
+        }, false);
+        reader.readAsDataURL(file);
     }
 
     setMessage(message: string) {
@@ -848,12 +851,11 @@ class Canvas {
     redraw() {
         this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
         // Draw image ...
-        if (!this.background_loaded) {
-            this.loadingBackground();
-        }
-
         if (this.background_loaded) {
-            this.brush.drawImage(this.background, 0, 0);
+            let w = this.background.naturalWidth;
+            let h = this.background.naturalHeight;
+            this.brush.drawImage(this.background, 0, 0, w, h,
+                0, 0, w, h);
         }
 
         // Draw blobs ...

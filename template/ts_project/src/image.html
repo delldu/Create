@@ -13,49 +13,113 @@
         <div class="matter-h4" style="position: absolute;left:10px;top:8px">Image ...</div>
         <ul class="matter-menubar" style="padding: 0 168px;">
             <li>
-                <a href="#" class="matter-button-contained" onclick="ClickButton('Loading')">Loading</a>
+                <a id="load_button" href="#" class="matter-button-contained" onclick="clickButton('load')">Loading</a>
             </li>
             <li>
-                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Cleaning')">Cleaning</a>
+                <a id="clean_button" href="#" class="matter-button-contained" onclick="clickButton('clean')">Cleaning</a>
             </li>
             <li>
-                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Coloring')">Coloring</a>
+                <a id="color_button" href="#" class="matter-button-contained" onclick="clickButton('color')">Coloring</a>
             </li>
             <li>
-                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Zooming')">Zooming</a>
+                <a id="zoom_button" href="#" class="matter-button-contained" onclick="clickButton('zoom')">Zooming</a>
             </li>
             <li>
-                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Patching')">Patching</a>
+                <a id="patch_button" href="#" class="matter-button-contained" onclick="clickButton('patch')">Patching</a>
             </li>
             <li>
-                <a href="#" class="matter-button-contained:disabled" onclick="ClickButton('Save')">Save</a>
+                <a id="save_button" href="#" class="matter-button-contained" onclick="clickButton('save')">Save</a>
             </li>
         </ul>
     </header>
-    <main style="position:relative;left:2px;right:2px;top:2px;bottom:2px">
-        <img src="mountain.jpg" style="width: 100%;height: 100%" alt="Image" />
+    <main>
+        <img id="start_image" src="mountain.jpg" style="width: 100%;height: 100%" alt="Image" />
+        <canvas id="load_canvas" tabindex="1" style="border:1px dashed red;">
+        </canvas>
+        <canvas id="clean_canvas" tabindex="2" style="border:1px dotted green;">
+        </canvas>
+        <canvas id="color_canvas" tabindex="3" style="border:1px dashed blue;">
+        </canvas>
+        <canvas id="zoom_canvas" tabindex="4" style="border:1px dotted white;">
+        </canvas>
+        <canvas id="patch_canvas" tabindex="5" style="border:1px dashed pink;">
+        </canvas>
     </main>
     <footer>
         <div id="message_id" class="matter-message" class="matter-h4" style="display:none">message</div>
         <progress class="matter-progress-linear" value="0" max="100" style="display:none">Cleaning ...</progress>
     </footer>
 </body>
-
 <script type="text/javascript">
 "use strict";
 
+var panel = new ShiftPanel();
 var message = new Message("message_id");
 var progress = new Progress(0);
+var load_canvas = new Canvas("load_canvas");
+var clean_canvas = new Canvas("clean_canvas");
+var color_canvas = new Canvas("color_canvas");
+var zoom_canvas = new Canvas("zoom_canvas");
+var patch_canvas = new Canvas("patch_canvas");
 
 function load() {
     message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
     progress.startDemo(0); // start 0
+    enableButton("clean_button", false);
+    enableButton("color_button", false);
+    enableButton("zoom_button", false);
+    enableButton("patch_button", false);
+    enableButton("save_button", false);
+
+    panel.add("start_image");
+    panel.add("load_canvas");
+    panel.add("clean_canvas");
+    panel.add("color_canvas");
+    panel.add("zoom_canvas");
+    panel.add("patch_canvas");
+
+    panel.test();
 }
 
-function ClickButton(id) {
+function refresh() {
+    console.log(panel.clicked());
+    if (panel.clicked() == 1) {
+        load_canvas.redraw();
+        return;
+    }
+}
+
+function enableButton(id, yes) {
+    var e = document.getElementById(id);
+    if (!e) {
+        console.log("Element not exists. id:", id);
+        return;
+    }
+    if (e) {
+        e.classList.remove("matter-button-contained");
+        e.classList.remove("matter-button-contained:disabled")
+        if (yes) {
+            e.classList.add("matter-button-contained");
+        } else {
+            e.classList.add("matter-button-contained:disabled");
+        }
+    }
+}
+
+function loadImage() {
+    selectFiles("images/*", false).then((files) => {
+        load_canvas.loadBackground(files[0]);
+    });
+}
+
+
+function clickButton(id) {
     console.log("PressButton: ", id);
+    if (id == "load") {
+        loadImage();
+    }
+    refresh();
 }
-
 </script>
 
 </html>
