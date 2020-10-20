@@ -37,12 +37,12 @@ body {
 
 .left {
     float: left;
-    width: 200px;
+    width: 254px;
     height: 100%;
 }
 
 .right {
-    margin-left: 200px;
+    margin-left: 256px;
 }
 
 /* Font */
@@ -1627,7 +1627,7 @@ body {
     color: rgb(var(--matter-primary-fg));
     background-color: rgb(var(--matter-primary-bg));
     width: 100%;
-    z-index: 1;
+    z-index: 10;
     line-height: 24px;
     display: block;
 }
@@ -1637,12 +1637,14 @@ body {
     display: inline-block;
     height: 24px;
     cursor: pointer;
+    z-index: 1000;
 }
 
 .matter-menubar ul {
     display: block;
     padding: 0;
     margin: 0;
+    z-index: 1000;
 }
 
 .matter-menubar li {
@@ -1650,6 +1652,7 @@ body {
     float: left;
     padding: 4px 16px;
     /*top, right, bottom, left*/
+    z-index: 1000;
 }
 
 .matter-menubar li ul {
@@ -1658,6 +1661,7 @@ body {
     border: 1px solid rgb(var(--matter-primary-fg), 0.75);
     min-width: 120px;
     position: absolute;
+    z-index: 1000;
 }
 
 .matter-menubar li ul li {
@@ -1671,15 +1675,18 @@ body {
     padding: 0;
     height: 1px;
     border-bottom: 1px solid rgb(var(--matter-primary-fg), 0.75);
+    z-index: 1000;
 }
 
 .matter-menubar li:hover {
     background-color: rgb(var(--matter-primary-fg), 0.25);
     cursor: default;
+    z-index: 1000;
 }
 
 .matter-menubar li:hover ul {
     display: block;
+    z-index: 1000;
 }
 
 .matter-message {
@@ -1691,16 +1698,15 @@ body {
 }
 
 button.leftsidebar_accordion {
-    background-color: rgb(var(--matter-primary-bg), 0.5);
-    /*#f2f2f2;*/
+    background-color: rgb(var(--matter-primary-bg), 0.75);
     color: rgb(var(--matter-primary-fg));
     letter-spacing: 1px;
-    text-transform: uppercase;
-    line-height: 20px;
+/*    text-transform: uppercase;
+*/    line-height: 20px;
     width: 100%;
     text-align: left;
     padding: 8px 8px;
-    /* border: 0; */
+    border: 0; 
     outline: none;
     cursor: pointer;
 }
