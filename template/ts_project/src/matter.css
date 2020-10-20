@@ -1128,11 +1128,11 @@ body {
     margin: 0;
     border: none;
     border-top: solid 24px transparent;
-    border-bottom: solid 1px rgba(var(--matter-onsurface-rgb), 0.6);
+    border-bottom: solid 1px rgba(var(--matter-primary-fg), 0.6);
     padding: 0 0 7px;
     width: 100%;
     height: inherit;
-    color: rgba(var(--matter-onsurface-rgb), 0.87);
+    color: rgba(var(--matter-primary-fg), 0.87);
     -webkit-text-fill-color: currentColor;
     /* Safari */
     background-color: transparent;
@@ -1156,7 +1156,7 @@ body {
     display: block;
     box-sizing: border-box;
     padding: 7px 0 0;
-    color: rgba(var(--matter-onsurface-rgb), 0.6);
+    color: rgba(var(--matter-primary-fg), 0.6);
     font-size: 75%;
     line-height: 18px;
     pointer-events: none;
@@ -1182,7 +1182,7 @@ body {
 /* Hover */
 .matter-textfield-standard:hover>input,
 .matter-textfield-standard:hover>textarea {
-    border-bottom-color: rgba(var(--matter-onsurface-rgb), 0.87);
+    border-bottom-color: rgba(var(--matter-primary-fg), 0.87);
 }
 
 /* Placeholder-shown */
@@ -1200,7 +1200,7 @@ body {
 
 .matter-textfield-standard>input:focus+span,
 .matter-textfield-standard>textarea:focus+span {
-    color: rgb(var(--matter-primary-bg));
+    color: rgb(var(--matter-primary-fg));
 }
 
 .matter-textfield-standard>input:focus+span::after,
@@ -1211,13 +1211,13 @@ body {
 /* Disabled */
 .matter-textfield-standard>input:disabled,
 .matter-textfield-standard>textarea:disabled {
-    border-bottom-color: rgba(var(--matter-onsurface-rgb), 0.38);
-    color: rgba(var(--matter-onsurface-rgb), 0.38);
+    border-bottom-color: rgba(var(--matter-primary-bg), 0.38);
+    color: rgba(var(--matter-primary-bg), 0.38);
 }
 
 .matter-textfield-standard>input:disabled+span,
 .matter-textfield-standard>textarea:disabled+span {
-    color: rgba(var(--matter-onsurface-rgb), 0.38);
+    color: rgba(var(--matter-primary-bg), 0.38);
 }
 
 /* Faster transition in Safari for less fractional font-size issue */
@@ -1249,15 +1249,15 @@ body {
     margin: 0;
     border: none;
     border-top: solid 24px transparent;
-    border-bottom: solid 1px rgba(var(--matter-onsurface-rgb), 0.6);
+    border-bottom: solid 1px rgba(var(--matter-primary-fg), 0.6);
     border-radius: 4px 4px 0 0;
     padding: 0 12px 7px;
     width: 100%;
     height: inherit;
-    color: rgba(var(--matter-onsurface-rgb), 0.87);
+    color: rgba(var(--matter-primary-fg), 0.87);
     -webkit-text-fill-color: currentColor;
     /* Safari */
-    background-color: rgba(var(--matter-onsurface-rgb), 0.04);
+    background-color: rgba(var(--matter-primary-bg), 0.04);
     box-shadow: none;
     /* Firefox */
     font-family: inherit;
@@ -1278,8 +1278,7 @@ body {
     display: block;
     box-sizing: border-box;
     padding: 7px 12px 0;
-    color: rgba(var(--matter-onsurface-rgb), 0.6);
-    font-size: 75%;
+    color: rgba(var(--matter-primary-fg), 0.6);
     line-height: 18px;
     pointer-events: none;
     transition: color 0.2s, font-size 0.2s, line-height 0.2s;
@@ -1304,8 +1303,8 @@ body {
 /* Hover */
 .matter-textfield-filled:hover>input,
 .matter-textfield-filled:hover>textarea {
-    border-bottom-color: rgba(var(--matter-onsurface-rgb), 0.87);
-    background-color: rgba(var(--matter-onsurface-rgb), 0.08);
+    border-bottom-color: rgba(var(--matter-primary-fg), 0.87);
+    background-color: rgba(var(--matter-primary-bg), 0.08);
 }
 
 /* Placeholder-shown */
@@ -1323,7 +1322,7 @@ body {
 
 .matter-textfield-filled>input:focus+span,
 .matter-textfield-filled>textarea:focus+span {
-    color: rgb(var(--matter-primary-bg));
+    color: rgb(var(--matter-primary-fg));
 }
 
 .matter-textfield-filled>input:focus+span::after,
@@ -1334,14 +1333,14 @@ body {
 /* Disabled */
 .matter-textfield-filled>input:disabled,
 .matter-textfield-filled>textarea:disabled {
-    border-bottom-color: rgba(var(--matter-onsurface-rgb), 0.38);
-    color: rgba(var(--matter-onsurface-rgb), 0.38);
-    background-color: rgba(var(--matter-onsurface-rgb), 0.24);
+    border-bottom-color: rgba(var(--matter-primary-bg), 0.38);
+    color: rgba(var(--matter-primary-bg), 0.38);
+    background-color: rgba(var(--matter-primary-bg), 0.24);
 }
 
 .matter-textfield-filled>input:disabled+span,
 .matter-textfield-filled>textarea:disabled+span {
-    color: rgba(var(--matter-onsurface-rgb), 0.38);
+    color: rgba(var(--matter-primary-bg), 0.38);
 }
 
 /* Faster transition in Safari for less fractional font-size issue */
@@ -1725,8 +1724,8 @@ button.leftsidebar_accordion.active:after {
 #image_filename_list {
     display: none;
     overflow: scroll;
-    min-height: 160px;
-    max-height: 400px;
+    min-height: 480px;
+    max-height: 960px;
 }
 
 #image_filename_list ul {
