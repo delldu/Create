@@ -195,3 +195,40 @@ textarea {
     left: 80%;
     top: 90%;
 }
+
+
+.matter-menubar {
+    padding: 0;
+    display: inline-block;
+    height: 32px;
+    cursor: pointer;
+}
+
+.matter-menubar li {
+    display: inline;
+    float: left;
+}
+
+.matter-menubar li ul {
+    display: none;
+    background-color: rgb(var(--matter-primary-bg), 0.50);
+    border: 1px solid rgb(var(--matter-primary-fg), 0.75);
+    min-width: 120px;
+    position: absolute;
+}
+
+.matter-menubar submenu-divider {
+    margin: 0 2px;
+    padding: 0;
+    height: 1px;
+    border-bottom: 1px solid rgb(var(--matter-primary-fg), 0.75);
+}
+
+.matter-menubar li:hover {
+    background-color: rgb(var(--matter-primary-bg), 0.75);
+    cursor: default;
+}
+
+.matter-menubar li:hover ul {
+    display: block;
+}

@@ -53,6 +53,11 @@ class ShiftPanel {
         return -1;
     }
 
+    id():string {
+        let index = this.clicked();
+        return (index >= 0)? this.panels[index] : "";
+    }
+
     shift() {
         if (this.panels.length < 1)
             return;

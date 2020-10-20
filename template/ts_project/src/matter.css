@@ -2,7 +2,7 @@
 :root {
     --matter-primary-fg: 240, 240, 240;
     --matter-primary-bg: 40, 40, 40;
-/*     --matter-primary-bg: 33, 150, 243; 
+    /*     --matter-primary-bg: 33, 150, 243; 
 */
     --matter-font-family: "Roboto", "Segoe UI", BlinkMacSystemFont, system-ui, -apple-system;
     --matter-onsurface-rgb: 0, 0, 0;
@@ -31,11 +31,22 @@ body {
     color: rgb(var(--matter-primary-fg));
     background-color: rgba(var(--matter-primary-bg), 0.80);
     font-family: var(--matter-font-family);
+    font-size: 16px;
+    font-weight: 100;
+}
+
+.left {
+    float: left;
+    width: 200px;
+    height: 100%;
+}
+
+.right {
+    margin-left: 200px;
 }
 
 /* Font */
 .matter-h1 {
-    font-family: var(--matter-font-family);
     font-size: 96px;
     font-weight: 200;
     letter-spacing: -1.5px;
@@ -43,7 +54,6 @@ body {
 }
 
 .matter-h2 {
-    font-family: var(--matter-font-family);
     font-size: 64px;
     font-weight: 200;
     letter-spacing: -0.5px;
@@ -51,7 +61,6 @@ body {
 }
 
 .matter-h3 {
-    font-family: var(--matter-font-family);
     font-size: 48px;
     font-weight: 200;
     letter-spacing: 0;
@@ -59,7 +68,6 @@ body {
 }
 
 .matter-h4 {
-    font-family: var(--matter-font-family);
     font-size: 32px;
     font-weight: 200;
     letter-spacing: 1px;
@@ -67,7 +75,6 @@ body {
 }
 
 .matter-h5 {
-    font-family: var(--matter-font-family);
     font-size: 24px;
     font-weight: 200;
     letter-spacing: 0;
@@ -75,7 +82,6 @@ body {
 }
 
 .matter-h6 {
-    font-family: var(--matter-font-family);
     font-size: 20px;
     font-weight: 200;
     letter-spacing: 1px;
@@ -83,7 +89,6 @@ body {
 }
 
 .matter-subtitle1 {
-    font-family: var(--matter-font-family);
     font-size: 16px;
     font-weight: 200;
     letter-spacing: 1px;
@@ -91,7 +96,6 @@ body {
 }
 
 .matter-subtitle2 {
-    font-family: var(--matter-font-family);
     font-size: 14px;
     font-weight: 200;
     letter-spacing: 1px;
@@ -99,42 +103,30 @@ body {
 }
 
 .matter-body1 {
-    font-family: var(--matter-font-family);
-    font-size: 16px;
-    font-weight: 200;
     letter-spacing: 1px;
     line-height: 24px;
 }
 
 .matter-body2 {
-    font-family: var(--matter-font-family);
     font-size: 14px;
-    font-weight: 200;
     letter-spacing: 1px;
     line-height: 20px;
 }
 
 .matter-button {
-    font-family: var(--matter-font-family);
-    font-size: 16px;
-    font-weight: 200;
     letter-spacing: 1px;
     text-transform: uppercase;
     line-height: 20px;
 }
 
 .matter-caption {
-    font-family: var(--matter-font-family);
     font-size: 12px;
-    font-weight: 200;
     letter-spacing: 1px;
     line-height: 20px;
 }
 
 .matter-overline {
-    font-family: var(--matter-font-family);
     font-size: 10px;
-    font-weight: 200;
     letter-spacing: 1px;
     text-transform: uppercase;
     line-height: 16px;
@@ -204,9 +196,6 @@ body {
     color: rgb(var(--matter-helper-ontheme));
     background-color: rgb(var(--matter-helper-theme));
     box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
-    font-family: var(--matter-font-family);
-    font-size: 16px;
-    font-weight: 200;
     line-height: 36px;
     outline: none;
     cursor: pointer;
@@ -288,7 +277,7 @@ body {
     display: inline-block;
     box-sizing: border-box;
     margin: 0;
-    border: solid 1px rgba(var(--matter-onsurface-rgb), 0.24);;
+    border: solid 1px rgba(var(--matter-onsurface-rgb), 0.24);
     border-radius: 4px;
     padding: 0 16px;
     min-width: 64px;
@@ -299,10 +288,7 @@ body {
     color: rgb(var(--matter-helper-theme));
     background-color: rgb(var(--matter-primary-bg));
     /*transparent; */
-    font-family: var(--matter-font-family);
-    font-size: 16px;
-    font-weight: 200;
-    line-height: 34px;
+    line-height: 32px;
     outline: none;
     cursor: pointer;
 }
@@ -381,10 +367,7 @@ body {
     text-overflow: ellipsis;
     color: rgb(var(--matter-helper-theme));
     background-color: rgb(var(--matter-primary-bg));
-    font-family: var(--matter-font-family);
-    font-size: 16px;
-    font-weight: 200;
-    line-height: 36px;
+    line-height: 32px;
     outline: none;
 }
 
@@ -725,8 +708,6 @@ body {
     position: relative;
     display: inline-block;
     color: rgba(var(--matter-onsurface-rgb), 0.87);
-    font-family: var(--matter-font-family);
-    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -740,7 +721,7 @@ body {
     display: block;
     box-sizing: border-box;
     margin: 3px 1px;
-    border: solid 2px rgba(var(--matter-onsurface-rgb), 0.6);;
+    border: solid 2px rgba(var(--matter-onsurface-rgb), 0.6);
     border-radius: 2px;
     width: 18px;
     height: 18px;
@@ -874,8 +855,6 @@ body {
     position: relative;
     display: inline-block;
     color: rgba(var(--matter-onsurface-rgb), 0.87);
-    font-family: var(--matter-font-family);
-    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -889,7 +868,7 @@ body {
     display: block;
     box-sizing: border-box;
     margin: 2px 0;
-    border: solid 2px rgba(var(--matter-onsurface-rgb), 0.6);;
+    border: solid 2px rgba(var(--matter-onsurface-rgb), 0.6);
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -909,7 +888,6 @@ body {
 
 /* Highlight */
 .matter-radio>input+span::before {
-    /*content: "";*/
     position: absolute;
     left: -10px;
     top: -8px;
@@ -1006,8 +984,6 @@ body {
     position: relative;
     display: inline-block;
     color: rgba(var(--matter-onsurface-rgb), 0.87);
-    font-family: var(--matter-font-family);
-    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -1153,8 +1129,6 @@ body {
     --matter-helper-theme: var(--matter-primary-bg);
     position: relative;
     display: inline-block;
-    font-family: var(--matter-font-family);
-    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -1277,8 +1251,6 @@ body {
     --matter-helper-theme: var(--matter-primary-bg);
     position: relative;
     display: inline-block;
-    font-family: var(--matter-font-family);
-    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -1388,7 +1360,6 @@ body {
 /* Faster transition in Safari for less fractional font-size issue */
 @media not all and (min-resolution:.001dpcm) {
     @supports (-webkit-appearance: none) {
-
         .matter-textfield-filled>input,
         .matter-textfield-filled>input+span,
         .matter-textfield-filled>input+span::after,
@@ -1408,8 +1379,6 @@ body {
     position: relative;
     display: inline-block;
     padding-top: 6px;
-    font-family: var(--matter-font-family);
-    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -1425,7 +1394,7 @@ body {
     padding: 15px 13px 15px;
     width: 100%;
     height: inherit;
-    color: rgba(var(--matter-onsurface-rgb), 0.87);
+    color: rgba(var(--matter-surface-rgb), 0.87);
     -webkit-text-fill-color: currentColor;
     /* Safari */
     background-color: transparent;
@@ -1452,17 +1421,11 @@ body {
     width: 100%;
     max-height: 100%;
     color: rgba(var(--matter-onsurface-rgb), 0.6);
-    font-size: 75%;
     line-height: 15px;
     cursor: text;
     transition: color 0.2s, font-size 0.2s, line-height 0.2s;
 }
 
-.matter-textfield-outlined>input:not(:focus):placeholder-shown+span,
-.matter-textfield-outlined>textarea:not(:focus):placeholder-shown+span {
-    font-size: inherit;
-    line-height: 68px;
-}
 
 /* Corners */
 .matter-textfield-outlined>input+span::before,
@@ -1596,9 +1559,7 @@ body {
     position: absolute;
     left: 0;
     right: 0;
-    font-family: var(--matter-font-family);
     font-size: 12px;
-    font-weight: 200;
     line-height: 16px;
     white-space: nowrap;
     text-transform: none;
@@ -1680,15 +1641,15 @@ body {
     color: rgb(var(--matter-primary-fg));
     background-color: rgb(var(--matter-primary-bg));
     width: 100%;
-    z-index: 1001;
-    line-height: 32px;
-    display: inline-block;
+    z-index: 1;
+    line-height: 24px;
+    display: block;
 }
 
 .matter-menubar {
     padding: 0;
     display: inline-block;
-    height: 16px;
+    height: 24px;
     cursor: pointer;
 }
 
@@ -1701,23 +1662,72 @@ body {
 .matter-menubar li {
     display: inline;
     float: left;
-    padding: 0 16px;
+    padding: 4px 16px;
+    /*top, right, bottom, left*/
 }
 
-.matter-menubar svg {
-    fill: rgb(var(--matter-primary-fg));
-    margin: 0 16px;
-    height: 32px;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
+.matter-menubar li ul {
+    display: none;
+    background-color: rgb(var(--matter-primary-bg));
+    border: 1px solid rgb(var(--matter-primary-fg), 0.75);
+    min-width: 120px;
+    position: absolute;
 }
 
-.matter-menubar svg:hover {
-    fill: rgb(var(--matter-primary-fg), 0.5);
+.matter-menubar li ul li {
+    display: block;
+    float: none;
+    color: rgb(var(--matter-primary-fg));
+}
+
+.matter-menubar li.submenu-divider {
+    margin: 0 4px;
+    padding: 0;
+    height: 1px;
+    border-bottom: 1px solid rgb(var(--matter-primary-fg), 0.75);
+}
+
+.matter-menubar li:hover {
+    background-color: rgb(var(--matter-primary-fg), 0.25);
+    cursor: default;
+}
+
+.matter-menubar li:hover ul {
+    display: block;
+}
+
+.matter-message {
+    display: inline;
+    line-height: 32px;
+    position: fixed;
+    left: 40%;
+    top: 50%;
+}
+
+button.leftsidebar_accordion {
+    background-color: rgb(var(--matter-primary-bg), 0.5); /*#f2f2f2;*/
+    color: rgb(var(--matter-primary-fg));
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 20px;
+    width: 100%;
+    text-align: left;
+    padding: 8px 8px;
+    /* border: 0; */
+    outline: none;
     cursor: pointer;
 }
 
-.matter-menubar svg:active {
-    fill: rgb(var(--matter-primary-fg));
+button.leftsidebar_accordion:hover {
+    background-color: rgb(var(--matter-primary-bg));
+}
+
+button.leftsidebar_accordion:after {
+    content: '\02795'; /* '+'*/
+    color: rgb(var(--matter-primary-bg));
+    float: right;
+}
+
+button.leftsidebar_accordion.active:after {
+    content: '\02796'; /*   '-'*/
 }
