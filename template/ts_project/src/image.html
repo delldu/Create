@@ -42,14 +42,25 @@
     </header>
     <main>
         <div class="left">
-            <button class="matter-button-text" onclick="leftsidebar_toggle()" title="Show/hide left side toolbar">&ltrif;</button>
+            <!--             <button class="matter-button-text" onclick="leftsidebar_toggle()" title="Show/hide left side toolbar">&ltrif;</button>
             <button class="matter-button-text" onclick="leftsidebar_toggle()" title="Show/hide left side toolbar">&rtrif;</button>
-            <button class="leftsidebar_accordion active" id="project_panel_title">Project Active</button>
-            <button class="leftsidebar_accordion show" id="project_panel_title">Project Show</button>
-            <label class="matter-textfield-outlined">
+ --> <button class="leftsidebar_accordion active" id="project_panel_title">Project</button>
+            <!--             <button class="leftsidebar_accordion show" id="project_panel_title">Project Show</button>
+ --> <label class="matter-textfield-outlined">
                 <input placeholder="" onchange="change_project_name(this)" id="project_name">
-                <span>Project Name</span>
+                <span>Name</span>
             </label>
+            <div id="image_filename_list" style="display: block;">
+                <ul>
+                    <li id="fl0" class="jump_to_image(0)" onclick="jump_to_image(0)" title="01_noise.png">[1] 01_noise.png</li>
+                    <li id="fl1" onclick="jump_to_image(1)" title="02_noise.png" class="sel">[2] 02_noise.png</li>
+                    <li id="fl2" onclick="jump_to_image(2)" title="03_noise.png">[3] 03_noise.png</li>
+                </ul>
+            </div>
+            <div>
+                <span class="matter-button-contained" onclick="project_add_files()" title="Add files">Add Files</span>
+                <span class="matter-button-contained" onclick="project_remove_file()" title="Remove selected file">Remove File</span>
+            </div>
         </div>
         <div id="display_area2" class="right">
             <img id="start_image" src="mountain.jpg" style="width:100%;height:100%;" alt="Image" />
