@@ -9,8 +9,8 @@
  -->
 </head>
 
-<body onload="load()">
-    <header>
+<body onload="load()" onresize="resize()">
+    <header id="header">
         <div class="matter-menubar">
             <ul>
                 <li onclick="show_home_panel()" style="cursor:pointer;">Home</li>
@@ -41,11 +41,11 @@
             </ul>
         </div>
     </header>
-    <main>
+    <main id="main">
         <leftside id="leftside">
-            <label class="matter-textfield-filled" style="width: 100%; height: 48px;">
-                <textarea placeholder="" onchange="change_project_name(this)" id="project_name"></textarea>
-                <span>Project Name</span>
+            <label class="matter-textfield-filled" style="width: 100%; height: 64px;">
+                <input placeholder="" onchange="change_project_name(this)" id="project_name" />
+                <span>Project</span>
             </label>
             <div id="image_filename_list" style="display: block;">
                 <ul>
@@ -59,13 +59,13 @@
                 <span class="matter-button-contained" onclick="project_remove_file()" title="Remove selected file">Remove File</span>
             </div>
         </leftside>
-        <workspace>
+        <workspace id="workspace">
             <img id="start_image" src="mountain.jpg" style="width:100%;height:100%;" alt="Image" />
             <canvas id="load_canvas" tabindex="1" style="display:block;border:1px dashed red;">
             </canvas>
         </workspace>
     </main>
-    <footer>
+    <footer id="footer">
         <div id="message_id" class="matter-message" class="matter-h4" style="display:none">message</div>
         <progress class="matter-progress-linear" value="0" max="100" style="display:none">Cleaning ...</progress>
     </footer>
@@ -86,6 +86,9 @@ function load() {
     // panel.add("load_canvas");
 
     // panel.test();
+
+    var project = document.getElementById("project_name");
+    project.value = get_default_project_name();
 
     window.addEventListener("keydown", (e) => {
         // e : KeyboardEvent
@@ -117,6 +120,39 @@ function show_or_hiden(id) {
         elem.style.display = (elem.style.display == "none") ? "" : "none";
     else
         console.log("Error: element " + id + " not exists.");
+}
+
+function resize() {
+    // adjust main size ...
+    var w = document.documentElement.clientWidth;
+    var h = document.documentElement.clientHeight;
+    var header = document.getElementById("header");
+    var footer = document.getElementById("footer");
+    var main = document.getElementById("main");
+    var leftside = document.getElementById("leftside");
+
+    h -= header.clientHeight;
+    h -= footer.clientHeight;
+    w -= leftside.clientWidth;
+    main.style.height = h + 'px';
+    main.style.width = w + 'px';
+}
+
+function number_padding_with_zeros(num, n) {
+    var len = num.toString().length;
+    while (len < n) {
+        num = "0" + num;
+        len++;
+    }
+    return num;
+}
+
+function get_default_project_name() {
+    const now = new Date();
+    var ts = now.getFullYear() + "" + number_padding_with_zeros(now.getMonth() + 1, 2) + "" + number_padding_with_zeros(now.getDate(), 2) +
+        "_" + number_padding_with_zeros(now.getHours(), 2) + "" + number_padding_with_zeros(now.getMinutes(), 2);
+    var project_name = 'image_' + ts;
+    return project_name;
 }
 </script>
 

@@ -76,7 +76,7 @@ main rightside {
 
 footer {
     display: flex;
-    flex-flow: row nowrap;
+    flex-direction: column;
     height: 32px;
 }
 /*holy grail layout end
