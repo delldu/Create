@@ -53,6 +53,8 @@ header {
 main {
     display: flex;
     flex-flow: row nowrap;
+height: 100vh - 64;
+
 }
 
 main leftside {

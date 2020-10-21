@@ -5,7 +5,8 @@
     <title>Image</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="matter.css">
-    <script src="index.js"></script>
+    <!--     <script src="index.js"></script>
+ -->
 </head>
 
 <body onload="load()">
@@ -41,15 +42,10 @@
         </div>
     </header>
     <main>
-        <leftside>
-            <!--             <button class="matter-button-text" onclick="leftsidebar_toggle()" title="Show/hide left side toolbar">&ltrif;</button>
-            <button class="matter-button-text" onclick="leftsidebar_toggle()" title="Show/hide left side toolbar">&rtrif;</button>
- --> <button class="leftsidebar_accordion active" id="project_panel_title">Project</button>
-            <!--             <button class="leftsidebar_accordion show" id="project_panel_title">Project Show</button>
- -->
+        <leftside id="leftside">
             <label class="matter-textfield-filled" style="width: 100%; height: 48px;">
                 <textarea placeholder="" onchange="change_project_name(this)" id="project_name"></textarea>
-                <span>Name</span>
+                <span>Project Name</span>
             </label>
             <div id="image_filename_list" style="display: block;">
                 <ul>
@@ -77,19 +73,26 @@
 <script type="text/javascript">
 "use strict";
 
-var panel = new ShiftPanel();
-var message = new Message("message_id");
-var progress = new Progress(0);
-var load_canvas = new Canvas("load_canvas");
+// var panel = new ShiftPanel();
+// var message = new Message("message_id");
+// var progress = new Progress(0);
+// var load_canvas = new Canvas("load_canvas");
 
 function load() {
-    message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
-    progress.startDemo(0); // start 0
+    // message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
+    // progress.startDemo(0); // start 0
 
-    panel.add("start_image");
-    panel.add("load_canvas");
+    // panel.add("start_image");
+    // panel.add("load_canvas");
 
-    panel.test();
+    // panel.test();
+
+    window.addEventListener("keydown", (e) => {
+        // e : KeyboardEvent
+        if (e.key == 'Shift') {
+            leftside_toggle();
+        }
+    }, false);
 }
 
 function loadImage() {
@@ -102,6 +105,18 @@ function change_project_name() {
     var e = document.getElementById("project_name");
 
     alert("project name: " + e.value);
+}
+
+function leftside_toggle() {
+    show_or_hiden("leftside");
+}
+
+function show_or_hiden(id) {
+    var elem = document.getElementById(id);
+    if (elem)
+        elem.style.display = (elem.style.display == "none") ? "" : "none";
+    else
+        console.log("Error: element " + id + " not exists.");
 }
 </script>
 
