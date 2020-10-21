@@ -35,15 +35,49 @@ body {
     font-weight: 100;
 }
 
-.left {
-    float: left;
-    width: 254px;
+/*holy grail layout begin*/
+body {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    width: 100%;
 }
 
-.right {
-    margin-left: 256px;
+header {
+    display: flex;
+    flex-flow: row nowrap;
+    background-color: rgba(var(--matter-primary-bg));
+    height: 32px;
 }
+
+main {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+main leftside {
+    display: flex;
+    flex-direction: column;
+    width: 256px;
+}
+
+main workspace {
+    display: flex;
+    flex-direction: column;
+    width:100%;
+}
+
+main rightside {
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    display: flex;
+    flex-flow: row nowrap;
+    height: 32px;
+}
+/*holy grail layout end
 
 /* Font */
 .matter-h1 {
@@ -1623,15 +1657,6 @@ body {
     }
 }
 
-.matter-block {
-    color: rgb(var(--matter-primary-fg));
-    background-color: rgb(var(--matter-primary-bg));
-    width: 100%;
-    z-index: 10;
-    line-height: 24px;
-    display: block;
-}
-
 .matter-menubar {
     padding: 0;
     display: inline-block;
@@ -1701,12 +1726,13 @@ button.leftsidebar_accordion {
     background-color: rgb(var(--matter-primary-bg), 0.75);
     color: rgb(var(--matter-primary-fg));
     letter-spacing: 1px;
-/*    text-transform: uppercase;
-*/    line-height: 20px;
+    /*    text-transform: uppercase;
+*/
+    line-height: 20px;
     width: 100%;
     text-align: left;
     padding: 8px 8px;
-    border: 0; 
+    border: 0;
     outline: none;
     cursor: pointer;
 }

@@ -9,7 +9,7 @@
 </head>
 
 <body onload="load()">
-    <header class="matter-block">
+    <header>
         <div class="matter-menubar">
             <ul>
                 <li onclick="show_home_panel()" style="cursor:pointer;">Home</li>
@@ -41,7 +41,7 @@
         </div>
     </header>
     <main>
-        <div class="left">
+        <leftside>
             <!--             <button class="matter-button-text" onclick="leftsidebar_toggle()" title="Show/hide left side toolbar">&ltrif;</button>
             <button class="matter-button-text" onclick="leftsidebar_toggle()" title="Show/hide left side toolbar">&rtrif;</button>
  --> <button class="leftsidebar_accordion active" id="project_panel_title">Project</button>
@@ -58,16 +58,16 @@
                     <li id="fl2" onclick="jump_to_image(2)" title="03_noise.png">[3] 03_noise.png</li>
                 </ul>
             </div>
-            <div>
+            <div style="justify-content: space-around;">
                 <span class="matter-button-contained" onclick="project_add_files()" title="Add files">Add Files</span>
                 <span class="matter-button-contained" onclick="project_remove_file()" title="Remove selected file">Remove File</span>
             </div>
-        </div>
-        <div id="display_area2" class="right">
+        </leftside>
+        <workspace>
             <img id="start_image" src="mountain.jpg" style="width:100%;height:100%;" alt="Image" />
-            <canvas id="load_canvas" tabindex="1" style="display:none;border:1px dashed red;">
+            <canvas id="load_canvas" tabindex="1" style="display:block;border:1px dashed red;">
             </canvas>
-        </div>
+        </workspace>
     </main>
     <footer>
         <div id="message_id" class="matter-message" class="matter-h4" style="display:none">message</div>
