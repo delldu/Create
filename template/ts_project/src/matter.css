@@ -53,8 +53,7 @@ header {
 main {
     display: flex;
     flex-flow: row nowrap;
-height: 100vh - 64;
-
+    height: 100vh - 64;
 }
 
 main leftside {
@@ -66,7 +65,7 @@ main leftside {
 main workspace {
     display: flex;
     flex-direction: column;
-    width:100%;
+    width: 100%;
 }
 
 main rightside {
@@ -79,6 +78,7 @@ footer {
     flex-direction: column;
     height: 32px;
 }
+
 /*holy grail layout end
 
 /* Font */
@@ -1724,6 +1724,33 @@ footer {
     top: 50%;
 }
 
+.matter-file-name-list ul {
+    display: block;
+    position: relative;
+    line-height: 24px;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.matter-file-name-list li {
+    white-space: nowrap;
+    display: block;
+    padding: 0 8px;
+}
+
+.matter-file-name-list li:hover {
+    background-color: rgb(var(--matter-primary-bg), 0.5);
+    cursor: pointer;
+}
+
+.matter-file-name-list .sel {
+    display: block;
+
+    border-left: 4px solid black;
+    font-weight: 400;
+}
+
 button.leftsidebar_accordion {
     background-color: rgb(var(--matter-primary-bg), 0.75);
     color: rgb(var(--matter-primary-fg));
@@ -1755,33 +1782,9 @@ button.leftsidebar_accordion.active:after {
     /*   '-'*/
 }
 
-#image_filename_list {
+.matter-file-name-list {
     display: none;
     overflow: scroll;
     min-height: 480px;
     max-height: 960px;
-}
-
-#image_filename_list ul {
-    position: relative;
-    line-height: 24px;
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
-
-#image_filename_list li {
-    white-space: nowrap;
-    display: block;
-    padding: 0 8px;
-}
-
-#image_filename_list li:hover {
-    background-color: rgb(var(--matter-primary-bg), 0.5);
-    cursor: pointer;
-}
-
-#image_filename_list .sel {
-    border-left: 4px solid black;
-    font-weight: 400;
 }

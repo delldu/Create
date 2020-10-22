@@ -1,7 +1,8 @@
 TARGET := \
-	dist/index.html \
-	dist/index.js \
-	dist/index.css
+	dist/matter.html \
+	dist/image.html \
+	dist/matter.js \
+	dist/matter.css
 
 TS_SOURCE_FILES := \
 	src/canvas.ts \
@@ -18,24 +19,20 @@ TS_SOURCE_FILES := \
 
 all: ${TARGET}
 
-dist/index.js: src/index.ts
-	tsc src/index.ts -lib es2015,dom --strict --removeComments --outDir dist
+dist/matter.js: src/matter.ts
+	tsc src/matter.ts -lib es2015,dom --strict --removeComments --outDir dist
 
-src/index.ts: ${TS_SOURCE_FILES}
+src/matter.ts: ${TS_SOURCE_FILES}
 	cat $^ > $@
 
-dist/index.html: src/index.html
-	cp src/index.html dist/index.html
+dist/image.html: src/image.html
+	cp src/image.html dist/image.html
 
-dist/index.css: src/index.css
-	cp src/index.css dist/index.css
+dist/matter.html: src/matter.html
+	cp src/matter.html dist/matter.html
+
+dist/matter.css: src/matter.css
+	cp src/matter.css dist/matter.css
 
 clean:
-	rm -rf src/index.ts dist/*.js dist/*.html dist/*.css
-
-
-test:
-	mkdir -p dist/upload
-	cp src/image.html dist
-	cp src/matter.css dist
-	cp src/image.py dist
+	rm -rf src/matter.ts dist/*.js dist/*.html dist/*.css

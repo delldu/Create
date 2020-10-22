@@ -19,28 +19,6 @@ function loadXMLDoc() {
     xhr.send("fname=Bill&lname=Gates");
 }
 
-// mime -- MIME(Multipurpose Internet Mail Extensions)
-function selectFiles(mime: string, multi: boolean): Promise < FileList > {
-    return new Promise((resolve, reject) => {
-        let input = document.createElement('input') as HTMLInputElement;
-        input.type = 'file';
-        input.accept = mime; // 'image/*';
-        input.multiple = multi;
-
-        input.addEventListener('change', () => {
-            if (input.files != undefined)
-                resolve(input.files);
-            else
-                reject("selectFiles: NO file selected.");
-        }, false);
-
-        setTimeout(() => {
-            let event = new MouseEvent('click');
-            input.dispatchEvent(event);
-        }, 10); // 10 ms
-    });
-}
-
 // AJAX = Asynchronous JavaScript and XML
 function ajaxGet(url: string): Promise < string > {
     return new Promise(function(resolve, reject) {

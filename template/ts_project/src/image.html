@@ -2,25 +2,24 @@
 <html lang="en">
 
 <head>
-    <title>Image</title>
+    <title>AI Image</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="matter.css">
-    <!--     <script src="index.js"></script>
- -->
+    <script src="matter.js"></script>
 </head>
 
-<body onload="load()" onresize="resize()">
-    <header id="header">
+<body onload="load()">
+    <header id="header_id">
         <div class="matter-menubar">
             <ul>
                 <li onclick="show_home_panel()" style="cursor:pointer;">Home</li>
                 <li>Project
                     <ul>
-                        <li onclick="open_project_from_json_file()" title="Open project (from a JSON file)">Open</li>
-                        <li onclick="save_project_with_confirm()" title="Save project (as a JSON file)">Save</li>
+                        <li onclick="projectOpen()" title="Open project (from a JSON file)">Open</li>
+                        <li onclick="projectSave()" title="Save project (as a JSON file)">Save</li>
                         <li class="submenu-divider"></li>
-                        <li onclick="project_add_files()" title="Add files">Add files</li>
-                        <li onclick="project_remove_file()" title="Remove selected file">Remove file</li>
+                        <li onclick="projectAddFiles()" title="Add files">Add files</li>
+                        <li onclick="projectDeleteFile()" title="Remove selected file">Remove file</li>
                     </ul>
                 </li>
                 <li>Preview
@@ -41,77 +40,141 @@
             </ul>
         </div>
     </header>
-    <main id="main">
-        <leftside id="leftside">
+    <main id="main_id">
+        <leftside id="left_side_id">
             <label class="matter-textfield-filled" style="width: 100%; height: 64px;">
-                <input placeholder="" onchange="change_project_name(this)" id="project_name" />
+                <input placeholder="" onchange="projectChangeName(this)" id="project_name" />
                 <span>Project</span>
             </label>
-            <div id="image_filename_list" style="display: block;">
+            <!--  add style to remove flex layout -->
+            <div id="file_name_list_id" class="matter-file-name-list" style="display: block;">
                 <ul>
-                    <li id="fl0" class="jump_to_image(0)" onclick="jump_to_image(0)" title="01_noise.png">[1] 01_noise.png</li>
-                    <li id="fl1" onclick="jump_to_image(1)" title="02_noise.png" class="sel">[2] 02_noise.png</li>
-                    <li id="fl2" onclick="jump_to_image(2)" title="03_noise.png">[3] 03_noise.png</li>
+                    <li onclick='jump_to_image(0)'>[1] 01_noise.png</li>
+                    <li onclick='jump_to_image(1)' class="sel">[2] 02_noise.png</li>
+                    <li onclick='jump_to_image(2)'>[3] 03_noise.png</li>
                 </ul>
             </div>
             <div style="justify-content: space-around;">
-                <span class="matter-button-contained" onclick="project_add_files()" title="Add files">Add Files</span>
-                <span class="matter-button-contained" onclick="project_remove_file()" title="Remove selected file">Remove File</span>
+                <span class="matter-button-contained" onclick="projectAddFiles()" title="Add files">Add Files</span>
+                <span class="matter-button-contained" onclick="projectDeleteFile()" title="Remove selected file">Remove File</span>
             </div>
         </leftside>
-        <workspace id="workspace">
-            <img id="start_image" src="mountain.jpg" style="width:100%;height:100%;" alt="Image" />
-            <canvas id="load_canvas" tabindex="1" style="display:block;border:1px dashed red;">
+        <workspace id="workspace_id">
+            <img id="start_image_id" src="mountain.jpg" style="width:100%;height:100%;" alt="Image" />
+            <canvas id="canvas_id" tabindex="1" style="display:none;border:1px dashed red;">
             </canvas>
         </workspace>
     </main>
-    <footer id="footer">
+    <footer1 id="footer_id">
+        <div style="display:flex;justify-content: space-around;">
+        @2020 AI Image Video</div>
         <div id="message_id" class="matter-message" class="matter-h4" style="display:none">message</div>
         <progress class="matter-progress-linear" value="0" max="100" style="display:none">Cleaning ...</progress>
-    </footer>
+    </footer1>
 </body>
 <script type="text/javascript">
 "use strict";
-
-// var panel = new ShiftPanel();
-// var message = new Message("message_id");
-// var progress = new Progress(0);
-// var load_canvas = new Canvas("load_canvas");
+var project = new ImageProject(defaultProjectName());
+var panel = new ShiftPanel();
+var message = new Message("message_id");
+var progress = new Progress(0);
+var canvas_id = new Canvas("canvas_id");
 
 function load() {
-    // message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
-    // progress.startDemo(0); // start 0
+    message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
+    progress.startDemo(50); // start 0
 
-    // panel.add("start_image");
-    // panel.add("load_canvas");
+    panel.add("start_image_id");
+    panel.add("canvas_id");
 
-    // panel.test();
-
-    var project = document.getElementById("project_name");
-    project.value = get_default_project_name();
+    document.getElementById("project_name").value = project.name;
 
     window.addEventListener("keydown", (e) => {
         // e : KeyboardEvent
-        if (e.key == 'Shift') {
-            leftside_toggle();
+        if (e.key == 'Shift' || e.key === 'Escape') {
+            fullScreenToggle();
         }
     }, false);
 }
 
-function loadImage() {
-    selectFiles("images/*", false).then((files) => {
-        load_canvas.loadBackground(files[0]);
-    });
+function canvasShow(yes) {
+    var canvas_e = document.getElementById("canvas_id");
+    if (canvas_e) {
+        canvas_e.style.display = (yes) ? "" : "none";
+    }
+    else {
+        console.log("Error: element canvas_id not exists.");
+    }
+    var start_image_e = document.getElementById("start_image_id");
+    if (start_image_e) {
+        start_image_e.style.display = (yes) ? "none" : "";
+    }
 }
 
-function change_project_name() {
-    var e = document.getElementById("project_name");
+function canvasResize() {
+    // canvas size adjust with background image ...
+    var w = document.documentElement.clientWidth;
+    var h = document.documentElement.clientHeight;
+    var header = document.getElementById("header_id");
+    var footer = document.getElementById("footer_id");
+    var main = document.getElementById("main_id");
+    var leftside = document.getElementById("left_side_id");
+    var canvas = document.getElementById("canvas_id");
 
-    alert("project name: " + e.value);
+    h -= header.clientHeight;
+    h -= footer.clientHeight;
+    w -= leftside.clientWidth;
+
+    canvas.style.height = h + 'px';
+    canvas.style.width = w + 'px';
 }
 
-function leftside_toggle() {
-    show_or_hiden("leftside");
+function defaultProjectName() {
+    const now = new Date();
+    var ts = now.getFullYear() + "" + number_padding_with_zeros(now.getMonth() + 1, 2) + "" + number_padding_with_zeros(now.getDate(), 2) +
+        "_" + number_padding_with_zeros(now.getHours(), 2) + "" + number_padding_with_zeros(now.getMinutes(), 2);
+    var project_name = 'image_' + ts;
+    return project_name;
+}
+
+function projectChangeName() {
+    project.name = document.getElementById("project_name").value;
+}
+
+function projectAddFiles() {
+    project.addFiles();
+    projectUpdateFileList();
+}
+
+function projectDeleteFile() {
+    // delete current file
+    project.deleteFile();
+    projectUpdateFileList();
+}
+
+function projectUpdateFileList() {
+    document.getElementById("file_name_list_id").innerHTML = project.listHtml();
+}
+
+function jump_to_image(index)
+{
+    // project.go(index)
+    if (true) {
+        // Show image with canvas ...
+        // canvas.reference project ?
+        // canvas.load(project.currentImage);
+        // canvas.load(project.currentItems);
+        canvasResize();
+        canvasShow(true);
+        // canvas.redraw();
+        console.log("Canvas switch to current project item.");
+    };
+}
+
+function fullScreenToggle() {
+    show_or_hiden("header_id");
+    show_or_hiden("left_side_id");
+    show_or_hiden("footer_id");
 }
 
 function show_or_hiden(id) {
@@ -122,22 +185,6 @@ function show_or_hiden(id) {
         console.log("Error: element " + id + " not exists.");
 }
 
-function resize() {
-    // adjust main size ...
-    var w = document.documentElement.clientWidth;
-    var h = document.documentElement.clientHeight;
-    var header = document.getElementById("header");
-    var footer = document.getElementById("footer");
-    var main = document.getElementById("main");
-    var leftside = document.getElementById("leftside");
-
-    h -= header.clientHeight;
-    h -= footer.clientHeight;
-    w -= leftside.clientWidth;
-    main.style.height = h + 'px';
-    main.style.width = w + 'px';
-}
-
 function number_padding_with_zeros(num, n) {
     var len = num.toString().length;
     while (len < n) {
@@ -145,14 +192,6 @@ function number_padding_with_zeros(num, n) {
         len++;
     }
     return num;
-}
-
-function get_default_project_name() {
-    const now = new Date();
-    var ts = now.getFullYear() + "" + number_padding_with_zeros(now.getMonth() + 1, 2) + "" + number_padding_with_zeros(now.getDate(), 2) +
-        "_" + number_padding_with_zeros(now.getHours(), 2) + "" + number_padding_with_zeros(now.getMinutes(), 2);
-    var project_name = 'image_' + ts;
-    return project_name;
 }
 </script>
 

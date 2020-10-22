@@ -30,6 +30,28 @@ const crc16 = (b: Uint8Array, n: number): number => {
     return crc & 0xffff;
 }
 
+// mime -- MIME(Multipurpose Internet Mail Extensions)
+function selectFiles(mime: string, multi: boolean): Promise < FileList > {
+    return new Promise((resolve, reject) => {
+        let input = document.createElement('input') as HTMLInputElement;
+        input.type = 'file';
+        input.accept = mime; // 'image/*';
+        input.multiple = multi;
+
+        input.addEventListener('change', () => {
+            if (input.files != undefined)
+                resolve(input.files);
+            else
+                reject("selectFiles: NO file selected.");
+        }, false);
+
+        setTimeout(() => {
+            let event = new MouseEvent('click');
+            input.dispatchEvent(event);
+        }, 10); // 10 ms
+    });
+}
+
 // Decode dataURL to HTMLImageElement
 function dataURLToImage(url: string): Promise < HTMLImageElement > {
     return new Promise(function(resolve, reject) {
@@ -131,6 +153,10 @@ class ImageProject {
     image_load_ok: number;
     image_load_err: number;
 
+    // Need saving ?
+    need_saving: boolean;
+    // Need update fileList ?
+
     constructor(name: string) {
         this.name = name;
         this.create = new Date();
@@ -142,6 +168,8 @@ class ImageProject {
         this.image_loading = 0;
         this.image_load_ok = 0;
         this.image_load_err = 0;
+
+        this.need_saving = false;
     }
 
     count(): number {
@@ -196,6 +224,8 @@ class ImageProject {
                             this.go(0);
                         this.image_load_ok++;
                         this.image_loading--;
+
+                        this.need_saving = true;
                     })
                     .catch((error) => {
                         this.image_load_err++;
@@ -214,22 +244,50 @@ class ImageProject {
         return "";
     }
 
+    // <ul>
+    //     <li onclick='jump_to_image(0)'>[1] 01_noise.png</li>
+    //     <li onclick='jump_to_image(1)' class='sel'>[2] 02_noise.png</li>
+    //     <li onclick='jump_to_image(2)'>[3] 03_noise.png</li>
+    // </ul>    
     listHtml(): string {
-        return "";
-    }
-
-    gridHtml(): string {
-        return "";
+        let html = [];
+        html.push("<ul>");
+        for (let i = 0; i < this.items.length; i++) {
+            let s = "<li onclick='jump_to_image(" + i + ")'";
+            if (i == this.current_index)
+                s += " class='sel'";
+            s += ">[" + (i + 1) + '] ' + this.items[i].name + "</li>";
+            html.push(s);
+        }
+        html.push("</ul>");
+        return html.join("\n");
     }
 
     // JSON format file
     open(file: File) {
-
+        this.need_saving = false;
     }
 
     // JSON format
     save(filename: string) {
+        // saving ...
+        this.need_saving = false;
+    }
 
+    addFiles() {
+        selectFiles("images/*", true).then((files: FileList) => {
+            for (let i = 0; i < files.length; i++)
+                this.load(files[i]);
+        });
+    }
+
+    // Delete current file
+    deleteFile() {
+        let index = this.current_index;
+        this.items.splice(index, 1);    // delete index
+        if (index > this.items.length - 1)
+            this.goLast();
+        this.need_saving = true;
     }
 
     info(): string {
