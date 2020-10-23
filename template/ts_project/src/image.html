@@ -134,6 +134,14 @@ function canvasResize() {
     canvas.style.width = w + 'px';
 }
 
+function projectSave() {
+    project.save();
+}
+
+function projectOpen() {
+    project.open();
+}
+
 function defaultProjectName() {
     const now = new Date();
     var ts = now.getFullYear() + "" + number_padding_with_zeros(now.getMonth() + 1, 2) + "" + number_padding_with_zeros(now.getDate(), 2) +

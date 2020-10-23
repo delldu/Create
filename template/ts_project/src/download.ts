@@ -10,20 +10,14 @@ function download(href: string, filename: string) {
     a.href = href;
     a.target = '_blank';
     a.download = filename;
-
-    // Simulate a mouse click event
-    var event = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-    });
-
-    a.dispatchEvent(event);
+    a.click();
 }
 
 function saveTextAsFile(text: string, filename: string) {
-    let href = URL.createObjectURL(text);
+    let blob = new Blob([text], {type: 'text/json;charset=utf-8'});
+    let href = URL.createObjectURL(blob);
     download(href, filename);
+    URL.revokeObjectURL(href);
 }
 
 function saveDataURLAsImage(dataurl: string, filename: string) {
@@ -53,3 +47,4 @@ function saveCanvasAsImage(id: string, filename: string): boolean {
     saveDataURLAsImage(dataurl, filename);
     return true;
 }
+

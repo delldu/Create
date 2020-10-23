@@ -98,6 +98,25 @@ function loadDataURLFromFile(file: File): Promise < string > {
     });
 }
 
+function loadTextFromFile(file: File): Promise < string > {
+    return new Promise(function(resolve, reject) {
+        if (!(file instanceof File))
+            reject("loadTextFromFile: input is not File object.");
+        else {
+            let reader = new FileReader();
+            reader.addEventListener("error", () => {
+                reject("loadTextFromFile: file read error.");
+            }, false);
+            reader.addEventListener("load", () => {
+                // reader ok ?
+                resolve(reader.result as string); // throw dataURL data
+            }, false);
+            reader.readAsText(file, 'utf-8');
+        }
+    });
+}
+
+
 class ImageProjectItem {
     name: string;
     readonly size: number;
@@ -259,13 +278,67 @@ class ImageProject {
     }
 
     // JSON format file
-    open(file: File) {
+    loadFromJSON(text: string) {
+        let d = JSON.parse(text);
+        // Reference this.save()
+        // let save_project = {
+        //     'name': this.name,
+        //     'create': this.create,
+        //     'items': this.items
+        // };
+        if (d['name'])
+            this.name = d['name'];
+        if (d['create'])
+            this.create = new Date(Date.parse(d['create']));
+        if (d['items']) {
+            // this.items = ...
+            this.items = new Array < ImageProjectItem > ();
+            for (let i in d['items']) {
+                let x = d['items'][i];
+                let unit = new ImageProjectItem(x.name,
+                    parseInt(x.size), parseInt(x.height), parseInt(x.width), x.data, x.blobs);
+                this.items.push(unit);
+            }
+        }
         this.need_saving = false;
+        this.need_refresh = true;
+        this.go(0);
+    }
+
+    open() {
+        this.need_saving = false;
+        // mime -- MIME(Multipurpose Internet Mail Extensions)
+        let input = document.createElement('input') as HTMLInputElement;
+        input.type = 'file';
+        input.accept = '.json'; // mime -- '.json'; JSON File
+        input.multiple = false;
+
+        input.addEventListener('change', () => {
+            if (input.files != undefined) {
+                let file = input.files[0];
+                loadTextFromFile(file).then((text) => {
+                        this.loadFromJSON(text);
+                    })
+                    .catch((error) => {
+                        console.log("ImageProject open: file reading error.")
+                    });
+            } else {
+                console.log("ImageProject open: error.");
+            }
+        }, false);
+        input.click();
     }
 
     // JSON format
-    save(filename: string) {
+    save() {
         // saving ...
+        let filename = this.name + ".json";
+        let save_project = {
+            'name': this.name,
+            'create': this.create,
+            'items': this.items
+        };
+        saveTextAsFile(JSON.stringify(save_project, undefined, 2), filename);
         this.need_saving = false;
     }
 
@@ -284,7 +357,8 @@ class ImageProject {
                 console.log("ImageProject addFiles: error.");
             }
         }, false);
-        input.dispatchEvent(new MouseEvent('click'));
+        // input.dispatchEvent(new MouseEvent('click'));
+        input.click();
     }
 
     // Delete current file
