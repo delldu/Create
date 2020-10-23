@@ -177,13 +177,8 @@ function jump_to_image(index) {
         updateFileList();
         let [current_image, current_index] = project.current();
         canvas.loadBackground(current_image);
-
-        // Show image with canvas ...
-        // canvas.reference project ?
-        // canvas.load(project.currentImage);
-        // canvas.load(project.currentItems);
-        // canvasResize();
-        sleep(50).then(() => { canvasShow(true); canvas.redraw(); });
+        // waiting for image decode finish ...
+        sleep(100).then(() => { canvasShow(true); canvas.redraw(); });
         // console.log("Canvas switch to current project item.");
     };
 }

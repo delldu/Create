@@ -336,6 +336,7 @@ class ImageProject {
         let save_project = {
             'name': this.name,
             'create': this.create,
+            'version': ImageProject.version,
             'items': this.items
         };
         saveTextAsFile(JSON.stringify(save_project, undefined, 2), filename);

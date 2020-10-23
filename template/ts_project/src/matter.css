@@ -1747,9 +1747,7 @@ footer {
 
 .matter-file-name-list .sel {
     display: block;
-
-    border-left: 4px solid black;
-    font-weight: 400;
+    background-color: rgb(var(--matter-primary-bg));
 }
 
 button.leftsidebar_accordion {
