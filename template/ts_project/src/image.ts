@@ -30,28 +30,6 @@ const crc16 = (b: Uint8Array, n: number): number => {
     return crc & 0xffff;
 }
 
-// mime -- MIME(Multipurpose Internet Mail Extensions)
-function selectFiles(mime: string, multi: boolean): Promise < FileList > {
-    return new Promise((resolve, reject) => {
-        let input = document.createElement('input') as HTMLInputElement;
-        input.type = 'file';
-        input.accept = mime; // 'image/*';
-        input.multiple = multi;
-
-        input.addEventListener('change', () => {
-            if (input.files != undefined)
-                resolve(input.files);
-            else
-                reject("selectFiles: NO file selected.");
-        }, false);
-
-        setTimeout(() => {
-            let event = new MouseEvent('click');
-            input.dispatchEvent(event);
-        }, 10); // 10 ms
-    });
-}
-
 // Decode dataURL to HTMLImageElement
 function dataURLToImage(url: string): Promise < HTMLImageElement > {
     return new Promise(function(resolve, reject) {
@@ -155,7 +133,8 @@ class ImageProject {
 
     // Need saving ?
     need_saving: boolean;
-    // Need update fileList ?
+    // Need updating file list ?
+    private need_refresh: boolean;
 
     constructor(name: string) {
         this.name = name;
@@ -170,6 +149,7 @@ class ImageProject {
         this.image_load_err = 0;
 
         this.need_saving = false;
+        this.need_refresh = false;
     }
 
     count(): number {
@@ -212,7 +192,18 @@ class ImageProject {
         return this.go(this.items.length - 1);
     }
 
+    find(name: string, size: number): boolean {
+        for (let i = 0; i < this.items.length; i++) {
+            if (this.items[i].name == name && this.items[i].size == size)
+                return true;
+        }
+        return false;
+    }
+
     load(file: File) {
+        // Remove duplicate file
+        if (this.find(file.name, file.size))
+            return;
         this.image_loading++;
         loadDataURLFromFile(file).then((url: string) => {
                 // dataURL ok ?
@@ -226,6 +217,7 @@ class ImageProject {
                         this.image_loading--;
 
                         this.need_saving = true;
+                        this.need_refresh = true;
                     })
                     .catch((error) => {
                         this.image_load_err++;
@@ -256,7 +248,10 @@ class ImageProject {
             let s = "<li onclick='jump_to_image(" + i + ")'";
             if (i == this.current_index)
                 s += " class='sel'";
-            s += ">[" + (i + 1) + '] ' + this.items[i].name + "</li>";
+            let no = (i + 1).toString();
+            while (no.length < 3)
+                no = "0" + no;
+            s += ">[" + no + '] ' + this.items[i].name + "</li>";
             html.push(s);
         }
         html.push("</ul>");
@@ -275,19 +270,37 @@ class ImageProject {
     }
 
     addFiles() {
-        selectFiles("images/*", true).then((files: FileList) => {
-            for (let i = 0; i < files.length; i++)
-                this.load(files[i]);
-        });
+        // mime -- MIME(Multipurpose Internet Mail Extensions)
+        let input = document.createElement('input') as HTMLInputElement;
+        input.type = 'file';
+        input.accept = 'image/*'; // mime -- 'image/*';
+        input.multiple = true;
+
+        input.addEventListener('change', () => {
+            if (input.files != undefined) {
+                for (let i = 0; i < input.files.length; i++)
+                    this.load(input.files[i]);
+            } else {
+                console.log("ImageProject addFiles: error.");
+            }
+        }, false);
+        input.dispatchEvent(new MouseEvent('click'));
     }
 
     // Delete current file
     deleteFile() {
         let index = this.current_index;
-        this.items.splice(index, 1);    // delete index
+        this.items.splice(index, 1); // delete index
         if (index > this.items.length - 1)
             this.goLast();
         this.need_saving = true;
+        this.need_refresh = true;
+    }
+
+    fresh() {
+        let ok = this.need_refresh;
+        this.need_refresh = false;
+        return ok;
     }
 
     info(): string {
@@ -449,7 +462,7 @@ class AbClient {
             if (this.status != WebSocket.OPEN) {
                 reject("WebSocket not opened.");
             }
-            if (! this.evthandler_registed) {
+            if (!this.evthandler_registed) {
                 this.evthandler_registed = true;
 
                 this.socket.addEventListener('message', (event: MessageEvent) => {

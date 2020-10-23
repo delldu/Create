@@ -48,12 +48,12 @@
             </label>
             <!--  add style to remove flex layout -->
             <div id="file_name_list_id" class="matter-file-name-list" style="display: block;">
-                <ul>
+<!--                 <ul>
                     <li onclick='jump_to_image(0)'>[1] 01_noise.png</li>
                     <li onclick='jump_to_image(1)' class="sel">[2] 02_noise.png</li>
                     <li onclick='jump_to_image(2)'>[3] 03_noise.png</li>
                 </ul>
-            </div>
+ -->            </div>
             <div style="justify-content: space-around;">
                 <span class="matter-button-contained" onclick="projectAddFiles()" title="Add files">Add Files</span>
                 <span class="matter-button-contained" onclick="projectDeleteFile()" title="Remove selected file">Remove File</span>
@@ -67,7 +67,7 @@
     </main>
     <footer1 id="footer_id">
         <div style="display:flex;justify-content: space-around;">
-        @2020 AI Image Video</div>
+            @2020 AI Image Video</div>
         <div id="message_id" class="matter-message" class="matter-h4" style="display:none">message</div>
         <progress class="matter-progress-linear" value="0" max="100" style="display:none">Cleaning ...</progress>
     </footer1>
@@ -75,7 +75,6 @@
 <script type="text/javascript">
 "use strict";
 var project = new ImageProject(defaultProjectName());
-var panel = new ShiftPanel();
 var message = new Message("message_id");
 var progress = new Progress(0);
 var canvas_id = new Canvas("canvas_id");
@@ -83,9 +82,6 @@ var canvas_id = new Canvas("canvas_id");
 function load() {
     message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
     progress.startDemo(50); // start 0
-
-    panel.add("start_image_id");
-    panel.add("canvas_id");
 
     document.getElementById("project_name").value = project.name;
 
@@ -95,14 +91,20 @@ function load() {
             fullScreenToggle();
         }
     }, false);
+
+    // Refresh file list -- adding files is async, routine is necessary
+    setInterval(() => {
+        if (project.fresh()) {
+            updateFileList();
+        }
+    }, 500); // 500 ms
 }
 
 function canvasShow(yes) {
     var canvas_e = document.getElementById("canvas_id");
     if (canvas_e) {
         canvas_e.style.display = (yes) ? "" : "none";
-    }
-    else {
+    } else {
         console.log("Error: element canvas_id not exists.");
     }
     var start_image_e = document.getElementById("start_image_id");
@@ -143,23 +145,24 @@ function projectChangeName() {
 
 function projectAddFiles() {
     project.addFiles();
-    projectUpdateFileList();
+    updateFileList();
 }
 
 function projectDeleteFile() {
     // delete current file
     project.deleteFile();
-    projectUpdateFileList();
+    updateFileList();
 }
 
-function projectUpdateFileList() {
+function updateFileList() {
+    // Force refresh file list
     document.getElementById("file_name_list_id").innerHTML = project.listHtml();
 }
 
-function jump_to_image(index)
-{
-    // project.go(index)
-    if (true) {
+function jump_to_image(index) {
+    if (project.go(index)) {
+        updateFileList();
+
         // Show image with canvas ...
         // canvas.reference project ?
         // canvas.load(project.currentImage);
