@@ -98,6 +98,8 @@ function load() {
     setInterval(() => {
         if (project.fresh()) {
             updateFileList();
+            // Need update project name
+            document.getElementById("project_name").value = project.name;
         }
     }, 500); // 500 ms
 }
