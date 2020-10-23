@@ -48,18 +48,20 @@
             </label>
             <!--  add style to remove flex layout -->
             <div id="file_name_list_id" class="matter-file-name-list" style="display: block;">
-<!--                 <ul>
+                <!--                 <ul>
                     <li onclick='jump_to_image(0)'>[1] 01_noise.png</li>
                     <li onclick='jump_to_image(1)' class="sel">[2] 02_noise.png</li>
                     <li onclick='jump_to_image(2)'>[3] 03_noise.png</li>
                 </ul>
- -->            </div>
+ -->
+            </div>
             <div style="justify-content: space-around;">
                 <span class="matter-button-contained" onclick="projectAddFiles()" title="Add files">Add Files</span>
                 <span class="matter-button-contained" onclick="projectDeleteFile()" title="Remove selected file">Remove File</span>
             </div>
         </leftside>
-        <workspace id="workspace_id">
+        <!--  add style to remove flex layout -->
+        <workspace id="workspace_id" style="display: block">
             <img id="start_image_id" src="mountain.jpg" style="width:100%;height:100%;" alt="Image" />
             <canvas id="canvas_id" tabindex="1" style="display:none;border:1px dashed red;">
             </canvas>
@@ -77,7 +79,7 @@
 var project = new ImageProject(defaultProjectName());
 var message = new Message("message_id");
 var progress = new Progress(0);
-var canvas_id = new Canvas("canvas_id");
+var canvas = new Canvas("canvas_id");
 
 function load() {
     message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
@@ -101,16 +103,17 @@ function load() {
 }
 
 function canvasShow(yes) {
-    var canvas_e = document.getElementById("canvas_id");
-    if (canvas_e) {
-        canvas_e.style.display = (yes) ? "" : "none";
-    } else {
-        console.log("Error: element canvas_id not exists.");
-    }
     var start_image_e = document.getElementById("start_image_id");
     if (start_image_e) {
         start_image_e.style.display = (yes) ? "none" : "";
     }
+    var e = document.getElementById("canvas_id");
+    if (e) {
+        e.style.display = (yes) ? "" : "none";
+    } else {
+        console.log("Error: element canvas not exists.");
+    }
+    e.focus();
 }
 
 function canvasResize() {
@@ -162,15 +165,16 @@ function updateFileList() {
 function jump_to_image(index) {
     if (project.go(index)) {
         updateFileList();
+        let [current_image, current_index] = project.current();
+        canvas.loadBackground(current_image);
 
         // Show image with canvas ...
         // canvas.reference project ?
         // canvas.load(project.currentImage);
         // canvas.load(project.currentItems);
-        canvasResize();
-        canvasShow(true);
-        // canvas.redraw();
-        console.log("Canvas switch to current project item.");
+        // canvasResize();
+        sleep(50).then(() => { canvasShow(true); canvas.redraw(); });
+        // console.log("Canvas switch to current project item.");
     };
 }
 
