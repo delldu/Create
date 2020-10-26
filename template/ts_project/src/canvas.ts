@@ -161,9 +161,9 @@ class Polygon {
         this.points.splice(index, 1);
     }
 
-    pop() {
-        this.points.pop();
-    }
+    // pop() {
+    //     this.points.pop();
+    // }
 
     // Bounding Box
     bbox(): Box {
@@ -234,16 +234,16 @@ class Polygon {
         return -1;
     }
 
-    setPath(brush: CanvasRenderingContext2D) {
+    setPath(brush: CanvasRenderingContext2D, scale: number) {
         let n = this.points.length;
         brush.beginPath();
-        brush.moveTo(this.points[0].x, this.points[0].y);
+        brush.moveTo(this.points[0].x * scale, this.points[0].y * scale);
         for (let i = 1; i < n; ++i)
-            brush.lineTo(this.points[i].x, this.points[i].y);
+            brush.lineTo(this.points[i].x*scale, this.points[i].y * scale);
         brush.closePath();
     }
 
-    draw(brush: CanvasRenderingContext2D, selected: boolean) {
+    draw(brush: CanvasRenderingContext2D, scale: number, selected: boolean) {
         let n = this.points.length;
         if (n < 1)
             return;
@@ -255,7 +255,7 @@ class Polygon {
             brush.strokeStyle = Polygon.LINE_COLOR;
             brush.lineWidth = Polygon.LINE_WIDTH;
         }
-        this.setPath(brush);
+        this.setPath(brush, scale);
         if (selected) {
             brush.fill();
         } else {
@@ -267,14 +267,14 @@ class Polygon {
         brush.globalAlpha = 1.0;
         for (let p of this.points) {
             brush.beginPath();
-            brush.arc(p.x, p.y, Point.THRESHOLD, 0, 2 * Math.PI, false);
+            brush.arc(p.x * scale, p.y * scale, Point.THRESHOLD, 0, 2 * Math.PI, false);
             brush.closePath();
             brush.fill();
         }
         brush.restore();
     }
 
-    draggingDraw(brush: CanvasRenderingContext2D) {
+    draggingDraw(brush: CanvasRenderingContext2D, scale:number) {
         let n = this.points.length;
         if (n < 1)
             return;
@@ -283,7 +283,7 @@ class Polygon {
         brush.strokeStyle = Polygon.LINE_COLOR;
         brush.lineWidth = Polygon.LINE_WIDTH;
         brush.setLineDash([1, 1]);
-        this.setPath(brush);
+        this.setPath(brush, scale);
         brush.stroke();
         brush.restore();
     }
@@ -379,25 +379,25 @@ class Shape {
         this.blobs.pop();
     }
 
-    draw(brush: CanvasRenderingContext2D) {
+    draw(brush: CanvasRenderingContext2D, scale:number) {
         for (let i = 0; i < this.blobs.length; i++) {
             if (i === this.selected_index)
-                this.blobs[i].draw(brush, true);
+                this.blobs[i].draw(brush, scale, true);
             else
-                this.blobs[i].draw(brush, false);
+                this.blobs[i].draw(brush, scale, false);
         }
     }
 
     // Region draw speed up drawing ...
-    regionDraw(brush: CanvasRenderingContext2D, rect: Box) {
+    regionDraw(brush: CanvasRenderingContext2D, scale: number, rect: Box) {
         for (let i = 0; i < this.blobs.length; i++) {
             let bbox = this.blobs[i].bbox();
             if (!rect.intersect(bbox))
                 continue;
             if (i === this.selected_index)
-                this.blobs[i].draw(brush, true);
+                this.blobs[i].draw(brush, scale, true);
             else
-                this.blobs[i].draw(brush, false);
+                this.blobs[i].draw(brush, scale, false);
         }
     }
 
@@ -476,7 +476,7 @@ class Shape {
     }
 
     // no need any redraw for using save/restore methods
-    dragging(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D, image_stack: ImageStack) {
+    dragging(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D, scale: number, image_stack: ImageStack) {
         // vertex could be dragged ?
 
         // drag vertex ?
@@ -498,7 +498,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush);
+            blob.draggingDraw(brush, scale);
 
             return;
         }
@@ -519,7 +519,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush);
+            blob.draggingDraw(brush, scale);
             return;
         } else {
             // Add new blob
@@ -542,7 +542,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush);
+            blob.draggingDraw(brush, scale);
             return;
         } // end of b_index
     }
@@ -753,7 +753,7 @@ class Canvas {
     private editModeMouseMoveHandler(e: MouseEvent) {
         if (this.mouse.pressed) {
             this.canvas.style.cursor = "pointer";
-            this.shape_blobs.dragging(e.ctrlKey, this.mouse, this.brush, this.image_stack);
+            this.shape_blobs.dragging(e.ctrlKey, this.mouse, this.brush, Canvas.ZOOM_LEVELS[this.zoom_index], this.image_stack);
         } else {
             this.canvas.style.cursor = "default";
         }
@@ -912,6 +912,12 @@ class Canvas {
         index = index % Canvas.ZOOM_LEVELS.length;
 
         this.zoom_index = index;
+        // this.canvas.width = Math.round(this.background.naturalWidth * Canvas.ZOOM_LEVELS[this.zoom_index]);
+        // this.canvas.height = Math.round(this.background.naturalHeight * Canvas.ZOOM_LEVELS[this.zoom_index]);
+
+        this.canvas.width = this.background.naturalWidth * Canvas.ZOOM_LEVELS[this.zoom_index];
+        this.canvas.height = this.background.naturalHeight * Canvas.ZOOM_LEVELS[this.zoom_index];
+
         this.brush.scale(Canvas.ZOOM_LEVELS[this.zoom_index], Canvas.ZOOM_LEVELS[this.zoom_index]);
         this.redraw();
 
@@ -924,13 +930,14 @@ class Canvas {
         if (this.background_loaded) {
             let w = this.background.naturalWidth;
             let h = this.background.naturalHeight;
-            this.brush.drawImage(this.background, 0, 0, w, h,
-                0, 0, w, h);
-            // this.brush.drawImage(this.background, 0, 0);
+            // this.brush.drawImage(this.background, 0, 0, w, h,
+            //     0, 0, w*Canvas.ZOOM_LEVELS[this.zoom_index], h*Canvas.ZOOM_LEVELS[this.zoom_index]);
+
+            this.brush.drawImage(this.background, 0, 0, w, h, 0, 0, w, h);
         }
 
         // Draw blobs ...
-        this.shape_blobs.draw(this.brush);
+        this.shape_blobs.draw(this.brush, Canvas.ZOOM_LEVELS[this.zoom_index]);
     }
 }
 

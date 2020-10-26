@@ -12,7 +12,7 @@
     <header id="header_id">
         <div class="matter-menubar">
             <ul>
-                <li onclick="show_home_panel()" style="cursor:pointer;">Home</li>
+                <li onclick="console.log('home');" style="cursor:pointer;">Home</li>
                 <li>Project
                     <ul>
                         <li onclick="projectOpen()" title="Open project (from a JSON file)">Open</li>
@@ -27,7 +27,7 @@
                         <li onclick="" title="Show clean image">Clean</li>
                         <li onclick="" title="Show color image">Color</li>
                         <li onclick="" title="Show zoom image">Zoom</li>
-                        <li onclick="" title="Show atch image">Patch</li>
+                        <li onclick="" title="Show patch image">Patch</li>
                     </ul>
                 </li>
                 <li>Help
@@ -70,16 +70,16 @@
     <footer1 id="footer_id">
         <div style="display:flex;justify-content: space-around;">
             @2020 AI Image Video</div>
-        <div id="message_id" class="matter-message" class="matter-h4" style="display:none">message</div>
+        <div id="message_id" class="matter-message" style="display:none">message</div>
         <progress class="matter-progress-linear" value="0" max="100" style="display:none">Cleaning ...</progress>
     </footer1>
 </body>
 <script type="text/javascript">
 "use strict";
-var project = new ImageProject(defaultProjectName());
-var message = new Message("message_id");
-var progress = new Progress(0);
-var canvas = new Canvas("canvas_id");
+const project = new ImageProject(defaultProjectName());
+const message = new Message("message_id");
+const progress = new Progress(0);
+const canvas = new Canvas("canvas_id");
 
 function load() {
     message.show("Image Cleaning/Coloring/Zooming/Patching is ready ...", 10);
@@ -89,7 +89,7 @@ function load() {
 
     window.addEventListener("keydown", (e) => {
         // e : KeyboardEvent
-        if (e.key == 'Shift' || e.key === 'Escape') {
+        if (e.key === 'Shift' || e.key === 'Escape') {
             fullScreenToggle();
         }
     }, false);
@@ -101,11 +101,11 @@ function load() {
 }
 
 function canvasShow(yes) {
-    var start_image_e = document.getElementById("start_image_id");
+    let start_image_e = document.getElementById("start_image_id");
     if (start_image_e) {
         start_image_e.style.display = (yes) ? "none" : "";
     }
-    var e = document.getElementById("canvas_id");
+    let e = document.getElementById("canvas_id");
     if (e) {
         e.style.display = (yes) ? "" : "none";
     } else {
@@ -116,13 +116,12 @@ function canvasShow(yes) {
 
 function canvasResize() {
     // canvas size adjust with background image ...
-    var w = document.documentElement.clientWidth;
-    var h = document.documentElement.clientHeight;
-    var header = document.getElementById("header_id");
-    var footer = document.getElementById("footer_id");
-    var main = document.getElementById("main_id");
-    var leftside = document.getElementById("left_side_id");
-    var canvas = document.getElementById("canvas_id");
+    let w = document.documentElement.clientWidth;
+    let h = document.documentElement.clientHeight;
+    let header = document.getElementById("header_id");
+    let footer = document.getElementById("footer_id");
+    let leftside = document.getElementById("left_side_id");
+    let canvas = document.getElementById("canvas_id");
 
     h -= header.clientHeight;
     h -= footer.clientHeight;
@@ -142,10 +141,9 @@ function projectOpen() {
 
 function defaultProjectName() {
     const now = new Date();
-    var ts = now.getFullYear() + "" + number_padding_with_zeros(now.getMonth() + 1, 2) + "" + number_padding_with_zeros(now.getDate(), 2) +
+    let ts = now.getFullYear() + "" + number_padding_with_zeros(now.getMonth() + 1, 2) + "" + number_padding_with_zeros(now.getDate(), 2) +
         "_" + number_padding_with_zeros(now.getHours(), 2) + "" + number_padding_with_zeros(now.getMinutes(), 2);
-    var project_name = 'image_' + ts;
-    return project_name;
+    return 'image_' + ts;
 }
 
 function projectChangeName() {
@@ -171,7 +169,7 @@ function canvasRefresh(index) {
     canvas.key = project.key();
     // waiting for image decode finish ...
     sleep(100).then(() => { canvasShow(true);
-    canvas.redraw(); });    
+    canvas.redraw(); });
 }
 
 function projectRefresh() {
@@ -186,7 +184,7 @@ function projectRefresh() {
         canvas.redraw();
     } else {
         if (project.indexOk()) {
-            var index = project.current_index;
+            let index = project.current_index;
             if (canvas.key != project.key()) {
                 canvasRefresh(index);
             } else {
@@ -202,17 +200,17 @@ function jump_to_image(index) {
         document.getElementById("file_name_list_id").innerHTML = project.listHtml();
         if (canvas.key != project.key())
             canvasRefresh(index);
-    };
+    }
 }
 
 function fullScreenToggle() {
-    show_or_hiden("header_id");
-    show_or_hiden("left_side_id");
-    show_or_hiden("footer_id");
+    show_or_not("header_id");
+    show_or_not("left_side_id");
+    show_or_not("footer_id");
 }
 
-function show_or_hiden(id) {
-    var elem = document.getElementById(id);
+function show_or_not(id) {
+    let elem = document.getElementById(id);
     if (elem)
         elem.style.display = (elem.style.display == "none") ? "" : "none";
     else
@@ -220,7 +218,7 @@ function show_or_hiden(id) {
 }
 
 function number_padding_with_zeros(num, n) {
-    var len = num.toString().length;
+    let len = num.toString().length;
     while (len < n) {
         num = "0" + num;
         len++;
