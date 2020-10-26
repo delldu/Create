@@ -234,16 +234,16 @@ class Polygon {
         return -1;
     }
 
-    setPath(brush: CanvasRenderingContext2D, scale: number) {
+    setPath(brush: CanvasRenderingContext2D) {
         let n = this.points.length;
         brush.beginPath();
-        brush.moveTo(this.points[0].x * scale, this.points[0].y * scale);
+        brush.moveTo(this.points[0].x, this.points[0].y);
         for (let i = 1; i < n; ++i)
-            brush.lineTo(this.points[i].x*scale, this.points[i].y * scale);
+            brush.lineTo(this.points[i].x, this.points[i].y);
         brush.closePath();
     }
 
-    draw(brush: CanvasRenderingContext2D, scale: number, selected: boolean) {
+    draw(brush: CanvasRenderingContext2D, selected: boolean) {
         let n = this.points.length;
         if (n < 1)
             return;
@@ -255,7 +255,7 @@ class Polygon {
             brush.strokeStyle = Polygon.LINE_COLOR;
             brush.lineWidth = Polygon.LINE_WIDTH;
         }
-        this.setPath(brush, scale);
+        this.setPath(brush);
         if (selected) {
             brush.fill();
         } else {
@@ -267,14 +267,14 @@ class Polygon {
         brush.globalAlpha = 1.0;
         for (let p of this.points) {
             brush.beginPath();
-            brush.arc(p.x * scale, p.y * scale, Point.THRESHOLD, 0, 2 * Math.PI, false);
+            brush.arc(p.x, p.y, Point.THRESHOLD, 0, 2 * Math.PI, false);
             brush.closePath();
             brush.fill();
         }
         brush.restore();
     }
 
-    draggingDraw(brush: CanvasRenderingContext2D, scale:number) {
+    draggingDraw(brush: CanvasRenderingContext2D) {
         let n = this.points.length;
         if (n < 1)
             return;
@@ -283,7 +283,7 @@ class Polygon {
         brush.strokeStyle = Polygon.LINE_COLOR;
         brush.lineWidth = Polygon.LINE_WIDTH;
         brush.setLineDash([1, 1]);
-        this.setPath(brush, scale);
+        this.setPath(brush);
         brush.stroke();
         brush.restore();
     }
@@ -379,25 +379,25 @@ class Shape {
         this.blobs.pop();
     }
 
-    draw(brush: CanvasRenderingContext2D, scale:number) {
+    draw(brush: CanvasRenderingContext2D) {
         for (let i = 0; i < this.blobs.length; i++) {
             if (i === this.selected_index)
-                this.blobs[i].draw(brush, scale, true);
+                this.blobs[i].draw(brush, true);
             else
-                this.blobs[i].draw(brush, scale, false);
+                this.blobs[i].draw(brush, false);
         }
     }
 
     // Region draw speed up drawing ...
-    regionDraw(brush: CanvasRenderingContext2D, scale: number, rect: Box) {
+    regionDraw(brush: CanvasRenderingContext2D, rect: Box) {
         for (let i = 0; i < this.blobs.length; i++) {
             let bbox = this.blobs[i].bbox();
             if (!rect.intersect(bbox))
                 continue;
             if (i === this.selected_index)
-                this.blobs[i].draw(brush, scale, true);
+                this.blobs[i].draw(brush, true);
             else
-                this.blobs[i].draw(brush, scale, false);
+                this.blobs[i].draw(brush, false);
         }
     }
 
@@ -476,7 +476,7 @@ class Shape {
     }
 
     // no need any redraw for using save/restore methods
-    dragging(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D, scale: number, image_stack: ImageStack) {
+    dragging(ctrl: boolean, m: Mouse, brush: CanvasRenderingContext2D, image_stack: ImageStack) {
         // vertex could be dragged ?
 
         // drag vertex ?
@@ -498,7 +498,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush, scale);
+            blob.draggingDraw(brush);
 
             return;
         }
@@ -519,7 +519,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush, scale);
+            blob.draggingDraw(brush);
             return;
         } else {
             // Add new blob
@@ -542,7 +542,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush, scale);
+            blob.draggingDraw(brush);
             return;
         } // end of b_index
     }
@@ -703,7 +703,7 @@ class Canvas {
     //     console.log(message);
     // }
 
-    saveBlobs():string {
+    saveBlobs(): string {
         return JSON.stringify(this.shape_blobs, undefined, 2);
     }
 
@@ -753,7 +753,7 @@ class Canvas {
     private editModeMouseMoveHandler(e: MouseEvent) {
         if (this.mouse.pressed) {
             this.canvas.style.cursor = "pointer";
-            this.shape_blobs.dragging(e.ctrlKey, this.mouse, this.brush, Canvas.ZOOM_LEVELS[this.zoom_index], this.image_stack);
+            this.shape_blobs.dragging(e.ctrlKey, this.mouse, this.brush, this.image_stack);
         } else {
             this.canvas.style.cursor = "default";
         }
@@ -818,8 +818,8 @@ class Canvas {
 
     private registerEventHandlers() {
         this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
-            this.mouse.start.x = e.offsetX;
-            this.mouse.start.y = e.offsetY;
+            this.mouse.start.x = e.offsetX / Canvas.ZOOM_LEVELS[this.zoom_index];
+            this.mouse.start.y = e.offsetY / Canvas.ZOOM_LEVELS[this.zoom_index];
             this.mouse.pressed = true;
 
             if (this.isEditMode())
@@ -828,8 +828,8 @@ class Canvas {
                 this.viewModeMouseDownHandler(e);
         }, false);
         this.canvas.addEventListener('mouseup', (e: MouseEvent) => {
-            this.mouse.stop.x = e.offsetX;
-            this.mouse.stop.y = e.offsetY;
+            this.mouse.stop.x = e.offsetX / Canvas.ZOOM_LEVELS[this.zoom_index];
+            this.mouse.stop.y = e.offsetY / Canvas.ZOOM_LEVELS[this.zoom_index];
 
             // Every this is calm ...
             this.canvas.style.cursor = "default";
@@ -845,8 +845,8 @@ class Canvas {
             this.redraw();
         }, false);
         this.canvas.addEventListener('mousemove', (e: MouseEvent) => {
-            this.mouse.moving.x = e.offsetX;
-            this.mouse.moving.y = e.offsetY;
+            this.mouse.moving.x = e.offsetX / Canvas.ZOOM_LEVELS[this.zoom_index];
+            this.mouse.moving.y = e.offsetY / Canvas.ZOOM_LEVELS[this.zoom_index];
 
             if (this.isEditMode())
                 this.editModeMouseMoveHandler(e);
@@ -912,8 +912,6 @@ class Canvas {
         index = index % Canvas.ZOOM_LEVELS.length;
 
         this.zoom_index = index;
-        // this.canvas.width = Math.round(this.background.naturalWidth * Canvas.ZOOM_LEVELS[this.zoom_index]);
-        // this.canvas.height = Math.round(this.background.naturalHeight * Canvas.ZOOM_LEVELS[this.zoom_index]);
 
         this.canvas.width = this.background.naturalWidth * Canvas.ZOOM_LEVELS[this.zoom_index];
         this.canvas.height = this.background.naturalHeight * Canvas.ZOOM_LEVELS[this.zoom_index];
@@ -930,14 +928,12 @@ class Canvas {
         if (this.background_loaded) {
             let w = this.background.naturalWidth;
             let h = this.background.naturalHeight;
-            // this.brush.drawImage(this.background, 0, 0, w, h,
-            //     0, 0, w*Canvas.ZOOM_LEVELS[this.zoom_index], h*Canvas.ZOOM_LEVELS[this.zoom_index]);
 
             this.brush.drawImage(this.background, 0, 0, w, h, 0, 0, w, h);
         }
 
         // Draw blobs ...
-        this.shape_blobs.draw(this.brush, Canvas.ZOOM_LEVELS[this.zoom_index]);
+        this.shape_blobs.draw(this.brush);
     }
 }
 
