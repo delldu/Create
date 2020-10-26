@@ -236,6 +236,7 @@ class Polygon {
 
     setPath(brush: CanvasRenderingContext2D) {
         let n = this.points.length;
+        brush.translate(0.5,0.5);
         brush.beginPath();
         brush.moveTo(this.points[0].x, this.points[0].y);
         for (let i = 1; i < n; ++i)
@@ -265,6 +266,7 @@ class Polygon {
         // Draw vertex
         brush.fillStyle = Polygon.FILL_COLOR;
         brush.globalAlpha = 1.0;
+        brush.translate(0.5,0.5);
         for (let p of this.points) {
             brush.beginPath();
             brush.arc(p.x, p.y, Point.THRESHOLD, 0, 2 * Math.PI, false);
