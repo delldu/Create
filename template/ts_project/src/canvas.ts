@@ -703,6 +703,10 @@ class Canvas {
     //     console.log(message);
     // }
 
+    saveBlobs():string {
+        return JSON.stringify(this.shape_blobs, undefined, 2);
+    }
+
     setMode(index: number) {
         // Bad case: (-1 % 2) == -1
         if (index < 0)
