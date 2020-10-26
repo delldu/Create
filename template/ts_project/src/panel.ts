@@ -36,7 +36,7 @@ class ShiftPanel {
 
     click(id: string) {
         for (let i = 0; i < this.panels.length; i++) {
-            // add make sure valid element, but compiler donot know !
+            // add make sure valid element, but compiler do not know !
             let element = document.getElementById(this.panels[i]);
             if (element)
                 element.style.display = (id == this.panels[i]) ? "" : "none";
@@ -45,7 +45,7 @@ class ShiftPanel {
 
     clicked(): number {
         for (let i = 0; i < this.panels.length; i++) {
-            // add make sure valid element, but compiler donot know !
+            // add make sure valid element, but compiler do not know !
             let element = document.getElementById(this.panels[i]);
             if (element && element.style.display != "none")
                 return i;
@@ -67,7 +67,7 @@ class ShiftPanel {
         if (index > this.panels.length - 1)
             index = 0;
         for (let i = 0; i < this.panels.length; i++) {
-            // add make sure valid element, but compiler donot know !
+            // add make sure valid element, but compiler do not know !
             let element = document.getElementById(this.panels[i]);
             if (element)
                 element.style.display = (i == index) ? "" : "none";

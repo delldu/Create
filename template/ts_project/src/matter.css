@@ -1724,6 +1724,13 @@ footer {
     top: 50%;
 }
 
+.matter-file-name-list {
+    display: none;
+    overflow: scroll;
+    min-height: 480px;
+    max-height: 960px;
+}
+
 .matter-file-name-list ul {
     display: block;
     position: relative;
@@ -1748,42 +1755,4 @@ footer {
 .matter-file-name-list .sel {
     display: block;
     background-color: rgb(var(--matter-primary-bg));
-}
-
-button.leftsidebar_accordion {
-    background-color: rgb(var(--matter-primary-bg), 0.75);
-    color: rgb(var(--matter-primary-fg));
-    letter-spacing: 1px;
-    /*    text-transform: uppercase;
-*/
-    line-height: 20px;
-    width: 100%;
-    text-align: left;
-    padding: 8px 8px;
-    border: 0;
-    outline: none;
-    cursor: pointer;
-}
-
-button.leftsidebar_accordion:hover {
-    background-color: rgb(var(--matter-primary-bg));
-}
-
-button.leftsidebar_accordion:after {
-    content: '\02795';
-    /* '+'*/
-    color: rgb(var(--matter-primary-bg));
-    float: right;
-}
-
-button.leftsidebar_accordion.active:after {
-    content: '\02796';
-    /*   '-'*/
-}
-
-.matter-file-name-list {
-    display: none;
-    overflow: scroll;
-    min-height: 480px;
-    max-height: 960px;
 }

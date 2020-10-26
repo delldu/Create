@@ -6,19 +6,6 @@
 // ***
 // ***********************************************************************************
 
-function loadXMLDoc() {
-    let xhr = new XMLHttpRequest();
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            // document.getElementById("myDiv").innerHTML = xhr.responseText;
-        }
-    }
-    xhr.open("POST", "/ajax/demo_post2.asp", true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send("fname=Bill&lname=Gates");
-}
-
 // AJAX = Asynchronous JavaScript and XML
 function ajaxGet(url: string): Promise < string > {
     return new Promise(function(resolve, reject) {
@@ -100,8 +87,7 @@ function ajaxPostFiles(url: string, files: FileList): Promise < string > {
     // formData.append(name, value, filename);
     for (let i = 0; i < files.length; i++)
         formData.append('file[]', files[i]);
-    console.log("Files Formdata -------- ", formData);
-
+    console.log("File Form Data -------- ", formData);
     return ajaxPostFormData(url, formData);
 }
 

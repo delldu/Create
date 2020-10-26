@@ -17,7 +17,7 @@ class Message {
             this.style.display = 'none';
         }, false);
 
-        console.log("Message: double click hidden messgae.");
+        console.log("Message: double click hidden message.");
     }
 
     // show message for t seconds
@@ -36,7 +36,7 @@ class Message {
 // Test:
 // <div id="message_id" class="message">Message Bar</div>
 // function load() {
-//     msgbar = new Message("message_id");
-//     msgbar.show("This is a message ........................", 10); // 10 s
+//     bar = new Message("message_id");
+//     bar.show("This is a message ........................", 10); // 10 s
 // }
 

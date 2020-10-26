@@ -21,31 +21,31 @@ class Mouse {
         this.pressed = false; // mouse clicked
     }
 
-    clone() {
-        let m = new Mouse();
-        m.start = this.start.clone();
-        m.moving = this.moving.clone();
-        m.stop = this.stop.clone();
+    // clone() {
+    //     let m = new Mouse();
+    //     m.start = this.start.clone();
+    //     m.moving = this.moving.clone();
+    //     m.stop = this.stop.clone();
+    //
+    //     m.pressed = this.pressed;
+    //     return m;
+    // }
 
-        m.pressed = this.pressed;
-        return m;
-    }
+    // offset(deltaX: number, deltaY: number) {
+    //     this.start.offset(deltaX, deltaY);
+    //     this.moving.offset(deltaX, deltaY);
+    //     this.stop.offset(deltaX, deltaY);
+    // }
 
-    offset(deltaX: number, deltaY: number) {
-        this.start.offset(deltaX, deltaY);
-        this.moving.offset(deltaX, deltaY);
-        this.stop.offset(deltaX, deltaY);
-    }
+    // zoom(s: number) {
+    //     this.start.zoom(s);
+    //     this.moving.zoom(s);
+    //     this.stop.zoom(s);
+    // }
 
-    zoom(s: number) {
-        this.start.zoom(s);
-        this.moving.zoom(s);
-        this.stop.zoom(s);
-    }
-
-    isclick(): boolean {
+    isClick(): boolean {
         let d = this.start.distance(this.stop);
-        return d <= MOUSE_DISTANCE_THRESHOLD;
+        return d <= Point.THRESHOLD;
     }
 
     // Bounding Box for two points
@@ -73,7 +73,7 @@ class Mouse {
     }
 
     // Bounding box for moving
-    mbbox(): Box {
+    moving_bbox(): Box {
         return this.points_bbox(this.start, this.moving);
     }
 }

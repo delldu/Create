@@ -5,7 +5,6 @@
 // *** File Author: Dell, 2020-09-15 18:09:40
 // ***
 // ***********************************************************************************
-
 // dataURL specification: RFC 2397
 
 const sleep = (time: number) => {
@@ -33,7 +32,6 @@ const crc16 = (b: Uint8Array, n: number): number => {
 // Decode dataURL to HTMLImageElement
 function dataURLToImage(url: string): Promise < HTMLImageElement > {
     return new Promise(function(resolve, reject) {
-        // Promise excutor ...
         if (url == null) {
             reject("dataURLToImage: url == null");
         }
@@ -52,27 +50,27 @@ function dataURLToImage(url: string): Promise < HTMLImageElement > {
 }
 
 // Convert dataURL to ImageData (ArrayBuffer)
-function dataURLToImageData(url: string): Promise < [number, number, ImageData] > {
-    return new Promise(function(resolve, reject) {
-        if (url == null)
-            reject("dataURLToImageData: url == null");
-        let canvas = document.createElement('canvas'),
-            context = canvas.getContext('2d'),
-            image = new Image();
-        image.addEventListener('load', function() {
-            canvas.width = image.width;
-            canvas.height = image.height;
-            if (context) {
-                context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                resolve([canvas.height, canvas.width, context.getImageData(0, 0, canvas.width, canvas.height)]);
-            }
-        }, false);
-        image.addEventListener('load', function() {
-            reject("dataURLToImageData: error.");
-        }, false);
-        image.src = url;
-    });
-}
+// function dataURLToImageData(url: string): Promise < [number, number, ImageData] > {
+//     return new Promise(function(resolve, reject) {
+//         if (url == null)
+//             reject("dataURLToImageData: url == null");
+//         let canvas = document.createElement('canvas'),
+//             context = canvas.getContext('2d'),
+//             image = new Image();
+//         image.addEventListener('load', function() {
+//             canvas.width = image.width;
+//             canvas.height = image.height;
+//             if (context) {
+//                 context.drawImage(image, 0, 0, canvas.width, canvas.height);
+//                 resolve([canvas.height, canvas.width, context.getImageData(0, 0, canvas.width, canvas.height)]);
+//             }
+//         }, false);
+//         image.addEventListener('load', function() {
+//             reject("dataURLToImageData: error.");
+//         }, false);
+//         image.src = url;
+//     });
+// }
 
 // dataURLToImageData(URI).then((imageData) => {
 //     // Here you can use ImageData
@@ -116,7 +114,6 @@ function loadTextFromFile(file: File): Promise < string > {
     });
 }
 
-
 class ImageProjectItem {
     name: string;
     readonly size: number;
@@ -143,7 +140,7 @@ class ImageProject {
 
     // Current item
     private current_index: number;
-    private current_image: HTMLImageElement;
+    private readonly current_image: HTMLImageElement;
 
     // Statics
     image_loading: number;
@@ -171,13 +168,13 @@ class ImageProject {
         this.need_refresh = false;
     }
 
-    count(): number {
-        return this.items.length;
-    }
+    // count(): number {
+    //     return this.items.length;
+    // }
 
-    empty(): boolean {
-        return this.items.length < 1;
-    }
+    // empty(): boolean {
+    //     return this.items.length < 1;
+    // }
 
     // ONLY Current Write Interface
     go(index: number): boolean {
@@ -195,17 +192,17 @@ class ImageProject {
         return [this.current_image, this.current_index];
     }
 
-    goFirst(): boolean {
-        return this.go(0);
-    }
+    // goFirst(): boolean {
+    //     return this.go(0);
+    // }
 
-    goPrev(): boolean {
-        return this.go(this.current_index - 1);
-    }
+    // goPrev(): boolean {
+    //     return this.go(this.current_index - 1);
+    // }
 
-    goNext(): boolean {
-        return this.go(this.current_index + 1);
-    }
+    // goNext(): boolean {
+    //     return this.go(this.current_index + 1);
+    // }
 
     goLast(): boolean {
         return this.go(this.items.length - 1);
@@ -241,25 +238,22 @@ class ImageProject {
                     .catch((error) => {
                         this.image_load_err++;
                         this.image_loading--;
+                        console.log("error: ", error);
                     });
                 // Decode end
             })
             .catch((error) => {
                 this.image_load_err++;
                 this.image_loading--;
+                console.log("error:", error);
             }); // loadDataURLFromFile end
-    }
-
-    // JSON string
-    json(): string {
-        return "";
     }
 
     // <ul>
     //     <li onclick='jump_to_image(0)'>[1] 01_noise.png</li>
     //     <li onclick='jump_to_image(1)' class='sel'>[2] 02_noise.png</li>
     //     <li onclick='jump_to_image(2)'>[3] 03_noise.png</li>
-    // </ul>    
+    // </ul>
     listHtml(): string {
         let html = [];
         html.push("<ul>");
@@ -292,9 +286,14 @@ class ImageProject {
             this.create = new Date(Date.parse(d['create']));
         if (d['items']) {
             // this.items = ...
-            this.items = new Array < ImageProjectItem > ();
+            this.items.length = 0; // reset() = new Array < ImageProjectItem > ();
             for (let i in d['items']) {
+                if(! d['items'].hasOwnProperty(i))
+                    continue;
                 let x = d['items'][i];
+                if (! x.hasOwnProperty('name') || ! x.hasOwnProperty('height') || 
+                    ! x.hasOwnProperty('width') || ! x.hasOwnProperty('data') || ! x.hasOwnProperty('blobs'))
+                    continue;
                 let unit = new ImageProjectItem(x.name,
                     parseInt(x.size), parseInt(x.height), parseInt(x.width), x.data, x.blobs);
                 this.items.push(unit);
@@ -305,6 +304,7 @@ class ImageProject {
         this.go(0);
     }
 
+    // Load model from JSON file
     open() {
         this.need_saving = false;
         // mime -- MIME(Multipurpose Internet Mail Extensions)
@@ -320,7 +320,7 @@ class ImageProject {
                         this.loadFromJSON(text);
                     })
                     .catch((error) => {
-                        console.log("ImageProject open: file reading error.")
+                        console.log("ImageProject open: file reading error.", error);
                     });
             } else {
                 console.log("ImageProject open: error.");
@@ -329,9 +329,8 @@ class ImageProject {
         input.click();
     }
 
-    // JSON format
+    // Save model as JSON file
     save() {
-        // saving ...
         let filename = this.name + ".json";
         let save_project = {
             'name': this.name,
@@ -378,14 +377,14 @@ class ImageProject {
         return ok;
     }
 
-    info(): string {
-        return "Project " + this.name +
-            ", version: " + ImageProject.version +
-            ", create time: " + this.create +
-            ", load: " + this.image_load_ok + " ok" +
-            ", " + this.image_load_err + " error" +
-            ", " + this.image_loading + " going.";
-    }
+    // info(): string {
+    //     return "Project " + this.name +
+    //         ", version: " + ImageProject.version +
+    //         ", create time: " + this.create +
+    //         ", load: " + this.image_load_ok + " ok" +
+    //         ", " + this.image_load_err + " error" +
+    //         ", " + this.image_loading + " going.";
+    // }
 }
 
 enum ImageOpcode {
@@ -393,7 +392,7 @@ enum ImageOpcode {
     Zoom,
     Color,
     Patch
-};
+}
 
 class AbHead {
     // CPU: 0x12345678, Storage: [78,56,34,12], Big Endian
@@ -463,33 +462,33 @@ class ImageHead {
         return p;
     }
 
-    decode(p: ArrayBuffer) {
-        let b = new Uint16Array(p);
-        this.h = b[0];
-        this.w = b[1];
-        this.c = b[2];
-        this.opc = b[3];
-    }
+    // decode(p: ArrayBuffer) {
+    //     let b = new Uint16Array(p);
+    //     this.h = b[0];
+    //     this.w = b[1];
+    //     this.c = b[2];
+    //     this.opc = b[3];
+    // }
 
-    dataSize(): number {
-        return this.h * this.w * this.c;
-    }
+    // dataSize(): number {
+    //     return this.h * this.w * this.c;
+    // }
 }
 
-function isImageMessage(p: ArrayBuffer): boolean {
-    let h = new ImageHead();
-    h.decode(p.slice(8, 16));
-    return isAbMessage(p) && (h.dataSize() + 8 + 8) == p.byteLength;
-}
-
-const DEFAULT_WEBSOCKET_RECONNECT_INTERVAL = 30 * 1000; // 30s
+// function isImageMessage(p: ArrayBuffer): boolean {
+//     let h = new ImageHead();
+//     h.decode(p.slice(8, 16));
+//     return isAbMessage(p) && (h.dataSize() + 8 + 8) == p.byteLength;
+// }
 
 class AbClient {
-    private address: string;
+    static WEBSOCKET_RECONNECT_INTERVAL = 30 * 1000; // 30s
+
+    private readonly address: string;
     private socket: any; // WebSocket;
     private status: number;
     private timer: number; // Timer
-    evthandler_registed: boolean;
+    handle_registered: boolean;
 
     constructor(address: string) {
         this.address = address;
@@ -497,7 +496,7 @@ class AbClient {
         // Define status for socket.readyState could not be used(because socket == null)
         this.status = WebSocket.CLOSED;
         this.timer = 0; // Re-connect timer
-        this.evthandler_registed = false;
+        this.handle_registered = false;
 
         this.open();
     }
@@ -507,7 +506,7 @@ class AbClient {
         if (this.timer <= 0) {
             this.timer = setInterval(() => {
                 this.open();
-            }, DEFAULT_WEBSOCKET_RECONNECT_INTERVAL);
+            }, AbClient.WEBSOCKET_RECONNECT_INTERVAL);
         }
 
         if (this.status == WebSocket.CONNECTING || this.status == WebSocket.OPEN) {
@@ -517,10 +516,10 @@ class AbClient {
 
         this.socket = new WebSocket(this.address);
         this.socket.binaryType = "arraybuffer";
-        this.evthandler_registed = false;
+        this.handle_registered = false;
 
         this.socket.addEventListener('open', (event: Event) => {
-            console.log("WebSocket open on " + this.socket.url + " ...");
+            console.log("WebSocket open on " + this.socket.url + " ...", event);
             this.status = WebSocket.OPEN;
         }, false);
 
@@ -537,8 +536,8 @@ class AbClient {
             if (this.status != WebSocket.OPEN) {
                 reject("WebSocket not opened.");
             }
-            if (!this.evthandler_registed) {
-                this.evthandler_registed = true;
+            if (!this.handle_registered) {
+                this.handle_registered = true;
 
                 this.socket.addEventListener('message', (event: MessageEvent) => {
                     if (event.data instanceof String) {
@@ -556,6 +555,7 @@ class AbClient {
                 }, false);
 
                 this.socket.addEventListener('error', (event: Event) => {
+                    console.log("error: ", event);
                     reject("WebSocket error.");
                 }, false);
             }
@@ -612,6 +612,6 @@ class AbClient {
 //      isImageMessage(ab) ?
 //      image_data = new Uint8Array(ab, 8 + 8);
 // })
-// .catch((errmsg) => {
-//      console.log(errmsg);
+// .catch((error) => {
+//      console.log(error);
 // });

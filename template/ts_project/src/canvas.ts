@@ -6,15 +6,8 @@
 // ***
 // ***********************************************************************************
 
-const BRUSH_LINE_WIDTH = 1;
-const BRUSH_LINE_COLOR = "#ff0000";
-const BRUSH_FILL_COLOR = "#ff00ff";
-const MOUSE_DISTANCE_THRESHOLD = 2;
-
-const ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
-const DEFAULT_ZOOM_LEVEL = 3; // 1.0 index
-
 class Point {
+    static THRESHOLD = 2;
     constructor(public x: number, public y: number) {}
 
     clone(): Point {
@@ -37,14 +30,14 @@ class Point {
     }
 
     onLine(p1: Point, p2: Point): boolean {
-        if (this.x < Math.min(p1.x, p2.x) - MOUSE_DISTANCE_THRESHOLD || this.x > Math.max(p1.x, p2.x) + MOUSE_DISTANCE_THRESHOLD)
+        if (this.x < Math.min(p1.x, p2.x) - Point.THRESHOLD || this.x > Math.max(p1.x, p2.x) + Point.THRESHOLD)
             return false;
-        if (this.y < Math.min(p1.y, p2.y) - MOUSE_DISTANCE_THRESHOLD || this.y > Math.max(p1.y, p2.y) + MOUSE_DISTANCE_THRESHOLD)
+        if (this.y < Math.min(p1.y, p2.y) - Point.THRESHOLD || this.y > Math.max(p1.y, p2.y) + Point.THRESHOLD)
             return false;
         if (p1.x == p2.x)
             return true;
         let y = (p2.y - p1.y) / (p2.x - p1.x) * (this.x - p1.x) + p1.y; // y = (y2 - y1)/(x2 - x1) * (x - x1) + y1;
-        return Math.abs(y - this.y) <= MOUSE_DISTANCE_THRESHOLD;
+        return Math.abs(y - this.y) <= Point.THRESHOLD;
     }
 }
 
@@ -52,25 +45,25 @@ class Box {
     constructor(public x: number, public y: number, public w: number, public h: number) {}
 
     valid(): boolean {
-        // console.log("Canvas: too small blob, give up.");
-        return (this.w >= MOUSE_DISTANCE_THRESHOLD * 4 && this.h >= MOUSE_DISTANCE_THRESHOLD * 4);
+        // console.log("Box: too small box, give up.");
+        return (this.w >= Point.THRESHOLD * 4 && this.h >= Point.THRESHOLD * 4);
     }
 
-    clone(): Box {
-        return new Box(this.x, this.y, this.w, this.h);
-    }
-
-    offset(deltaX: number, deltaY: number) {
-        this.x += deltaX;
-        this.y += deltaY;
-    }
-
-    zoom(s: number) {
-        this.x *= s;
-        this.y *= s;
-        this.w *= s;
-        this.h *= s;
-    }
+    // clone(): Box {
+    //     return new Box(this.x, this.y, this.w, this.h);
+    // }
+    //
+    // offset(deltaX: number, deltaY: number) {
+    //     this.x += deltaX;
+    //     this.y += deltaY;
+    // }
+    //
+    // zoom(s: number) {
+    //     this.x *= s;
+    //     this.y *= s;
+    //     this.w *= s;
+    //     this.h *= s;
+    // }
 
     extend(delta: number) {
         this.x = this.x - delta;
@@ -98,22 +91,29 @@ class Box {
     }
 }
 
-
 // AMD Mode -- A: add, M: move, D: delete
-class Shape {
-    label: string;
+class Polygon {
+    static LINE_WIDTH = 1;
+    static LINE_COLOR = "#ff0000";
+    static FILL_COLOR = "#ff00ff";
+
+    label: number;
     points: Array < Point > ;
 
     constructor() {
-        this.label = "";
+        this.label = 0;
         this.points = new Array < Point > ();
     }
 
-    clone(): Shape {
-        let c = new Shape();
+    reset() {
+        this.points.length = 0;
+    }
+
+    clone(): Polygon {
+        let c = new Polygon();
         c.label = this.label;
         for (let p of this.points)
-            c.push(p);
+            c.push(p.clone());
         return c;
     }
 
@@ -122,20 +122,42 @@ class Shape {
             p.offset(deltaX, deltaY);
     }
 
-    zoom(s: number) {
-        for (let p of this.points)
-            p.zoom(s);
+    // set 3x3 polygon via rectangle
+    set3x3(box: Box) {
+        this.reset();
+        this.push(new Point(box.x, box.y));
+        this.push(new Point(box.x, box.y + box.h / 2));
+        this.push(new Point(box.x, box.y + box.h));
+        this.push(new Point(box.x + box.w / 2, box.y + box.h));
+        this.push(new Point(box.x + box.w, box.y + box.h));
+        this.push(new Point(box.x + box.w, box.y + box.h / 2));
+        this.push(new Point(box.x + box.w, box.y));
+        this.push(new Point(box.x + box.w / 2, box.y));
     }
+
+    // Set 2x2 polygon via rectangle
+    set2x2(box: Box) {
+        this.reset();
+        this.push(new Point(box.x, box.y));
+        this.push(new Point(box.x, box.y + box.h));
+        this.push(new Point(box.x + box.w, box.y + box.h));
+        this.push(new Point(box.x + box.w, box.y));
+    }
+
+    // zoom(s: number) {
+    //     for (let p of this.points)
+    //         p.zoom(s);
+    // }
 
     push(p: Point) {
-        this.points.push(new Point(p.x, p.y)); // Dot share, or will be disaster !!!
+        this.points.push(new Point(p.x, p.y)); // Do not share, or will be disaster !!!
     }
 
-    insert(index: number, p: Point) {
+    addPoint(index: number, p: Point) {
         this.points.splice(index, 0, new Point(p.x, p.y));
     }
 
-    delete(index: number) {
+    delPoint(index: number) {
         this.points.splice(index, 1);
     }
 
@@ -178,13 +200,13 @@ class Shape {
 
             if (p1.y == p2.y)
                 continue;
-            if (p.y < Math.min(p1.y, p2.y) - MOUSE_DISTANCE_THRESHOLD)
+            if (p.y < Math.min(p1.y, p2.y) - Point.THRESHOLD)
                 continue;
-            if (p.y > Math.max(p1.y, p2.y) + MOUSE_DISTANCE_THRESHOLD)
+            if (p.y > Math.max(p1.y, p2.y) + Point.THRESHOLD)
                 continue;
 
             let x = (p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
-            if (x > p.x - MOUSE_DISTANCE_THRESHOLD)
+            if (x > p.x - Point.THRESHOLD)
                 cross++;
         }
         return (cross % 2 == 1);
@@ -202,23 +224,23 @@ class Shape {
         return -1;
     }
 
-    // p is on vertex of polygon ?
+    // p is on vertex ?
     onVertex(p: Point): number {
         let n = this.points.length;
         for (let i = 0; i < n; i++) {
-            if (p.distance(this.points[i]) <= MOUSE_DISTANCE_THRESHOLD)
+            if (p.distance(this.points[i]) <= Point.THRESHOLD)
                 return i;
         }
         return -1;
     }
 
-    // dump vertex for debug
-    dump() {
-        console.log("Canvas: dump vertex ...");
+    setPath(brush: CanvasRenderingContext2D) {
         let n = this.points.length;
-        for (let i = 0; i < n; i++) {
-            console.log("  i:", i, this.points[i]);
-        }
+        brush.beginPath();
+        brush.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 1; i < n; ++i)
+            brush.lineTo(this.points[i].x, this.points[i].y);
+        brush.closePath();
     }
 
     draw(brush: CanvasRenderingContext2D, selected: boolean) {
@@ -227,31 +249,25 @@ class Shape {
             return;
         brush.save();
         if (selected) {
-            brush.fillStyle = BRUSH_FILL_COLOR;
+            brush.fillStyle = Polygon.FILL_COLOR;
             brush.globalAlpha = 0.5;
         } else {
-            brush.strokeStyle = BRUSH_LINE_COLOR;
-            brush.lineWidth = BRUSH_LINE_WIDTH;
+            brush.strokeStyle = Polygon.LINE_COLOR;
+            brush.lineWidth = Polygon.LINE_WIDTH;
         }
-        brush.beginPath();
-        brush.moveTo(this.points[0].x, this.points[0].y);
-        for (let i = 1; i < n; ++i)
-            brush.lineTo(this.points[i].x, this.points[i].y);
-        // brush.lineTo(this.points[0].x, this.points[0].y); // close loop
-        brush.closePath();
+        this.setPath(brush);
         if (selected) {
             brush.fill();
-            // this.drawVertex(brush);
         } else {
             brush.stroke();
         }
 
         // Draw vertex
-        brush.fillStyle = BRUSH_FILL_COLOR;
+        brush.fillStyle = Polygon.FILL_COLOR;
         brush.globalAlpha = 1.0;
         for (let p of this.points) {
             brush.beginPath();
-            brush.arc(p.x, p.y, MOUSE_DISTANCE_THRESHOLD, 0, 2 * Math.PI, false);
+            brush.arc(p.x, p.y, Point.THRESHOLD, 0, 2 * Math.PI, false);
             brush.closePath();
             brush.fill();
         }
@@ -264,53 +280,92 @@ class Shape {
             return;
 
         brush.save();
-        brush.strokeStyle = BRUSH_LINE_COLOR;
-        brush.lineWidth = BRUSH_LINE_WIDTH;
+        brush.strokeStyle = Polygon.LINE_COLOR;
+        brush.lineWidth = Polygon.LINE_WIDTH;
         brush.setLineDash([1, 1]);
-
-        brush.beginPath();
-        brush.moveTo(this.points[0].x, this.points[0].y);
-        for (let i = 1; i < n; ++i)
-            brush.lineTo(this.points[i].x, this.points[i].y);
-        // brush.lineTo(this.points[0].x, this.points[0].y); // close loop
-        brush.closePath();
+        this.setPath(brush);
         brush.stroke();
         brush.restore();
     }
 }
 
-class ShapeBlobs {
-    blobs: Array < Shape > ;
+class Shape {
+    blobs: Array < Polygon > ;
     selected_index: number;
 
     constructor() {
-        this.blobs = new Array < Shape > ();
+        this.blobs = new Array < Polygon > ();
         this.selected_index = -1;
     }
 
-    clone(): ShapeBlobs {
-        let c = new ShapeBlobs();
-        c.selected_index = this.selected_index;
-        for (let i = 0; i < this.blobs.length; i++)
-            c.push(this.blobs[i]);
-        return c;
+    // clone(): Shape {
+    //     let c = new Shape();
+    //     c.selected_index = this.selected_index;
+    //     for (let i = 0; i < this.blobs.length; i++)
+    //         c.push(this.blobs[i]);
+    //     return c;
+    // }
+
+    // offset(deltaX: number, deltaY: number) {
+    //     for (let b of this.blobs)
+    //         b.offset(deltaX, deltaY);
+    // }
+
+    // zoom(s: number) {
+    //     for (let b of this.blobs)
+    //         b.zoom(s);
+    // }
+
+    // s is a JSON string
+    load(s: string) {
+        let j = JSON.parse(s);
+        this.blobs.length = 0; // reset
+        for (let k1 in j) {
+            if (!j.hasOwnProperty(k1))
+                continue;
+            if (k1 == "selected_index") {
+                this.selected_index = parseInt(j[k1]);
+                continue;
+            }
+            if (k1 != "blobs")
+                continue;
+            // now k1 === "blobs"
+            for (let k2 in j[k1]) {
+                if (!j[k1].hasOwnProperty(k2))
+                    continue;
+                // Here k2 is number 0, 1 ...
+                let blob = new Polygon();
+                for (let k3 in j[k1][k2]) {
+                    if (!j[k1][k2].hasOwnProperty(k3))
+                        continue;
+                    // k3 == "label" || "points" ...
+                    if (k3 == "label") {
+                        blob.label = parseInt(j[k1][k2][k3]);
+                        continue;
+                    }
+                    if (k3 != "points")
+                        continue;
+                    // now k3 === points
+                    for (let k4 in j[k1][k2][k3]) {
+                        if (!j[k1][k2][k3].hasOwnProperty(k4))
+                            continue;
+                        blob.push(new Point(j[k1][k2][k3][k4].x, j[k1][k2][k3][k4].y));
+                    }
+                    this.push(blob);
+                }
+            } // end of k2
+        }
     }
 
-    offset(deltaX: number, deltaY: number) {
-        for (let b of this.blobs)
-            b.offset(deltaX, deltaY);
+    push(s: Polygon) {
+        this.blobs.push(s.clone());
     }
 
-    zoom(s: number) {
-        for (let b of this.blobs)
-            b.zoom(s);
+    addBlob(index: number, s: Polygon) {
+        this.blobs.splice(index, 0, s.clone());
     }
 
-    push(s: Shape) {
-        this.blobs.push(s);
-    }
-
-    delete(index: number) {
+    delBlob(index: number) {
         this.blobs.splice(index, 1);
     }
 
@@ -376,13 +431,13 @@ class ShapeBlobs {
         if (v_index >= 0 && v_sub_index >= 0) {
             if (ctrl) {
                 // Delete this vertex !!!
-                this.blobs[v_index].delete(v_sub_index);
+                this.blobs[v_index].delPoint(v_sub_index);
                 // Delete more ... whole blob ?
                 if (this.blobs[v_index].points.length < 3)
-                    this.delete(v_index);
+                    this.delBlob(v_index);
                 return true;
             } else {
-                console.log("Canvas: do you want to delete vertex ? please press ctrl key and click vertex.")
+                console.log("Shape: want to delete vertex ? press ctrl key and click vertex.")
             }
             return false;
         }
@@ -392,10 +447,10 @@ class ShapeBlobs {
         if (e_index >= 0 && e_sub_index >= 0) {
             // Add vertex
             if (ctrl) {
-                this.blobs[e_index].insert(e_sub_index + 1, m.start);
+                this.blobs[e_index].addPoint(e_sub_index + 1, m.start);
                 return true;
             } else {
-                console.log("Canvas: do you want to add vertex ? please press ctrl key and click edge.")
+                console.log("Shape: want to add vertex ? press ctrl key and click edge.")
             }
             return false;
         }
@@ -422,7 +477,7 @@ class ShapeBlobs {
         let [v_index, v_sub_index] = this.findVertex(m.start);
         if (v_index >= 0 && v_sub_index >= 0) {
             let n = this.blobs[v_index].points.length;
-            let blob = new Shape();
+            let blob = new Polygon();
             // Bad case -1 % n = -1 !!!
             // So we use (n + v_sub_index - 1)%n instead of (v_sub_index - 1) % n
             blob.push(this.blobs[v_index].points[(n + v_sub_index - 1) % n]);
@@ -434,7 +489,7 @@ class ShapeBlobs {
                 return;
 
             image_stack.restore(brush);
-            rect.extend(BRUSH_LINE_WIDTH);
+            rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
             blob.draggingDraw(brush);
@@ -455,32 +510,22 @@ class ShapeBlobs {
                 return;
 
             image_stack.restore(brush);
-            rect.extend(BRUSH_LINE_WIDTH);
+            rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
             blob.draggingDraw(brush);
             return;
         } else {
             // Add new blob
-            let box = m.mbbox();
+            let box = m.moving_bbox();
             if (!box.valid())
                 return;
 
-            let blob = new Shape();
+            let blob = new Polygon();
             if (ctrl) { // Add 3x3 rectangle, heavy blob
-                blob.push(new Point(box.x, box.y));
-                blob.push(new Point(box.x, box.y + box.h / 2));
-                blob.push(new Point(box.x, box.y + box.h));
-                blob.push(new Point(box.x + box.w / 2, box.y + box.h));
-                blob.push(new Point(box.x + box.w, box.y + box.h));
-                blob.push(new Point(box.x + box.w, box.y + box.h / 2));
-                blob.push(new Point(box.x + box.w, box.y));
-                blob.push(new Point(box.x + box.w / 2, box.y));
+                blob.set3x3(box);
             } else { // Add 2x2 rectangle, light blob
-                blob.push(new Point(box.x, box.y));
-                blob.push(new Point(box.x, box.y + box.h));
-                blob.push(new Point(box.x + box.w, box.y + box.h));
-                blob.push(new Point(box.x + box.w, box.y));
+                blob.set2x2(box);
             }
 
             let rect = blob.bbox();
@@ -488,7 +533,7 @@ class ShapeBlobs {
                 return;
 
             image_stack.restore(brush);
-            rect.extend(BRUSH_LINE_WIDTH);
+            rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
             blob.draggingDraw(brush);
@@ -497,8 +542,8 @@ class ShapeBlobs {
     }
 
     // return true -- need redraw, else false
-    draged(ctrl: boolean, m: Mouse): boolean {
-        // vertex could be draged ? this will change blob
+    dragged(ctrl: boolean, m: Mouse): boolean {
+        // vertex could be dragged ? this will change blob
         let [v_index, v_sub_index] = this.findVertex(m.start);
         if (v_index >= 0 && v_sub_index >= 0) {
             if (ctrl) {
@@ -508,12 +553,12 @@ class ShapeBlobs {
                 this.blobs[v_index].points[v_sub_index].y += deltaY;
                 return true;
             } else {
-                console.log("Canvas: do you want dragging vertex ? please press ctrl key and drag vertex.")
+                console.log("Shape: want dragging vertex ? press ctrl key and drag vertex.")
             }
             return false;
         }
 
-        // whole blob could be draged ?
+        // whole blob could be dragged ?
         let b_index = this.findBlob(m.start);
         if (b_index >= 0) {
             let deltaX = m.stop.x - m.start.x;
@@ -525,21 +570,11 @@ class ShapeBlobs {
             if (!box.valid())
                 return false;
 
-            let blob = new Shape();
+            let blob = new Polygon();
             if (ctrl) { // Add 3x3 rectangle, heavy blob
-                blob.push(new Point(box.x, box.y));
-                blob.push(new Point(box.x, box.y + box.h / 2));
-                blob.push(new Point(box.x, box.y + box.h));
-                blob.push(new Point(box.x + box.w / 2, box.y + box.h));
-                blob.push(new Point(box.x + box.w, box.y + box.h));
-                blob.push(new Point(box.x + box.w, box.y + box.h / 2));
-                blob.push(new Point(box.x + box.w, box.y));
-                blob.push(new Point(box.x + box.w / 2, box.y));
+                blob.set3x3(box);
             } else { // Add 2x2 rectangle, light blob
-                blob.push(new Point(box.x, box.y));
-                blob.push(new Point(box.x, box.y + box.h));
-                blob.push(new Point(box.x + box.w, box.y + box.h));
-                blob.push(new Point(box.x + box.w, box.y));
+                blob.set2x2(box);
             }
             box = blob.bbox();
             if (!box.valid())
@@ -548,43 +583,30 @@ class ShapeBlobs {
             this.push(blob);
         } // end of b_index
         return true;
-    } // end of draged
-}
-
-class ShapeStack {
-    stack: Array < Shape > ;
-
-    constructor() {
-        this.stack = new Array < Shape > ();
-    }
-
-    push(blob: Shape) {
-        this.stack.push(blob);
-    }
-
-    pop(): Shape {
-        return this.stack.pop() as Shape;
-    }
+    } // end of dragged
 }
 
 class Canvas {
+    static ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
+    static DEFAULT_ZOOM_LEVEL = 3; // 1.0 index
+
     canvas: HTMLCanvasElement; // canvas element
-    private brush: CanvasRenderingContext2D;
+    private readonly brush: CanvasRenderingContext2D;
+
     private background: HTMLImageElement; // Image;
     private background_loaded: boolean;
+    shape_blobs: Shape;
 
     mode_index: number;
 
-    // Shape container
-    shape_blobs: ShapeBlobs;
-    private shape_stack: ShapeStack;
-    private image_stack: ImageStack;
+    // Polygon container
+    private readonly image_stack: ImageStack;
 
     // Zoom control
     zoom_index: number;
 
     // Handle mouse
-    private mouse: Mouse;
+    private readonly mouse: Mouse;
 
     constructor(id: string) {
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
@@ -592,14 +614,13 @@ class Canvas {
 
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
 
-        this.shape_blobs = new ShapeBlobs();
-        this.shape_stack = new ShapeStack();
+        this.shape_blobs = new Shape();
 
         // Line width and color
-        this.brush.strokeStyle = BRUSH_LINE_COLOR;
-        this.brush.lineWidth = BRUSH_LINE_WIDTH;
+        this.brush.strokeStyle = Polygon.LINE_COLOR;
+        this.brush.lineWidth = Polygon.LINE_WIDTH;
 
-        this.zoom_index = DEFAULT_ZOOM_LEVEL;
+        this.zoom_index = Canvas.DEFAULT_ZOOM_LEVEL;
 
         this.mode_index = 0;
 
@@ -617,34 +638,34 @@ class Canvas {
         this.image_stack = new ImageStack();
     }
 
-    loadBackgroundFromFile(file: File) {
-        this.background_loaded = false;
-        let reader = new FileReader();
-        reader.addEventListener("load", () => {
-            this.background.src = reader.result;
-            this.background_loaded = true;
-            if (this.canvas.width < this.background.naturalWidth)
-                this.canvas.width = this.background.naturalWidth;
-            if (this.canvas.height < this.background.naturalHeight)
-                this.canvas.height = this.background.naturalHeight;
-
-            this.setZoom(DEFAULT_ZOOM_LEVEL);
-        }, false);
-        reader.readAsDataURL(file);
-    }
+    // loadBackgroundFromFile(file: File) {
+    //     this.background_loaded = false;
+    //     let reader = new FileReader();
+    //     reader.addEventListener("load", () => {
+    //         this.background.src = reader.result;
+    //         this.background_loaded = true;
+    //         if (this.canvas.width < this.background.naturalWidth)
+    //             this.canvas.width = this.background.naturalWidth;
+    //         if (this.canvas.height < this.background.naturalHeight)
+    //             this.canvas.height = this.background.naturalHeight;
+    //
+    //         this.setZoom(Canvas.DEFAULT_ZOOM_LEVEL);
+    //     }, false);
+    //     reader.readAsDataURL(file);
+    // }
 
     loadBackground(e: HTMLImageElement) {
         this.background_loaded = false;
         this.background = e;
         this.canvas.width = this.background.naturalWidth;
         this.canvas.height = this.background.naturalHeight;
-        this.setZoom(DEFAULT_ZOOM_LEVEL);
+        this.setZoom(Canvas.DEFAULT_ZOOM_LEVEL);
         this.background_loaded = true;
     }
 
-    setMessage(message: string) {
-        console.log(message);
-    }
+    // setMessage(message: string) {
+    //     console.log(message);
+    // }
 
     setMode(index: number) {
         // Bad case: (-1 % 2) == -1
@@ -655,9 +676,9 @@ class Canvas {
         console.log("Canvas: set mode:", this.mode_index);
     }
 
-    getMode(): number {
-        return this.mode_index;
-    }
+    // getMode(): number {
+    //     return this.mode_index;
+    // }
 
     isEditMode(): boolean {
         return this.mode_index > 0;
@@ -677,7 +698,7 @@ class Canvas {
     }
 
     private viewModeMouseUpHandler(e: MouseEvent) {
-        if (!this.mouse.isclick() && this.mouse.pressed) {
+        if (!this.mouse.isClick() && this.mouse.pressed) {
             console.log("Canvas: dragging ..., which src object ? moving background ?");
         }
     }
@@ -700,14 +721,14 @@ class Canvas {
 
     private editModeMouseUpHandler(e: MouseEvent) {
         // Clicking
-        if (this.mouse.isclick()) {
+        if (this.mouse.isClick()) {
             if (this.shape_blobs.clicked(e.ctrlKey, this.mouse))
                 this.redraw();
             return;
         }
 
-        if (!this.mouse.isclick() && this.mouse.pressed) {
-            if (this.shape_blobs.draged(e.ctrlKey, this.mouse))
+        if (!this.mouse.isClick() && this.mouse.pressed) {
+            if (this.shape_blobs.dragged(e.ctrlKey, this.mouse))
                 this.redraw();
             return;
         }
@@ -722,7 +743,7 @@ class Canvas {
         if (e.key === "+") {
             this.setZoom(this.zoom_index + 1);
         } else if (e.key === "=") {
-            this.setZoom(DEFAULT_ZOOM_LEVEL);
+            this.setZoom(Canvas.DEFAULT_ZOOM_LEVEL);
         } else if (e.key === "-") {
             this.setZoom(this.zoom_index - 1);
         } else if (e.key === 'F1') { // F1 for help
@@ -744,7 +765,7 @@ class Canvas {
         if (e.key === "d") {
             if (this.shape_blobs.selected_index >= 0) {
                 console.log("Canvas: delete blob:", this.shape_blobs.selected_index);
-                this.shape_blobs.delete(this.shape_blobs.selected_index);
+                this.shape_blobs.delBlob(this.shape_blobs.selected_index);
                 this.shape_blobs.selected_index = -1;
                 this.redraw();
             }
@@ -846,15 +867,15 @@ class Canvas {
     setZoom(index: number) {
         // Bad case: (-1 % ZOOM_LEVELS.length) == -1
         if (index < 0) {
-            index = ZOOM_LEVELS.length - 1;
+            index = Canvas.ZOOM_LEVELS.length - 1;
         }
-        index = index % ZOOM_LEVELS.length;
+        index = index % Canvas.ZOOM_LEVELS.length;
 
         this.zoom_index = index;
-        this.brush.scale(ZOOM_LEVELS[this.zoom_index], ZOOM_LEVELS[this.zoom_index]);
+        this.brush.scale(Canvas.ZOOM_LEVELS[this.zoom_index], Canvas.ZOOM_LEVELS[this.zoom_index]);
         this.redraw();
 
-        console.log("Canvas: set zoom: index = ", index, "scale: ", ZOOM_LEVELS[index]);
+        console.log("Canvas: set zoom: index = ", index, "scale: ", Canvas.ZOOM_LEVELS[index]);
     }
 
     redraw() {
@@ -909,3 +930,21 @@ class ImageStack {
         this.stack.length = 0;
     }
 }
+
+let x = new Shape();
+let blob = new Polygon();
+let box = new Box(10, 10, 100, 200);
+blob.set3x3(box);
+blob.label = 10;
+x.push(blob);
+blob.set2x2(box);
+blob.label = 20;
+x.push(blob);
+
+let s = JSON.stringify(x, undefined, 2);
+console.log("x JSON:", s);
+
+let y = new Shape();
+y.load(s);
+console.log("y == ", y);
+console.log("y JSON:", JSON.stringify(y, undefined, 2));
