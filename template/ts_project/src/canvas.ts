@@ -657,6 +657,7 @@ class Canvas {
         this.mode_index = 0;
         this.mouse = new Mouse();
         this.image_stack = new ImageStack();
+        this.background_loaded = false;
         this.key = "";
     }
 

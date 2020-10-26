@@ -182,6 +182,9 @@ function projectRefresh() {
             canvas.loadBackground(project.items[index].data);
             canvas.loadBlobs(project.items[index].blobs);
             canvas.key = project.key();
+            // waiting for image decode finish ...
+            sleep(100).then(() => { canvasShow(true);
+            canvas.redraw(); });
         }
     }
 }
