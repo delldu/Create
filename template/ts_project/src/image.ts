@@ -182,15 +182,19 @@ class ImageProject {
             return false;
         if (this.current_index != index) {
             this.current_index = index;
-            this.current_image.src = this.items[index].data;
+            // this.current_image.src = this.items[index].data;
         }
         return true;
     }
 
-    // ONLY Current Read Interface
-    current(): [HTMLImageElement, number] {
-        return [this.current_image, this.current_index];
+    indexOk():boolean {
+        return this.current_index >= 0 && this.current_index < this.items.length;
     }
+
+    // ONLY Current Read Interface
+    // current(): [HTMLImageElement, number] {
+    //     return [this.current_image, this.current_index];
+    // }
 
     // goFirst(): boolean {
     //     return this.go(0);
@@ -206,6 +210,17 @@ class ImageProject {
 
     goLast(): boolean {
         return this.go(this.items.length - 1);
+    }
+
+    empty(): boolean {
+        return this.items.length < 1;
+    }
+
+    key(): string {
+        let i = this.current_index;
+        if (i >= 0 && i < this.items.length)
+            return this.items[i].name + "_" + this.items[i].size.toString();
+        return "";
     }
 
     find(name: string, size: number): boolean {
@@ -273,35 +288,41 @@ class ImageProject {
 
     // JSON format file
     loadFromJSON(text: string) {
-        let d = JSON.parse(text);
-        // Reference this.save()
-        // let save_project = {
-        //     'name': this.name,
-        //     'create': this.create,
-        //     'items': this.items
-        // };
-        if (d['name'])
-            this.name = d['name'];
-        if (d['create'])
-            this.create = new Date(Date.parse(d['create']));
-        if (d['items']) {
-            // this.items = ...
-            this.items.length = 0; // reset() = new Array < ImageProjectItem > ();
-            for (let i in d['items']) {
-                if(! d['items'].hasOwnProperty(i))
-                    continue;
-                let x = d['items'][i];
-                if (! x.hasOwnProperty('name') || ! x.hasOwnProperty('height') || 
-                    ! x.hasOwnProperty('width') || ! x.hasOwnProperty('data') || ! x.hasOwnProperty('blobs'))
-                    continue;
-                let unit = new ImageProjectItem(x.name,
-                    parseInt(x.size), parseInt(x.height), parseInt(x.width), x.data, x.blobs);
-                this.items.push(unit);
+        try {
+            let d = JSON.parse(text);
+            // Reference this.save()
+            // let save_project = {
+            //     'name': this.name,
+            //     'create': this.create,
+            //     'items': this.items
+            // };
+            if (d['name'])
+                this.name = d['name'];
+            if (d['create'])
+                this.create = new Date(Date.parse(d['create']));
+            if (d['items']) {
+                // this.items = ...
+                this.items.length = 0; // reset() = new Array < ImageProjectItem > ();
+                for (let i in d['items']) {
+                    if (!d['items'].hasOwnProperty(i))
+                        continue;
+                    let x = d['items'][i];
+                    if (!x.hasOwnProperty('name') || !x.hasOwnProperty('height') ||
+                        !x.hasOwnProperty('width') || !x.hasOwnProperty('data') || !x.hasOwnProperty('blobs'))
+                        continue;
+                    let unit = new ImageProjectItem(x.name,
+                        parseInt(x.size), parseInt(x.height), parseInt(x.width), x.data, x.blobs);
+                    this.items.push(unit);
+                }
             }
+            this.need_saving = false;
+            this.need_refresh = true;
+            this.go(0);
         }
-        this.need_saving = false;
-        this.need_refresh = true;
-        this.go(0);
+        catch {
+            console.log("ImageProject loadFromJSON: error");
+            return;
+        }
     }
 
     // Load model from JSON file

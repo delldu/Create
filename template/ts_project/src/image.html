@@ -97,9 +97,7 @@ function load() {
     // Refresh file list -- adding files is async, routine is necessary
     setInterval(() => {
         if (project.fresh()) {
-            updateFileList();
-            // Need update project name
-            document.getElementById("project_name").value = project.name;
+            projectRefresh();
         }
     }, 500); // 500 ms
 }
@@ -158,25 +156,45 @@ function projectChangeName() {
 
 function projectAddFiles() {
     project.addFiles();
-    updateFileList();
+    document.getElementById("file_name_list_id").innerHTML = project.listHtml();
 }
 
 function projectDeleteFile() {
     // delete current file
     project.deleteFile();
-    updateFileList();
+    document.getElementById("file_name_list_id").innerHTML = project.listHtml();
 }
 
-function updateFileList() {
+function projectRefresh() {
+    // Need update project name
+    document.getElementById("project_name").value = project.name;
     // Force refresh file list
     document.getElementById("file_name_list_id").innerHTML = project.listHtml();
+
+    // Fore refresh canvas ...
+    if (project.empty()) {
+        canvas.reset();
+        canvas.redraw();
+    } else {
+        if (project.indexOk() && canvas.key != project.key()) {
+            var index = project.current_index;
+            canvas.reset();
+            canvas.loadBackground(project.items[index].data);
+            canvas.loadBlobs(project.items[index].blobs);
+            canvas.key = project.key();
+        }
+    }
 }
 
 function jump_to_image(index) {
     if (project.go(index)) {
-        updateFileList();
-        let [current_image, current_index] = project.current();
-        canvas.loadBackground(current_image);
+        document.getElementById("file_name_list_id").innerHTML = project.listHtml();
+        if (canvas.key != project.key()) {
+            canvas.reset();
+            canvas.loadBackground(project.items[index].data);
+            canvas.loadBlobs(project.items[index].blobs);
+            canvas.key = project.key();
+        }
         // waiting for image decode finish ...
         sleep(100).then(() => { canvasShow(true);
             canvas.redraw(); });

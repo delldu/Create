@@ -10,9 +10,9 @@ class Point {
     static THRESHOLD = 2;
     constructor(public x: number, public y: number) {}
 
-    clone(): Point {
-        return new Point(this.x, this.y);
-    }
+    // clone(): Point {
+    //     return new Point(this.x, this.y);
+    // }
 
     offset(deltaX: number, deltaY: number) {
         this.x += deltaX;
@@ -113,7 +113,7 @@ class Polygon {
         let c = new Polygon();
         c.label = this.label;
         for (let p of this.points)
-            c.push(p.clone());
+            c.push(new Point(p.x, p.y)); // Clone Point
         return c;
     }
 
@@ -318,42 +318,48 @@ class Shape {
 
     // s is a JSON string
     load(s: string) {
-        let j = JSON.parse(s);
-        this.blobs.length = 0; // reset
-        for (let k1 in j) {
-            if (!j.hasOwnProperty(k1))
-                continue;
-            if (k1 == "selected_index") {
-                this.selected_index = parseInt(j[k1]);
-                continue;
-            }
-            if (k1 != "blobs")
-                continue;
-            // now k1 === "blobs"
-            for (let k2 in j[k1]) {
-                if (!j[k1].hasOwnProperty(k2))
+        try {
+            let j = JSON.parse(s);
+            this.blobs.length = 0; // reset
+            for (let k1 in j) {
+                if (!j.hasOwnProperty(k1))
                     continue;
-                // Here k2 is number 0, 1 ...
-                let blob = new Polygon();
-                for (let k3 in j[k1][k2]) {
-                    if (!j[k1][k2].hasOwnProperty(k3))
-                        continue;
-                    // k3 == "label" || "points" ...
-                    if (k3 == "label") {
-                        blob.label = parseInt(j[k1][k2][k3]);
-                        continue;
-                    }
-                    if (k3 != "points")
-                        continue;
-                    // now k3 === points
-                    for (let k4 in j[k1][k2][k3]) {
-                        if (!j[k1][k2][k3].hasOwnProperty(k4))
-                            continue;
-                        blob.push(new Point(j[k1][k2][k3][k4].x, j[k1][k2][k3][k4].y));
-                    }
-                    this.push(blob);
+                if (k1 == "selected_index") {
+                    this.selected_index = parseInt(j[k1]);
+                    continue;
                 }
-            } // end of k2
+                if (k1 != "blobs")
+                    continue;
+                // now k1 === "blobs"
+                for (let k2 in j[k1]) {
+                    if (!j[k1].hasOwnProperty(k2))
+                        continue;
+                    // Here k2 is number 0, 1 ...
+                    let blob = new Polygon();
+                    for (let k3 in j[k1][k2]) {
+                        if (!j[k1][k2].hasOwnProperty(k3))
+                            continue;
+                        // k3 == "label" || "points" ...
+                        if (k3 == "label") {
+                            blob.label = parseInt(j[k1][k2][k3]);
+                            continue;
+                        }
+                        if (k3 != "points")
+                            continue;
+                        // now k3 === points
+                        for (let k4 in j[k1][k2][k3]) {
+                            if (!j[k1][k2][k3].hasOwnProperty(k4))
+                                continue;
+                            blob.push(new Point(j[k1][k2][k3][k4].x, j[k1][k2][k3][k4].y));
+                        }
+                        this.push(blob);
+                    }
+                } // end of k2
+            }
+
+        } catch {
+            console.log("JSON Parse error.");
+            return;
         }
     }
 
@@ -591,7 +597,7 @@ class Canvas {
     static DEFAULT_ZOOM_LEVEL = 3; // 1.0 index
 
     canvas: HTMLCanvasElement; // canvas element
-    private readonly brush: CanvasRenderingContext2D;
+    private brush: CanvasRenderingContext2D;
 
     private background: HTMLImageElement; // Image;
     private background_loaded: boolean;
@@ -600,13 +606,16 @@ class Canvas {
     mode_index: number;
 
     // Polygon container
-    private readonly image_stack: ImageStack;
+    private image_stack: ImageStack;
 
     // Zoom control
     zoom_index: number;
 
     // Handle mouse
-    private readonly mouse: Mouse;
+    private mouse: Mouse;
+
+    // Key
+    key: string;
 
     constructor(id: string) {
         this.canvas = document.getElementById(id) as HTMLCanvasElement;
@@ -616,9 +625,10 @@ class Canvas {
 
         this.shape_blobs = new Shape();
 
-        // Line width and color
+        // Default brush line width, color
         this.brush.strokeStyle = Polygon.LINE_COLOR;
         this.brush.lineWidth = Polygon.LINE_WIDTH;
+        this.brush.fillStyle = Polygon.FILL_COLOR;
 
         this.zoom_index = Canvas.DEFAULT_ZOOM_LEVEL;
 
@@ -628,14 +638,26 @@ class Canvas {
         this.registerEventHandlers();
 
         // Create background for canvas
-        this.background = document.createElement('img') as HTMLImageElement;
-        this.background.id = this.canvas.id + "_background_image";
-        this.background.style.display = "none";
-        this.canvas.appendChild(this.background);
+        // this.background = document.createElement('img') as HTMLImageElement;
+        // this.background.id = this.canvas.id + "_background_image";
+        // this.background.style.display = "none";
+        // this.canvas.appendChild(this.background);
+        this.background = new Image() as HTMLImageElement;
         // this.background.src = "dog.jpg";
         this.background_loaded = false;
 
         this.image_stack = new ImageStack();
+
+        this.key = "";
+    }
+
+    reset() {
+        this.shape_blobs = new Shape();
+        this.zoom_index = Canvas.DEFAULT_ZOOM_LEVEL;
+        this.mode_index = 0;
+        this.mouse = new Mouse();
+        this.image_stack = new ImageStack();
+        this.key = "";
     }
 
     // loadBackgroundFromFile(file: File) {
@@ -654,13 +676,26 @@ class Canvas {
     //     reader.readAsDataURL(file);
     // }
 
-    loadBackground(e: HTMLImageElement) {
+    // loadBackground(e: HTMLImageElement) {
+    //     this.background_loaded = false;
+    //     this.background = e;
+    //     this.canvas.width = this.background.naturalWidth;
+    //     this.canvas.height = this.background.naturalHeight;
+    //     this.setZoom(Canvas.DEFAULT_ZOOM_LEVEL);
+    //     this.background_loaded = true;
+    // }
+
+    loadBackground(dataurl: string) {
         this.background_loaded = false;
-        this.background = e;
+        this.background.src = dataurl;
         this.canvas.width = this.background.naturalWidth;
         this.canvas.height = this.background.naturalHeight;
         this.setZoom(Canvas.DEFAULT_ZOOM_LEVEL);
         this.background_loaded = true;
+    }
+
+    loadBlobs(blobs: string) {
+        this.shape_blobs.load(blobs);
     }
 
     // setMessage(message: string) {
@@ -930,21 +965,3 @@ class ImageStack {
         this.stack.length = 0;
     }
 }
-
-let x = new Shape();
-let blob = new Polygon();
-let box = new Box(10, 10, 100, 200);
-blob.set3x3(box);
-blob.label = 10;
-x.push(blob);
-blob.set2x2(box);
-blob.label = 20;
-x.push(blob);
-
-let s = JSON.stringify(x, undefined, 2);
-console.log("x JSON:", s);
-
-let y = new Shape();
-y.load(s);
-console.log("y == ", y);
-console.log("y JSON:", JSON.stringify(y, undefined, 2));
