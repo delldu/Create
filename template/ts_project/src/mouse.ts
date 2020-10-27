@@ -9,7 +9,7 @@
 enum MouseStatus {
     ClickOver,
     DragOver,
-    Moving
+    Moving  // Default Status ?
 }
 
 // How to get mouse status out of event handlers ? Record it !
@@ -19,19 +19,15 @@ class Mouse {
     stop: Point;
     left_button_pressed: boolean;   // mouse moving erase the status, we define it !
 
-    e: MouseEvent;
-
     constructor() {
         this.start = new Point(0, 0);
         this.moving = new Point(0, 0);
         this.stop = new Point(0, 0);
 
-        this.e = new MouseEvent("");
         this.left_button_pressed = false;
     }
 
     set(e: MouseEvent, scale: number = 1.0) {
-        this.e = e;
         if (e.type == "mousedown") {
             this.start.x = e.offsetX / scale;
             this.start.y = e.offsetY / scale;
@@ -51,22 +47,6 @@ class Mouse {
 
     pressed(): boolean {
         return this.left_button_pressed;
-    }
-
-    // ctrlPressed(): boolean {
-    //     return this.e.ctrlKey;
-    // }
-    //
-    // shiftPressed(): boolean {
-    //     return this.e.shiftKey;
-    // }
-    //
-    // altPressed(): boolean {
-    //     return this.e.altKey;
-    // }
-
-    type(): string {
-        return this.e.type; // mousedown, mouseup, mouseover
     }
 
     status(): number {

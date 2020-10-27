@@ -144,11 +144,6 @@ class Polygon {
         this.push(new Point(box.x + box.w, box.y));
     }
 
-    // zoom(s: number) {
-    //     for (let p of this.points)
-    //         p.zoom(s);
-    // }
-
     push(p: Point) {
         this.points.push(new Point(p.x, p.y)); // Do not share, or will be disaster !!!
     }
@@ -161,9 +156,9 @@ class Polygon {
         this.points.splice(index, 1);
     }
 
-    // pop() {
-    //     this.points.pop();
-    // }
+    pop() {
+        this.points.pop();
+    }
 
     // Bounding Box
     bbox(): Box {
@@ -236,7 +231,9 @@ class Polygon {
 
     setPath(brush: CanvasRenderingContext2D) {
         let n = this.points.length;
-        brush.translate(0.5,0.5);
+        if (n < 1)
+            return;
+        brush.translate(0.5, 0.5);
         brush.beginPath();
         brush.moveTo(this.points[0].x, this.points[0].y);
         for (let i = 1; i < n; ++i)
@@ -245,48 +242,53 @@ class Polygon {
     }
 
     draw(brush: CanvasRenderingContext2D, selected: boolean) {
-        let n = this.points.length;
-        if (n < 1)
-            return;
-        brush.save();
         if (selected) {
-            brush.fillStyle = Polygon.FILL_COLOR;
-            brush.globalAlpha = 0.5;
+            this.fillRegion(brush);
         } else {
-            brush.strokeStyle = Polygon.LINE_COLOR;
-            brush.lineWidth = Polygon.LINE_WIDTH;
+            this.drawBorder(brush);
         }
-        this.setPath(brush);
-        if (selected) {
-            brush.fill();
-        } else {
-            brush.stroke();
-        }
+        this.fillVertex(brush);
+    }
 
-        // Draw vertex
-        brush.fillStyle = Polygon.FILL_COLOR;
-        brush.globalAlpha = 1.0;
-        brush.translate(0.5,0.5);
-        for (let p of this.points) {
-            brush.beginPath();
-            brush.arc(p.x, p.y, Point.THRESHOLD, 0, 2 * Math.PI, false);
-            brush.closePath();
-            brush.fill();
-        }
+    drawBorder(brush: CanvasRenderingContext2D) {
+        brush.save();
+        brush.strokeStyle = Polygon.LINE_COLOR;
+        brush.lineWidth = Polygon.LINE_WIDTH;
+        this.setPath(brush);
+        brush.stroke();
         brush.restore();
     }
 
-    draggingDraw(brush: CanvasRenderingContext2D) {
-        let n = this.points.length;
-        if (n < 1)
-            return;
-
+    drawDashBorder(brush: CanvasRenderingContext2D) {
         brush.save();
         brush.strokeStyle = Polygon.LINE_COLOR;
         brush.lineWidth = Polygon.LINE_WIDTH;
         brush.setLineDash([1, 1]);
         this.setPath(brush);
         brush.stroke();
+        brush.restore();
+    }
+
+    fillRegion(brush: CanvasRenderingContext2D) {
+        brush.save();
+        brush.fillStyle = Polygon.FILL_COLOR;
+        brush.globalAlpha = 0.5;
+        this.setPath(brush);
+        brush.fill();
+        brush.restore();
+    }
+
+    fillVertex(brush: CanvasRenderingContext2D) {
+        brush.save();
+        brush.fillStyle = Polygon.FILL_COLOR;
+        brush.globalAlpha = 1.0;
+        brush.translate(0.5, 0.5);
+        for (let p of this.points) {
+            brush.beginPath();
+            brush.arc(p.x, p.y, Point.THRESHOLD, 0, 2 * Math.PI, false);
+            brush.closePath();
+            brush.fill();
+        }
         brush.restore();
     }
 }
@@ -500,7 +502,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush);
+            blob.drawDashBorder(brush);
 
             return;
         }
@@ -521,7 +523,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush);
+            blob.drawDashBorder(brush);
             return;
         } else {
             // Add new blob
@@ -544,7 +546,7 @@ class Shape {
             rect.extend(Polygon.LINE_WIDTH);
             image_stack.save(brush, rect);
 
-            blob.draggingDraw(brush);
+            blob.drawDashBorder(brush);
             return;
         } // end of b_index
     }
@@ -615,6 +617,7 @@ class Canvas {
 
     // Handle mouse
     private mouse: Mouse;
+    private keyboard: Keyboard;
 
     // Key
     key: string;
@@ -637,6 +640,8 @@ class Canvas {
         this.mode_index = 0;
 
         this.mouse = new Mouse();
+        this.keyboard = new Keyboard();
+
         this.registerEventHandlers();
 
         // Create background for canvas
@@ -874,6 +879,7 @@ class Canvas {
 
         // Handle keyboard
         this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
+            this.keyboard.set(e);
             console.log("Canvas: addEventListener keydown ...", e);
             if (e.key == 'Shift') {
                 this.setMode(this.mode_index + 1);
@@ -893,6 +899,7 @@ class Canvas {
                 this.editModeKeyUpHandler(e);
             else
                 this.viewModeKeyUpHandler(e);
+            this.keyboard.set(e);
             e.preventDefault();
         }, false);
     }
