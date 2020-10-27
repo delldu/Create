@@ -149,8 +149,9 @@ class ImageProject {
 
     // Need saving ?
     need_saving: boolean;
-    // Need updating file list ?
-    private need_refresh: boolean;
+
+    // Refresh message
+    refresh: Refresh;
 
     constructor(name: string) {
         this.name = name;
@@ -165,7 +166,8 @@ class ImageProject {
         this.image_load_err = 0;
 
         this.need_saving = false;
-        this.need_refresh = false;
+
+        this.refresh = Refresh.getInstance();
     }
 
     // count(): number {
@@ -248,7 +250,7 @@ class ImageProject {
                         this.image_loading--;
 
                         this.need_saving = true;
-                        this.need_refresh = true;
+                        this.refresh.notify("refresh_file_name_list");
                     })
                     .catch((error) => {
                         this.image_load_err++;
@@ -316,7 +318,7 @@ class ImageProject {
                 }
             }
             this.need_saving = false;
-            this.need_refresh = true;
+            this.refresh.notify("refresh_file_name_list");
             this.go(0);
         }
         catch {
@@ -389,13 +391,7 @@ class ImageProject {
         if (index > this.items.length - 1)
             this.goLast();
         this.need_saving = true;
-        this.need_refresh = true;
-    }
-
-    fresh() {
-        let ok = this.need_refresh;
-        this.need_refresh = false;
-        return ok;
+        this.refresh.notify("refresh_file_name_list");
     }
 
     // info(): string {

@@ -48,48 +48,53 @@ function saveCanvasAsImage(id: string, filename: string): boolean {
     return true;
 }
 
-// class Refresh {
-//     static THRESHOLD = 20;
-//     static instance = new Refresh();
-//     refresh_events: Array < string > ;
-//
-//     private constructor() {
-//         this.refresh_events = new Array < string > ();
-//     }
-//
-//     notify(msg: string) {
-//         if (this.refresh_events.length >= 1024) {
-//             this.refresh_events.shift();
-//         }
-//         this.refresh_events.push(msg);
-//     }
-//
-//     message(): string {
-//         console.log(Refresh.THRESHOLD);
-//
-//         let ok = this.refresh_events.length > 0;
-//         if (ok) {
-//             let msg = this.refresh_events.shift() as string;
-//             let count = 0;
-//             for (let i = 0; i < this.refresh_events.length; i++) {
-//                 if (this.refresh_events[i] != msg) {
-//                     break;
-//                 } else {
-//                     count++;
-//                 }
-//             }
-//             if (count > 0) {
-//                 this.refresh_events.splice(0, count);
-//             }
-//             return msg;
-//         }
-//         return "";
-//     }
-//
-//     static getInstance(): Refresh {
-//         return Refresh.instance;
-//     }
-// }
+class Refresh {
+    static THRESHOLD = 2048;
+    static instance = new Refresh();
+    private event_queue: Array < string > ;
+
+    private constructor() {
+        this.event_queue = new Array < string > ();
+    }
+
+    notify(message: string) {
+        if (this.event_queue.length >= Refresh.THRESHOLD) {
+            this.event_queue.shift();
+        }
+        this.event_queue.push(message);
+    }
+
+    message(prefix: string): string {
+        let ok = this.event_queue.length > 0;
+        if (ok) {
+            let start = -1;
+            let message = "";
+            for (let i = 0; i < this.event_queue.length; i++) {
+                if (this.event_queue[i].startsWith(prefix)) {
+                    start = i;
+                    message = this.event_queue[i];
+                    break;
+                }
+            }
+            if (start >= 0) { // find same message ...
+                let count = 1;
+                for (let i = start + 1; i < this.event_queue.length; i++) {
+                    if (this.event_queue[i] == message)
+                        count++;
+                    else
+                        break;
+                }
+                this.event_queue.splice(start, count);
+                return message;
+            }
+        }
+        return "";
+    }
+
+    static getInstance(): Refresh {
+        return Refresh.instance;
+    }
+}
 
 // let refresh = Refresh.getInstance();
 
@@ -101,9 +106,9 @@ function saveCanvasAsImage(id: string, filename: string): boolean {
 // refresh.notify("1234557");
 //
 // while (true) {
-//     let msg = refresh.message();
-//     if (msg.length > 0) {
-//         console.log(msg);
+//     let message = refresh.message();
+//     if (message.length > 0) {
+//         console.log(message);
 //     } else {
 //         break;
 //     }

@@ -173,10 +173,16 @@ function canvasRefresh(index) {
 }
 
 function projectRefresh() {
+    let refresh = Refresh.getInstance();
+
     // Need update project name
     document.getElementById("project_name").value = project.name;
+
     // Force refresh file list
-    document.getElementById("file_name_list_id").innerHTML = project.listHtml();
+    let message = refresh.message("refresh_file_name_list");
+    if (message.length > 0) {
+        document.getElementById("file_name_list_id").innerHTML = project.listHtml();
+    }
 
     // Fore refresh canvas ...
     if (project.empty()) {

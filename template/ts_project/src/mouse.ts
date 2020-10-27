@@ -9,7 +9,6 @@
 enum MouseStatus {
     ClickOver,
     DragOver,
-    Dragging,
     Moving
 }
 
@@ -54,62 +53,32 @@ class Mouse {
         return this.left_button_pressed;
     }
 
-    ctrlPressed(): boolean {
-        return this.e.ctrlKey;
-    }
-
-    shiftPressed(): boolean {
-        return this.e.shiftKey;
-    }
-
-    altPressed(): boolean {
-        return this.e.altKey;
-    }
+    // ctrlPressed(): boolean {
+    //     return this.e.ctrlKey;
+    // }
+    //
+    // shiftPressed(): boolean {
+    //     return this.e.shiftKey;
+    // }
+    //
+    // altPressed(): boolean {
+    //     return this.e.altKey;
+    // }
 
     type(): string {
         return this.e.type; // mousedown, mouseup, mouseover
     }
 
-    // clone() {
-    //     let m = new Mouse();
-    //     m.start = this.start.clone();
-    //     m.moving = this.moving.clone();
-    //     m.stop = this.stop.clone();
-    //
-    //     m.pressed = this.pressed;
-    //     return m;
-    // }
-
-    // offset(deltaX: number, deltaY: number) {
-    //     this.start.offset(deltaX, deltaY);
-    //     this.moving.offset(deltaX, deltaY);
-    //     this.stop.offset(deltaX, deltaY);
-    // }
-
-    // zoom(s: number) {
-    //     this.start.zoom(s);
-    //     this.moving.zoom(s);
-    //     this.stop.zoom(s);
-    // }
-
     status(): number {
         let d = this.start.distance(this.stop);
         if (d <= Point.THRESHOLD)
             return MouseStatus.ClickOver;
-
-        // Draging ?
+        // Dragging ?
         if (this.pressed())
             return MouseStatus.DragOver;
-        if (this.e.buttons == 1)
-            return MouseStatus.Dragging;
-
+        // Default
         return MouseStatus.Moving;
     }
-
-    // isClick(): boolean {
-    //     let d = this.start.distance(this.stop);
-    //     return d <= Point.THRESHOLD;
-    // }
 
     // Bounding Box for two points
     points_bbox(p1: Point, p2: Point): Box {
