@@ -657,7 +657,6 @@ class Canvas {
         this.shape_blobs = new Shape();
         this.zoom_index = Canvas.DEFAULT_ZOOM_LEVEL;
         this.mode_index = 0;
-        this.mouse = new Mouse();
         this.image_stack = new ImageStack();
         this.background_loaded = false;
         this.key = "";
@@ -731,7 +730,7 @@ class Canvas {
     }
 
     private viewModeMouseMoveHandler(e: MouseEvent) {
-        if (this.mouse.pressed) {
+        if (this.mouse.pressed()) {
             this.canvas.style.cursor = "pointer";
             // this.canvas.start = new Point(this.mouse.stop.x, this.mouse.stop.y);
         } else {
@@ -740,7 +739,7 @@ class Canvas {
     }
 
     private viewModeMouseUpHandler(e: MouseEvent) {
-        if (!this.mouse.isClick() && this.mouse.pressed) {
+        if (this.mouse.status() == MouseStatus.DragOver) {
             console.log("Canvas: dragging ..., which src object ? moving background ?");
         }
     }
@@ -753,7 +752,7 @@ class Canvas {
     }
 
     private editModeMouseMoveHandler(e: MouseEvent) {
-        if (this.mouse.pressed) {
+        if (this.mouse.pressed()) {
             this.canvas.style.cursor = "pointer";
             this.shape_blobs.dragging(e.ctrlKey, this.mouse, this.brush, this.image_stack);
         } else {
@@ -762,14 +761,14 @@ class Canvas {
     }
 
     private editModeMouseUpHandler(e: MouseEvent) {
-        // Clicking
-        if (this.mouse.isClick()) {
+        // Click Over
+        if (this.mouse.status() == MouseStatus.ClickOver) {
             if (this.shape_blobs.clicked(e.ctrlKey, this.mouse))
                 this.redraw();
             return;
         }
-
-        if (!this.mouse.isClick() && this.mouse.pressed) {
+        // Drag Over
+        if (this.mouse.status() == MouseStatus.DragOver) {
             if (this.shape_blobs.dragged(e.ctrlKey, this.mouse))
                 this.redraw();
             return;
@@ -820,36 +819,28 @@ class Canvas {
 
     private registerEventHandlers() {
         this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
-            this.mouse.start.x = e.offsetX / Canvas.ZOOM_LEVELS[this.zoom_index];
-            this.mouse.start.y = e.offsetY / Canvas.ZOOM_LEVELS[this.zoom_index];
-            this.mouse.pressed = true;
-
+            this.mouse.set(e, Canvas.ZOOM_LEVELS[this.zoom_index]);
             if (this.isEditMode())
                 this.editModeMouseDownHandler(e);
             else
                 this.viewModeMouseDownHandler(e);
         }, false);
         this.canvas.addEventListener('mouseup', (e: MouseEvent) => {
-            this.mouse.stop.x = e.offsetX / Canvas.ZOOM_LEVELS[this.zoom_index];
-            this.mouse.stop.y = e.offsetY / Canvas.ZOOM_LEVELS[this.zoom_index];
-
             // Every this is calm ...
+            this.mouse.set(e, Canvas.ZOOM_LEVELS[this.zoom_index]);
             this.canvas.style.cursor = "default";
             if (this.isEditMode())
                 this.editModeMouseUpHandler(e);
             else
                 this.viewModeMouseUpHandler(e);
-
-            this.mouse.pressed = false;
+            this.mouse.reset(); // Clear left_button_pressed !!!
             e.stopPropagation();
         }, false);
         this.canvas.addEventListener('mouseover', (e: MouseEvent) => {
             this.redraw();
         }, false);
         this.canvas.addEventListener('mousemove', (e: MouseEvent) => {
-            this.mouse.moving.x = e.offsetX / Canvas.ZOOM_LEVELS[this.zoom_index];
-            this.mouse.moving.y = e.offsetY / Canvas.ZOOM_LEVELS[this.zoom_index];
-
+            this.mouse.set(e, Canvas.ZOOM_LEVELS[this.zoom_index]);
             if (this.isEditMode())
                 this.editModeMouseMoveHandler(e);
             else

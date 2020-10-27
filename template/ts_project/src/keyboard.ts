@@ -17,7 +17,7 @@ class TsKey {
     }
 }
 
-class Keyboard {
+class TimeKeyboard {
     duration: number;
     private timer: number;
     private keys: Array < TsKey > ;
