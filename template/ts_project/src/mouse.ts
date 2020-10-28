@@ -133,16 +133,22 @@ class Keyboard {
             return;
         let m = this.stack.pop() as KeyboardMode;
         if (m != KeyboardMode.CtrlKeyup && m != KeyboardMode.ShiftKeyup && m != KeyboardMode.AltKeyup) {
-            this.stack.push(m); // restore stack
+            this.stack.push(m);         // Restore stack
             return;
         }
-        let s = KeyboardMode.Normal;
-        if (m == KeyboardMode.CtrlKeyup) {
-            s = KeyboardMode.CtrlKeydown;
-        } else if (m == KeyboardMode.ShiftKeyup) {
-            s = KeyboardMode.ShiftKeydown;
-        } else if (m == KeyboardMode.AltKeyup) {
-            s = KeyboardMode.AltKeydown;
+        let s = KeyboardMode.Normal;    // Search 
+        switch(m) {
+            case KeyboardMode.CtrlKeyup:
+                s = KeyboardMode.CtrlKeydown;
+                break;
+            case KeyboardMode.ShiftKeyup:
+                s = KeyboardMode.ShiftKeydown;
+                break;
+            case KeyboardMode.AltKeyup:
+                s = KeyboardMode.AltKeydown;
+                break;
+            default:
+                break;
         }
         for (let i = this.stack.length - 1; i >= 0; i--) {
             if (s == this.stack[i]) {

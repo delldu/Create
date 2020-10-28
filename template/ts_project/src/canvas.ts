@@ -375,12 +375,7 @@ class Shape {
 
     draw(brush: CanvasRenderingContext2D) {
         for (let i = 0; i < this.blobs.length; i++)
-            this.blobs[i].draw(brush, false);
-    }
-
-    drawSelected(brush: CanvasRenderingContext2D) {
-        if (this.selected_index >= 0 && this.selected_index < this.blobs.length)
-            this.blobs[this.selected_index].fillRegion(brush);
+            this.blobs[i].draw(brush, (i == this.selected_index));
     }
 
     // Region draw speed up drawing ...
@@ -389,10 +384,7 @@ class Shape {
             let bbox = this.blobs[i].bbox();
             if (!rect.intersect(bbox))
                 continue;
-            if (i === this.selected_index)
-                this.blobs[i].draw(brush, true);
-            else
-                this.blobs[i].draw(brush, false);
+            this.blobs[i].draw(brush, (i == this.selected_index));
         }
     }
 
@@ -704,10 +696,6 @@ class Canvas {
         this.shape_blobs.load(blobs);
     }
 
-    // setMessage(message: string) {
-    //     console.log(message);
-    // }
-
     saveBlobs(): string {
         return JSON.stringify(this.shape_blobs, undefined, 2);
     }
@@ -721,9 +709,9 @@ class Canvas {
         console.log("Canvas: set mode:", this.mode_index);
     }
 
-    // getMode(): number {
-    //     return this.mode_index;
-    // }
+    getMode(): number {
+        return this.mode_index;
+    }
 
     isEditMode(): boolean {
         return this.mode_index > 0;
@@ -981,9 +969,6 @@ class Canvas {
 
         // Draw blobs ...
         this.shape_blobs.draw(this.brush);
-
-        // Draw selected ...
-        this.shape_blobs.drawSelected(this.brush);
     }
 }
 
