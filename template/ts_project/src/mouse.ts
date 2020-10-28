@@ -96,15 +96,15 @@ enum KeyboardMode {
 
 // How to get key out of event handlers ? Record it !
 class Keyboard {
-    stack: Array < number > ;
+    stack: Array < KeyboardMode > ;
 
     constructor() {
-        this.stack = new Array < number > ();
+        this.stack = new Array < KeyboardMode > ();
     }
 
     push(e: KeyboardEvent) {
         if (e.type == "keydown") {
-            if (e.key == "Contrl")
+            if (e.key == "Control")
                 this.stack.push(KeyboardMode.CtrlKeydown);
             else if (e.key == "Shift") {
                 this.stack.push(KeyboardMode.ShiftKeydown);
@@ -112,7 +112,7 @@ class Keyboard {
                 this.stack.push(KeyboardMode.AltKeydown);
             }
         } else if (e.type == "keyup") {
-            if (e.key == "Contrl")
+            if (e.key == "Control")
                 this.stack.push(KeyboardMode.CtrlKeyup);
             else if (e.key == "Shift") {
                 this.stack.push(KeyboardMode.ShiftKeyup);
@@ -122,7 +122,7 @@ class Keyboard {
         }
     }
 
-    mode(): number {
+    mode(): KeyboardMode {
         if (this.stack.length < 1)
             return KeyboardMode.Normal;
         return this.stack[this.stack.length - 1];
@@ -131,7 +131,7 @@ class Keyboard {
     pop() {
         if (this.stack.length < 1)
             return;
-        let m = this.stack.pop() as number;
+        let m = this.stack.pop() as KeyboardMode;
         if (m != KeyboardMode.CtrlKeyup && m != KeyboardMode.ShiftKeyup && m != KeyboardMode.AltKeyup) {
             this.stack.push(m); // restore stack
             return;
@@ -147,7 +147,7 @@ class Keyboard {
         for (let i = this.stack.length - 1; i >= 0; i--) {
             if (s == this.stack[i]) {
                 this.stack.splice(i, 1);    // pop relative keydown
-                return;
+                break;
             }
         }
     }
