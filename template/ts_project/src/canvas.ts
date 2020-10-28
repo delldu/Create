@@ -310,6 +310,11 @@ class Shape {
         this.selected_index = -1;
     }
 
+    reset() {
+        this.blobs.length = 0;
+        this.selected_index = -1;
+    }
+
     // s is a JSON string
     load(s: string) {
         try {
@@ -597,6 +602,7 @@ class Canvas {
     private background: HTMLImageElement; // Image;
     private background_loaded: boolean;
     shape_blobs: Shape;
+    shift_blob: Polygon;
 
     mode_index: number;
 
@@ -620,6 +626,7 @@ class Canvas {
         this.brush = this.canvas.getContext('2d') as CanvasRenderingContext2D;
 
         this.shape_blobs = new Shape();
+        this.shift_blob = new Polygon();
 
         // Default brush line width, color
         this.brush.strokeStyle = Polygon.LINE_COLOR;
@@ -650,7 +657,8 @@ class Canvas {
     }
 
     reset() {
-        this.shape_blobs = new Shape();
+        this.shape_blobs.reset();
+        this.shift_blob.reset();
         this.zoom_index = Canvas.DEFAULT_ZOOM_LEVEL;
         this.mode_index = 0;
         this.image_stack = new ImageStack();
@@ -723,31 +731,133 @@ class Canvas {
     // 3. Alt mode -- alt key pressed: AI create polygon ...
     // 4. Normal mode -- others: create 2x2, select or not, drag/delete selected ...
     // Generally keyboard.mode() return current mode: KeyboardMode.CtrlKeydown, ...
-    ctrlmode_start() {
-        console.log("ctrlmode start ...");
+    ctrlModeStartHandle() {
+        // nothing to do
     }
 
-    ctrlmode_stop() {
-        console.log("controlmode stop ...");
+    ctrlModeMouseMoveHandle() {
+
+    }
+
+    ctrlModeMouseUpHandle() {
+        if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
+            // vertex be clicked ?
+            let [v_index, v_sub_index] = this.shape_blobs.findVertex(this.mouse.start);
+            if (v_index >= 0 && v_sub_index >= 0) {
+                // Delete this vertex !!!
+                this.shape_blobs.blobs[v_index].delPoint(v_sub_index);
+                // Delete more ... whole blob ?
+                if (this.shape_blobs.blobs[v_index].points.length < 3)
+                    this.shape_blobs.delBlob(v_index);
+                this.redraw();
+                return;
+            }
+
+            // edge be clicked with ctrl ?
+            let [e_index, e_sub_index] = this.shape_blobs.findEdge(this.mouse.start);
+            if (e_index >= 0 && e_sub_index >= 0) {
+                // Add vertex
+                this.shape_blobs.blobs[e_index].addPoint(e_sub_index + 1, this.mouse.start);
+                this.redraw();
+                return;
+            }
+            // other case, ignore
+        } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
+
+        }
+    }
+
+    ctrlModeStopHandle() {
         this.keyboard.pop();
     }
 
-    shiftmode_start() {
-        console.log("shiftmode start ...");
+    shiftModeStartHandle() {
+        this.shift_blob.reset();
     }
 
-    shiftmode_stop() {
-        console.log("shiftmode stop ...");
+    shiftModeMouseMoveHandle() {
+
+    }
+
+    shiftModeMouseUpHandle() {
+        // Click, add one point;, drag, add two points
+        if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
+            this.shift_blob.push(this.mouse.stop);
+        } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
+            this.shift_blob.push(this.mouse.start);
+            this.shift_blob.push(this.mouse.stop);
+        }
+        // other case, simple ignore
+    }
+
+    shiftModeStopHandle() {
+        // is valid ?
+        if (this.shift_blob.points.length >= 3) {
+            this.shape_blobs.push(this.shift_blob);
+            this.redraw();
+        }
         this.keyboard.pop();
     }
 
-    altmode_start() {
-        console.log("altmode start ...");
+    altModeStartHandle() {
+        // todo
     }
 
-    altmode_stop() {
-        console.log("altmode stop ...");
+    altModeMouseMoveHandle() {
+        // todo
+    }
+
+    altModeMouseUpHandle() {
+        // todo
+    }
+
+    altModeStopHandle() {
+        // todo
         this.keyboard.pop();
+    }
+
+    normalModeMouseMoveHandle() {
+        if (this.mouse.pressed()) {
+            // this.shape_blobs.dragging(e.ctrlKey, this.mouse, this.brush, this.image_stack);
+        }
+    }
+
+    normalModeMouseUpHandle() {
+        if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
+            let b_index = this.shape_blobs.findBlob(this.mouse.start);
+            if (b_index >= 0) {
+                // Selected/remove selected flag
+                if (this.shape_blobs.selected_index == b_index) {
+                    this.shape_blobs.selected_index = -1;
+                } else {
+                    this.shape_blobs.selected_index = b_index;
+                }
+                this.redraw();
+            }
+            // if (this.shape_blobs.clicked(e.ctrlKey, this.mouse))
+            //     this.redraw();
+        } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
+            // whole blob could be dragged ?
+            let b_index = this.shape_blobs.findBlob(this.mouse.start);
+            if (b_index >= 0) {
+                let deltaX = this.mouse.stop.x - this.mouse.start.x;
+                let deltaY = this.mouse.stop.y - this.mouse.start.y;
+                this.shape_blobs.blobs[b_index].offset(deltaX, deltaY);
+            } else {
+                // Add new blob
+                let box = this.mouse.bbox();
+                if (!box.valid())
+                    return;
+
+                let blob = new Polygon();
+                blob.set2x2(box);
+                this.shape_blobs.push(blob);
+                this.redraw();
+            } // end of b_index
+
+            // if (this.shape_blobs.dragged(e.ctrlKey, this.mouse))
+            //     this.redraw();
+        }
     }
 
     private viewModeMouseDownHandler(e: MouseEvent) {
@@ -777,26 +887,30 @@ class Canvas {
     }
 
     private editModeMouseMoveHandler(e: MouseEvent) {
-        if (this.mouse.pressed()) {
-            this.canvas.style.cursor = "pointer";
-            this.shape_blobs.dragging(e.ctrlKey, this.mouse, this.brush, this.image_stack);
+        // Set mouse pointer
+        this.canvas.style.cursor = this.mouse.pressed() ? "pointer" : "default";
+
+        if (this.keyboard.mode() == KeyboardMode.CtrlKeydown) {
+            this.ctrlModeMouseMoveHandle();
+        } else if (this.keyboard.mode() == KeyboardMode.ShiftKeydown) {
+            this.shiftModeMouseMoveHandle();
+        } else if (this.keyboard.mode() == KeyboardMode.AltKeydown) {
+            this.altModeMouseMoveHandle();
         } else {
-            this.canvas.style.cursor = "default";
+            // Normal mode
+            this.normalModeMouseMoveHandle();
         }
     }
 
     private editModeMouseUpHandler(e: MouseEvent) {
-        // Click Over
-        if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
-            if (this.shape_blobs.clicked(e.ctrlKey, this.mouse))
-                this.redraw();
-            return;
-        }
-        // Drag Over
-        if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
-            if (this.shape_blobs.dragged(e.ctrlKey, this.mouse))
-                this.redraw();
-            return;
+        if (this.keyboard.mode() == KeyboardMode.CtrlKeydown) {
+            this.ctrlModeMouseUpHandle();
+        } else if (this.keyboard.mode() == KeyboardMode.ShiftKeydown) {
+            this.shiftModeMouseUpHandle();
+        } else if (this.keyboard.mode() == KeyboardMode.AltKeydown) {
+            this.altModeMouseUpHandle();
+        } else { // Normal mode
+            this.normalModeMouseUpHandle();
         }
     }
 
@@ -821,13 +935,31 @@ class Canvas {
         e.preventDefault();
     }
 
-
     private editModeKeyDownHandler(e: KeyboardEvent) {
-        console.log("Canvas: editModeKeyDown ...", e.key);
+        if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
+            this.keyboard.push(e);
+            if (e.key == "Control") {
+                this.ctrlModeStartHandle();
+            } else if (e.key == "Shift") {
+                this.shiftModeStartHandle();
+            } else {
+                this.altModeStartHandle();
+            }
+        }
     }
 
     private editModeKeyUpHandler(e: KeyboardEvent) {
-        console.log("Canvas: editModeKeyUpHandler ...", e.key);
+        if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
+            this.keyboard.push(e);
+            if (e.key == "Control") {
+                this.ctrlModeStopHandle();
+            } else if (e.key == "Shift") {
+                this.shiftModeStopHandle();
+            } else {
+                this.altModeStopHandle();
+            }
+            return;
+        }
         if (e.key === "d") {
             if (this.shape_blobs.selected_index >= 0) {
                 console.log("Canvas: delete blob:", this.shape_blobs.selected_index);
@@ -899,22 +1031,10 @@ class Canvas {
 
         // Handle keyboard
         this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
-            console.log("Canvas: addEventListener keydown ...", e);
-            if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
-                this.keyboard.push(e);
-                if (e.key == "Control") {
-                    this.ctrlmode_start();
-                } else if (e.key == "Shift") {
-                    this.shiftmode_start();
-                } else {
-                    this.altmode_start();
-                }
-            } else {
-                if (this.isEditMode())
-                    this.editModeKeyDownHandler(e);
-                else
-                    this.viewModeKeyDownHandler(e);
-            }
+            if (this.isEditMode())
+                this.editModeKeyDownHandler(e);
+            else
+                this.viewModeKeyDownHandler(e);
             e.preventDefault();
         }, false);
 
@@ -923,11 +1043,11 @@ class Canvas {
             if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
                 this.keyboard.push(e);
                 if (e.key == "Control") {
-                    this.ctrlmode_stop();
+                    this.ctrlModeStopHandle();
                 } else if (e.key == "Shift") {
-                    this.shiftmode_stop();
+                    this.shiftModeStopHandle();
                 } else {
-                    this.altmode_stop();
+                    this.altModeStopHandle();
                 }
             } else {
                 if (this.isEditMode())
