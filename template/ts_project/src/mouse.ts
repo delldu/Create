@@ -6,18 +6,17 @@
 // ***
 // ***********************************************************************************
 
-enum MouseStatus {
-    ClickOver,
+enum MouseOverStatus {
     DragOver,
-    Moving  // Default Status ?
+    ClickOver,
 }
 
-// How to get mouse status out of event handlers ? Record it !
+// How to get mouse overStatus out of event handlers ? Record it !
 class Mouse {
     start: Point;
     moving: Point;
     stop: Point;
-    left_button_pressed: boolean;   // mouse moving erase the status, we define it !
+    left_button_pressed: boolean; // mouse moving erase the overStatus, we define it !
 
     constructor() {
         this.start = new Point(0, 0);
@@ -49,15 +48,10 @@ class Mouse {
         return this.left_button_pressed;
     }
 
-    status(): number {
+    overStatus(): number {
         let d = this.start.distance(this.stop);
-        if (d <= Point.THRESHOLD)
-            return MouseStatus.ClickOver;
-        // Dragging ?
-        if (this.pressed())
-            return MouseStatus.DragOver;
-        // Default
-        return MouseStatus.Moving;
+        return (this.pressed() && d > Point.THRESHOLD) ?
+            MouseOverStatus.DragOver : MouseOverStatus.ClickOver;
     }
 
     // Bounding Box for two points
@@ -90,35 +84,75 @@ class Mouse {
     }
 }
 
+enum KeyboardMode {
+    Normal,
+    CtrlKeydown,
+    CtrlKeyup,
+    ShiftKeydown,
+    ShiftKeyup,
+    AltKeydown,
+    AltKeyup
+}
+
 // How to get key out of event handlers ? Record it !
 class Keyboard {
-    e: KeyboardEvent;
+    stack: Array < number > ;
 
     constructor() {
-        this.e = new KeyboardEvent("");
+        this.stack = new Array < number > ();
     }
 
-    ctrlPressed(): boolean {
-        return this.e.ctrlKey;
+    push(e: KeyboardEvent) {
+        if (e.type == "keydown") {
+            if (e.key == "Contrl")
+                this.stack.push(KeyboardMode.CtrlKeydown);
+            else if (e.key == "Shift") {
+                this.stack.push(KeyboardMode.ShiftKeydown);
+            } else if (e.key == "Alt") {
+                this.stack.push(KeyboardMode.AltKeydown);
+            }
+        } else if (e.type == "keyup") {
+            if (e.key == "Contrl")
+                this.stack.push(KeyboardMode.CtrlKeyup);
+            else if (e.key == "Shift") {
+                this.stack.push(KeyboardMode.ShiftKeyup);
+            } else if (e.key == "Alt") {
+                this.stack.push(KeyboardMode.AltKeyup);
+            }
+        }
     }
 
-    shiftPressed(): boolean {
-        return this.e.shiftKey;
+    mode(): number {
+        if (this.stack.length < 1)
+            return KeyboardMode.Normal;
+        return this.stack[this.stack.length - 1];
     }
 
-    altPressed(): boolean {
-        return this.e.altKey;
+    pop() {
+        if (this.stack.length < 1)
+            return;
+        let m = this.stack.pop() as number;
+        if (m != KeyboardMode.CtrlKeyup && m != KeyboardMode.ShiftKeyup && m != KeyboardMode.AltKeyup) {
+            this.stack.push(m); // restore stack
+            return;
+        }
+        let s = KeyboardMode.Normal;
+        if (m == KeyboardMode.CtrlKeyup) {
+            s = KeyboardMode.CtrlKeydown;
+        } else if (m == KeyboardMode.ShiftKeyup) {
+            s = KeyboardMode.ShiftKeydown;
+        } else if (m == KeyboardMode.AltKeyup) {
+            s = KeyboardMode.AltKeydown;
+        }
+        for (let i = this.stack.length - 1; i >= 0; i--) {
+            if (s == this.stack[i]) {
+                this.stack.splice(i, 1);    // pop relative keydown
+                return;
+            }
+        }
     }
 
-    key(): string {
-        return this.e.key; // Shift, Control, Alt, Escape, A etc.
-    }
-
-    type(): string {
-        return this.e.type; // keydown, keyup
-    }
-
-    set(e: KeyboardEvent) {
-        this.e = e;
+    reset() {
+        this.stack.length = 0;
     }
 }

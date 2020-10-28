@@ -186,6 +186,10 @@ class Polygon {
         return new Box(x1, y1, x2 - x1, y2 - y1);
     }
 
+    size(): number {
+        return this.bbox().size();
+    }
+
     // p is inside of polygon ?
     inside(p: Point): boolean {
         let cross = 0;
@@ -306,24 +310,6 @@ class Shape {
         this.selected_index = -1;
     }
 
-    // clone(): Shape {
-    //     let c = new Shape();
-    //     c.selected_index = this.selected_index;
-    //     for (let i = 0; i < this.blobs.length; i++)
-    //         c.push(this.blobs[i]);
-    //     return c;
-    // }
-
-    // offset(deltaX: number, deltaY: number) {
-    //     for (let b of this.blobs)
-    //         b.offset(deltaX, deltaY);
-    // }
-
-    // zoom(s: number) {
-    //     for (let b of this.blobs)
-    //         b.zoom(s);
-    // }
-
     // s is a JSON string
     load(s: string) {
         try {
@@ -412,24 +398,19 @@ class Shape {
 
     // find blob via point ...
     findBlob(p: Point): number {
-        let indexs = [];
+        let index = -1;
+        let smallest = 8196 * 8196; // big size
         for (let i = 0; i < this.blobs.length; i++) {
-            if (this.blobs[i].inside(p))
-                indexs.push(i);
-        }
-        if (indexs.length < 1)
-            return -1;
-        // Find smallest i
-        let size = 1024*1024;
-        let index = 0;
-        for (let i = 0; i < indexs.length; i++) {
-            let bbox = this.blobs[indexs[i]].bbox();
-            if (size > bbox.size()) {
+            if (!this.blobs[i].inside(p))
+                continue;
+            // Find smallest
+            let size = this.blobs[i].size();
+            if (smallest >= size) {
                 index = i;
-                size = bbox.size();
+                smallest = size;
             }
         }
-        return indexs[index];
+        return index;
     }
 
     // find blob, vertex
@@ -748,6 +729,39 @@ class Canvas {
         return this.mode_index > 0;
     }
 
+    // EditMode has 4 sub mode:
+    // 1. Ctrl mode -- control key pressed: edit polygon, add 3x3, add vertex, dete vertex, drag ...
+    // 2. Shift mode -- shift key pressed: free click for polygon ...
+    // 3. Alt mode -- alt key pressed: AI create polygon ...
+    // 4. Normal mode -- others: create 2x2, select or not, drag/delete selected ...
+    // Generally keyboard.mode() return current mode: KeyboardMode.CtrlKeydown, ...
+    ctrlmode_start() {
+        console.log("ctrlmode start ...");
+    }
+
+    ctrlmode_stop() {
+        console.log("controlmode stop ...");
+        this.keyboard.pop();
+    }
+
+    shiftmode_start() {
+        console.log("shiftmode start ...");
+    }
+
+    shiftmode_stop() {
+        console.log("shiftmode stop ...");
+        this.keyboard.pop();
+    }
+
+    altmode_start() {
+        console.log("altmode start ...");
+    }
+
+    altmode_stop() {
+        console.log("altmode stop ...");
+        this.keyboard.pop();
+    }
+
     private viewModeMouseDownHandler(e: MouseEvent) {
         // console.log("viewModeMouseDownHandler ...", e);
     }
@@ -762,7 +776,7 @@ class Canvas {
     }
 
     private viewModeMouseUpHandler(e: MouseEvent) {
-        if (this.mouse.status() == MouseStatus.DragOver) {
+        if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
             console.log("Canvas: dragging ..., which src object ? moving background ?");
         }
     }
@@ -785,13 +799,13 @@ class Canvas {
 
     private editModeMouseUpHandler(e: MouseEvent) {
         // Click Over
-        if (this.mouse.status() == MouseStatus.ClickOver) {
+        if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
             if (this.shape_blobs.clicked(e.ctrlKey, this.mouse))
                 this.redraw();
             return;
         }
         // Drag Over
-        if (this.mouse.status() == MouseStatus.DragOver) {
+        if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
             if (this.shape_blobs.dragged(e.ctrlKey, this.mouse))
                 this.redraw();
             return;
@@ -897,27 +911,42 @@ class Canvas {
 
         // Handle keyboard
         this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
-            this.keyboard.set(e);
             console.log("Canvas: addEventListener keydown ...", e);
-            if (e.key == 'Shift') {
-                this.setMode(this.mode_index + 1);
-                return;
+            if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
+                this.keyboard.push(e);
+                if (e.key == "Control") {
+                    this.ctrlmode_start();
+                } else if (e.key == "Shift") {
+                    this.shiftmode_start();
+                } else {
+                    this.altmode_start();
+                }
+            } else {
+                if (this.isEditMode())
+                    this.editModeKeyDownHandler(e);
+                else
+                    this.viewModeKeyDownHandler(e);
             }
-            if (this.isEditMode())
-                this.editModeKeyDownHandler(e);
-            else
-                this.viewModeKeyDownHandler(e);
-
             e.preventDefault();
         }, false);
 
         this.canvas.addEventListener('keyup', (e: KeyboardEvent) => {
             console.log("Canvas: addEventListener keyup ...", e);
-            if (this.isEditMode())
-                this.editModeKeyUpHandler(e);
-            else
-                this.viewModeKeyUpHandler(e);
-            this.keyboard.set(e);
+            if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
+                this.keyboard.push(e);
+                if (e.key == "Control") {
+                    this.ctrlmode_stop();
+                } else if (e.key == "Shift") {
+                    this.shiftmode_stop();
+                } else {
+                    this.altmode_stop();
+                }
+            } else {
+                if (this.isEditMode())
+                    this.editModeKeyUpHandler(e);
+                else
+                    this.viewModeKeyUpHandler(e);
+            }
             e.preventDefault();
         }, false);
     }

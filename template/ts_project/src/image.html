@@ -86,10 +86,9 @@ function load() {
     progress.startDemo(50); // start 0
 
     document.getElementById("project_name").value = project.name;
-
     window.addEventListener("keydown", (e) => {
         // e : KeyboardEvent
-        if (e.key === 'Shift' || e.key === 'Escape') {
+        if (e.key === 'Tab' || e.key === 'Escape') {
             fullScreenToggle();
         }
     }, false);
@@ -175,11 +174,14 @@ function canvasRefresh(index) {
 function projectRefresh() {
     let refresh = Refresh.getInstance();
 
-    // Need update project name
-    document.getElementById("project_name").value = project.name;
+    // update project name ?
+    let message = refresh.message("refresh_project_name");
+    if (message.length > 0) {
+        document.getElementById("project_name").value = project.name;
+    }
 
-    // Force refresh file list
-    let message = refresh.message("refresh_file_name_list");
+    // refresh file list ?
+    message = refresh.message("refresh_file_name_list");
     if (message.length > 0) {
         document.getElementById("file_name_list_id").innerHTML = project.listHtml();
     }

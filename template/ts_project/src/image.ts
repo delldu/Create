@@ -340,6 +340,7 @@ class ImageProject {
                 let file = input.files[0];
                 loadTextFromFile(file).then((text) => {
                         this.loadFromJSON(text);
+                        this.refresh.notify("refresh_project_name");
                     })
                     .catch((error) => {
                         console.log("ImageProject open: file reading error.", error);
