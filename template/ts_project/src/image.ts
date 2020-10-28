@@ -189,7 +189,7 @@ class ImageProject {
         return true;
     }
 
-    indexOk():boolean {
+    indexOk(): boolean {
         return this.current_index >= 0 && this.current_index < this.items.length;
     }
 
@@ -320,8 +320,7 @@ class ImageProject {
             this.need_saving = false;
             this.refresh.notify("refresh_file_name_list");
             this.go(0);
-        }
-        catch {
+        } catch {
             console.log("ImageProject loadFromJSON: error");
             return;
         }

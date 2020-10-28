@@ -97,19 +97,3 @@ class Refresh {
 }
 
 // let refresh = Refresh.getInstance();
-
-
-// refresh.notify("abcdef");
-// refresh.notify("abcdef");
-// refresh.notify("1234557");
-// refresh.notify("1234557");
-// refresh.notify("1234557");
-//
-// while (true) {
-//     let message = refresh.message();
-//     if (message.length > 0) {
-//         console.log(message);
-//     } else {
-//         break;
-//     }
-// }

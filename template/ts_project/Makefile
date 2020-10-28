@@ -20,7 +20,7 @@ TS_SOURCE_FILES := \
 all: ${TARGET}
 
 dist/matter.js: src/matter.ts
-	tsc src/matter.ts -lib es2016,dom --strict --removeComments --outDir dist
+	tsc src/matter.ts -lib es2015,dom --strict --removeComments --outDir dist
 
 src/matter.ts: ${TS_SOURCE_FILES}
 	cat $^ > $@

@@ -49,6 +49,10 @@ class Box {
         return (this.w >= Point.THRESHOLD * 4 && this.h >= Point.THRESHOLD * 4);
     }
 
+    size(): number {
+        return this.w * this.w;
+    }
+
     // clone(): Box {
     //     return new Box(this.x, this.y, this.w, this.h);
     // }
@@ -94,8 +98,8 @@ class Box {
 // AMD Mode -- A: add, M: move, D: delete
 class Polygon {
     static LINE_WIDTH = 1;
-    static LINE_COLOR = "#ff0000";
-    static FILL_COLOR = "#ff00ff";
+    static LINE_COLOR = "#FF0000";
+    static FILL_COLOR = "#FF00FF";
 
     label: number;
     points: Array < Point > ;
@@ -272,7 +276,7 @@ class Polygon {
     fillRegion(brush: CanvasRenderingContext2D) {
         brush.save();
         brush.fillStyle = Polygon.FILL_COLOR;
-        brush.globalAlpha = 0.5;
+        brush.globalAlpha = 0.25;
         this.setPath(brush);
         brush.fill();
         brush.restore();
@@ -384,12 +388,13 @@ class Shape {
     }
 
     draw(brush: CanvasRenderingContext2D) {
-        for (let i = 0; i < this.blobs.length; i++) {
-            if (i === this.selected_index)
-                this.blobs[i].draw(brush, true);
-            else
-                this.blobs[i].draw(brush, false);
-        }
+        for (let i = 0; i < this.blobs.length; i++)
+            this.blobs[i].draw(brush, false);
+    }
+
+    drawSelected(brush: CanvasRenderingContext2D) {
+        if (this.selected_index >= 0 && this.selected_index < this.blobs.length)
+            this.blobs[this.selected_index].fillRegion(brush);
     }
 
     // Region draw speed up drawing ...
@@ -407,11 +412,24 @@ class Shape {
 
     // find blob via point ...
     findBlob(p: Point): number {
+        let indexs = [];
         for (let i = 0; i < this.blobs.length; i++) {
             if (this.blobs[i].inside(p))
-                return i;
+                indexs.push(i);
         }
-        return -1;
+        if (indexs.length < 1)
+            return -1;
+        // Find smallest i
+        let size = 1024*1024;
+        let index = 0;
+        for (let i = 0; i < indexs.length; i++) {
+            let bbox = this.blobs[indexs[i]].bbox();
+            if (size > bbox.size()) {
+                index = i;
+                size = bbox.size();
+            }
+        }
+        return indexs[index];
     }
 
     // find blob, vertex
@@ -934,6 +952,9 @@ class Canvas {
 
         // Draw blobs ...
         this.shape_blobs.draw(this.brush);
+
+        // Draw selected ...
+        this.shape_blobs.drawSelected(this.brush);
     }
 }
 
