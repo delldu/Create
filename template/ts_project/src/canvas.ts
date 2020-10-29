@@ -10,9 +10,9 @@ class Point {
     static THRESHOLD = 2;
     constructor(public x: number, public y: number) {}
 
-    // clone(): Point {
-    //     return new Point(this.x, this.y);
-    // }
+    clone(): Point {
+        return new Point(this.x, this.y);
+    }
 
     offset(deltaX: number, deltaY: number) {
         this.x += deltaX;
@@ -125,12 +125,6 @@ class Polygon {
         return c;
     }
 
-    copyFrom(from: Polygon) {
-        this.reset();
-        for (let i = 0; i < from.points.length; i++)
-            this.push(new Point(from.points[i].x, from.points[i].y));
-    }
-
     offset(deltaX: number, deltaY: number) {
         for (let p of this.points)
             p.offset(deltaX, deltaY);
@@ -147,19 +141,6 @@ class Polygon {
         this.push(new Point(box.x + box.w, box.y + box.h / 2));
         this.push(new Point(box.x + box.w, box.y));
         this.push(new Point(box.x + box.w / 2, box.y));
-    }
-
-    // Set 2x2 polygon via rectangle
-    set2x2(box: Box) {
-        this.reset();
-        this.push(new Point(box.x, box.y));
-        this.push(new Point(box.x, box.y + box.h));
-        this.push(new Point(box.x + box.w, box.y + box.h));
-        this.push(new Point(box.x + box.w, box.y));
-    }
-
-    more(p: Point) {
-        this.push(new Point(p.x, p.y));
     }
 
     push(p: Point) {
@@ -466,11 +447,10 @@ class Shape {
         return [-1, -1];
     }
 
-    vertextClickOver(from: Point, blob: Polygon): boolean {
+    vertextClickOver(from: Point): boolean {
         // if hit vertex, delete it
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
-            blob.copyFrom(this.blobs[v_index]);
             // Delete vertex !!!
             this.blobs[v_index].delPoint(v_sub_index);
             // Delete more ... whole blob ?
@@ -481,13 +461,12 @@ class Shape {
         return false;
     }
 
-    edgeClickOver(from: Point, blob: Polygon): boolean {
+    edgeClickOver(from: Point): boolean {
         // if hit edge, add one vertext
         let [e_index, e_sub_index] = this.findEdge(from);
         if (e_index >= 0 && e_sub_index >= 0) {
             // Add vertex
             this.blobs[e_index].addPoint(e_sub_index + 1, from);
-            blob.copyFrom(this.blobs[e_index]);
             return true;
         }
         return false;
@@ -507,62 +486,66 @@ class Shape {
         return false;
     }
 
-    vertextDragging(from: Point, to: Point, blob: Polygon): boolean {
+    vertextDragging(from: Point, to: Point, target: Polygon): boolean {
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
             let n = this.blobs[v_index].points.length;
             // Bad case -1 % n = -1 !!!
             // So we use (n + v_sub_index - 1)%n instead of (v_sub_index - 1) % n
-            blob.push(this.blobs[v_index].points[(n + v_sub_index - 1) % n]);
-            blob.push(this.blobs[v_index].points[(v_sub_index + 1) % n]);
-            blob.push(to);
+            target.reset();
+            target.push(this.blobs[v_index].points[(n + v_sub_index - 1) % n]);
+            target.push(this.blobs[v_index].points[(v_sub_index + 1) % n]);
+            target.push(to);
             return true;
         }
         return false;
     }
 
-    blobDragging(from: Point, to: Point, blob: Polygon): boolean {
-        // if dragging exist blob
+    blobDragging(from: Point, to: Point, target: Polygon): boolean {
+        // dragging exist blob ?
         let b_index = this.findBlob(from);
         if (b_index >= 0) {
             let deltaX = to.x - from.x;
             let deltaY = to.y - from.y;
-            // let blob = this.blobs[b_index].clone();
-            blob.copyFrom(this.blobs[b_index]);
-            blob.offset(to.x - from.x, to.y - from.y);
+
+            target.reset(); // Clone
+            for (let i = 0; i < this.blobs[b_index].points.length; i++)
+                target.push(this.blobs[b_index].points[i].clone());
+
+            target.offset(to.x - from.x, to.y - from.y);
             return true;
         }
         return false;
     }
 
-    newBlobDragging(from: Point, to: Point, blob: Polygon): boolean {
-        // if dragging new blob (created by box)
-        blob.set3x3(Box.bbox(from, to));
+    newBlobDragging(from: Point, to: Point, target: Polygon): boolean {
+        // dragging new blob (created by box)
+        target.set3x3(Box.bbox(from, to));
         return true;
     }
 
-    vertextDragOver(from: Point, to: Point, blob: Polygon): boolean {
+    vertextDragOver(from: Point, to: Point): boolean {
+        // vertex could be dragged ? yes will change blob
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
-            blob.copyFrom(this.blobs[v_index]);
             this.blobs[v_index].offset(to.x - from.x, to.y - from.y);
             return true;
         }
         return false;
     }
 
-    blobDragOver(from: Point, to: Point, blob: Polygon): boolean {
+    blobDragOver(from: Point, to: Point): boolean {
         let b_index = this.findBlob(from);
         if (b_index >= 0) {
-            blob.copyFrom(this.blobs[b_index]);
             this.blobs[b_index].offset(to.x - from.x, to.y - from.y);
             return true;
         }
         return false;
     }
 
-    newBlobDragOver(from: Point, to: Point, blob: Polygon): boolean {
+    newBlobDragOver(from: Point, to: Point): boolean {
         let box = Box.bbox(from, to);
+        let blob = new Polygon();
         blob.set3x3(box);
         this.push(blob);
         return true;
@@ -632,7 +615,7 @@ class Canvas {
         this.shift_blob.reset();
         this.zoom_index = Canvas.DEFAULT_ZOOM_LEVEL;
         this.mode_index = 0;
-        this.image_stack = new ImageStack();
+        this.image_stack.reset();
         this.background_loaded = false;
         this.key = "";
     }
@@ -684,24 +667,22 @@ class Canvas {
     ctrlModeMouseMoveHandle() {
         if (!this.mouse.pressed()) // Dragging status
             return;
-        let t = new Polygon(); // temp blob
+
+        let t = new Polygon();
 
         if (this.shape_blobs.vertextDragging(this.mouse.start, this.mouse.moving, t)) {
-            this.regionDraw(t.bbox());
-            t.drawDashBorder(this.brush);
+            this.fastDrawMovingObject(t);
             return;
         }
 
         // drag whole blob ?
         if (this.shape_blobs.blobDragging(this.mouse.start, this.mouse.moving, t)) {
-            this.regionDraw(t.bbox());
-            t.drawDashBorder(this.brush);
+            this.fastDrawMovingObject(t);
             return;
         }
 
         if (this.shape_blobs.newBlobDragging(this.mouse.start, this.mouse.moving, t)) {
-            this.regionDraw(t.bbox());
-            t.drawDashBorder(this.brush);
+            this.fastDrawMovingObject(t);
             return;
         }
     }
@@ -709,32 +690,29 @@ class Canvas {
     ctrlModeMouseUpHandle() {
         if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
             // vertex be clicked ?
-            let t = new Polygon(); // temp
-            if (this.shape_blobs.vertextClickOver(this.mouse.start, t)) {
-                this.regionDraw(t.bbox());
+            if (this.shape_blobs.vertextClickOver(this.mouse.start)) {
+                this.redraw();
                 return;
             }
             // edge be clicked ?
-            if (this.shape_blobs.edgeClickOver(this.mouse.start, t)) {
-                this.regionDraw(t.bbox());
+            if (this.shape_blobs.edgeClickOver(this.mouse.start)) {
+                this.redraw();
                 return;
             }
             // other case, ignore
         } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
-            // vertex could be dragged ? yes will change blob
-            let t = new Polygon();
-            if (this.shape_blobs.vertextDragOver(this.mouse.start, this.mouse.stop, t)) {
-                this.regionDraw(t.bbox());
+            if (this.shape_blobs.vertextDragOver(this.mouse.start, this.mouse.stop)) {
+                this.redraw();
                 return;
             }
             // whole blob could be dragged ?
-            if (this.shape_blobs.blobDragOver(this.mouse.start, this.mouse.stop, t)) {
-                this.regionDraw(t.bbox()); // xxxx ?????
+            if (this.shape_blobs.blobDragOver(this.mouse.start, this.mouse.stop)) {
+                this.redraw();
                 return;
             }
 
-            if (this.shape_blobs.newBlobDragOver(this.mouse.start, this.mouse.stop, t)) {
-                this.regionDraw(t.bbox());
+            if (this.shape_blobs.newBlobDragOver(this.mouse.start, this.mouse.stop)) {
+                this.redraw();
                 return;
             }
         } // end of dragged
@@ -792,15 +770,14 @@ class Canvas {
         if (!this.mouse.pressed()) // Dragging status
             return;
         // drag whole blob ?
+        let s = new Polygon();
         let t = new Polygon();
         if (this.shape_blobs.blobDragging(this.mouse.start, this.mouse.moving, t)) {
-            this.regionDraw(t.bbox());
-            t.drawDashBorder(this.brush);
+            this.fastDrawMovingObject(t);
             return;
         }
         if (this.shape_blobs.newBlobDragging(this.mouse.start, this.mouse.moving, t)) {
-            this.regionDraw(t.bbox());
-            t.drawDashBorder(this.brush);
+            this.fastDrawMovingObject(t);
             return;
         }
     }
@@ -808,18 +785,17 @@ class Canvas {
     normalModeMouseUpHandle() {
         if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
             if (this.shape_blobs.blobClickOver(this.mouse.start)) {
-                this.redraw();  // NO Fast redraw method, so redraw whole
+                this.redraw(); // NO Fast redraw method, so redraw whole
                 return;
             }
         } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
             // whole blob could be dragged ?
-            let t = new Polygon();
-            if (this.shape_blobs.blobDragOver(this.mouse.start, this.mouse.stop, t)) {
-                this.regionDraw(t.bbox()); // xxxx ?????
+            if (this.shape_blobs.blobDragOver(this.mouse.start, this.mouse.stop)) {
+                this.redraw();
                 return;
             }
-            if (this.shape_blobs.newBlobDragOver(this.mouse.start, this.mouse.stop, t)) {
-                this.regionDraw(t.bbox());
+            if (this.shape_blobs.newBlobDragOver(this.mouse.start, this.mouse.stop)) {
+                this.redraw();
                 return;
             }
         }
@@ -1053,12 +1029,13 @@ class Canvas {
         this.shape_blobs.draw(this.brush);
     }
 
-    regionDraw(rect: Box) {
-        if (this.background_loaded) {
-            let b = this.shape_blobs.regionBbox(rect);
-            this.brush.drawImage(this.background, b.x, b.y, b.w, b.h, b.x, b.y, b.w, b.h);
-        }
-        this.shape_blobs.regionDraw(this.brush, rect);
+    fastDrawMovingObject(t: Polygon) {
+        let box = t.bbox();
+        box.extend(Polygon.LINE_WIDTH * 2);
+        this.image_stack.restore(this.brush);
+        this.image_stack.save(this.brush, box);
+
+        t.drawDashBorder(this.brush);
     }
 }
 
