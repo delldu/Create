@@ -7,13 +7,6 @@
 // ***********************************************************************************
 // dataURL specification: RFC 2397
 
-const sleep = (time: number) => {
-    return new Promise(resolve => setTimeout(resolve, time));
-}
-// sleep(2000).then(() => {
-//     console.log("2 seconds passed.");
-// })
-
 const crc16 = (b: Uint8Array, n: number): number => {
     let crc = 0;
     let CRC_CCITT_POLY = 0x1021;
@@ -170,13 +163,9 @@ class ImageProject {
         this.refresh = Refresh.getInstance();
     }
 
-    // count(): number {
-    //     return this.items.length;
-    // }
-
-    // empty(): boolean {
-    //     return this.items.length < 1;
-    // }
+    count(): number {
+        return this.items.length;
+    }
 
     // ONLY Current Write Interface
     go(index: number): boolean {
@@ -193,22 +182,17 @@ class ImageProject {
         return this.current_index >= 0 && this.current_index < this.items.length;
     }
 
-    // ONLY Current Read Interface
-    // current(): [HTMLImageElement, number] {
-    //     return [this.current_image, this.current_index];
-    // }
+    goFirst(): boolean {
+        return this.go(0);
+    }
 
-    // goFirst(): boolean {
-    //     return this.go(0);
-    // }
+    goPrev(): boolean {
+        return this.go(this.current_index - 1);
+    }
 
-    // goPrev(): boolean {
-    //     return this.go(this.current_index - 1);
-    // }
-
-    // goNext(): boolean {
-    //     return this.go(this.current_index + 1);
-    // }
+    goNext(): boolean {
+        return this.go(this.current_index + 1);
+    }
 
     goLast(): boolean {
         return this.go(this.items.length - 1);
