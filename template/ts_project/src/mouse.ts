@@ -54,33 +54,21 @@ class Mouse {
             MouseOverStatus.DragOver : MouseOverStatus.ClickOver;
     }
 
-    // Bounding Box for two points
-    points_bbox(p1: Point, p2: Point): Box {
-        let box = new Box(0, 0, 0, 0);
-        if (p1.x > p2.x) {
-            box.x = p2.x;
-            box.w = p1.x - p2.x;
-        } else {
-            box.x = p1.x;
-            box.w = p2.x - p1.x;
-        }
-        if (p1.y > p2.y) {
-            box.y = p2.y;
-            box.h = p1.y - p2.y;
-        } else {
-            box.y = p1.y;
-            box.h = p2.y - p1.y;
-        }
-        return box;
-    }
-
     bbox(): Box {
-        return this.points_bbox(this.start, this.stop);
+        return Box.bbox(this.start, this.stop);
     }
 
     // Bounding box for moving
     moving_bbox(): Box {
-        return this.points_bbox(this.start, this.moving);
+        return Box.bbox(this.start, this.moving);
+    }
+
+    delta(): [number, number] {
+        return [this.stop.x - this.start.x, this.stop.y - this.start.y];
+    }
+
+    moving_delta(): [number, number] {
+        return [this.moving.x - this.start.x, this.moving.y - this.start.y];
     }
 }
 
@@ -133,11 +121,11 @@ class Keyboard {
             return;
         let m = this.stack.pop() as KeyboardMode;
         if (m != KeyboardMode.CtrlKeyup && m != KeyboardMode.ShiftKeyup && m != KeyboardMode.AltKeyup) {
-            this.stack.push(m);         // Restore stack
+            this.stack.push(m); // Restore stack
             return;
         }
-        let s = KeyboardMode.Normal;    // Search 
-        switch(m) {
+        let s = KeyboardMode.Normal; // Search 
+        switch (m) {
             case KeyboardMode.CtrlKeyup:
                 s = KeyboardMode.CtrlKeydown;
                 break;
@@ -152,7 +140,7 @@ class Keyboard {
         }
         for (let i = this.stack.length - 1; i >= 0; i--) {
             if (s == this.stack[i]) {
-                this.stack.splice(i, 1);    // pop relative keydown
+                this.stack.splice(i, 1); // pop relative keydown
                 break;
             }
         }
