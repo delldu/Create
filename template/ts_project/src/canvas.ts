@@ -727,7 +727,7 @@ class Canvas {
     }
 
     shiftModeMouseMoveHandle() {
-
+        this.fastDrawMovingObject(this.shift_blob);
     }
 
     shiftModeMouseUpHandle() {
