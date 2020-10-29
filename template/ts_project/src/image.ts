@@ -393,15 +393,6 @@ class ImageProject {
         this.need_saving = true;
         this.refresh.notify("refresh_file_name_list");
     }
-
-    // info(): string {
-    //     return "Project " + this.name +
-    //         ", version: " + ImageProject.version +
-    //         ", create time: " + this.create +
-    //         ", load: " + this.image_load_ok + " ok" +
-    //         ", " + this.image_load_err + " error" +
-    //         ", " + this.image_loading + " going.";
-    // }
 }
 
 enum ImageOpcode {

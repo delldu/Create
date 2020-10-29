@@ -5,17 +5,9 @@ TARGET := \
 	dist/matter.css
 
 TS_SOURCE_FILES := \
+	src/common.ts \
 	src/canvas.ts \
-	src/image.ts \
-	src/message.ts \
-	src/progress.ts \
-	src/keyboard.ts \
-	src/mouse.ts \
-	src/panel.ts \
-	src/uploader.ts \
-	src/download.ts \
-
-#	src/workspace.ts
+	src/image.ts
 
 all: ${TARGET}
 
