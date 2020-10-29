@@ -226,7 +226,7 @@ class Polygon {
     onVertex(p: Point): number {
         let n = this.points.length;
         for (let i = 0; i < n; i++) {
-            if (p.distance(this.points[i]) <= Point.THRESHOLD)
+            if (p.distance(this.points[i]) <= 2*Point.THRESHOLD)
                 return i;
         }
         return -1;
@@ -528,7 +528,7 @@ class Shape {
         // vertex could be dragged ? yes will change blob
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
-            this.blobs[v_index].offset(to.x - from.x, to.y - from.y);
+            this.blobs[v_index].points[v_sub_index].offset(to.x - from.x, to.y - from.y);
             return true;
         }
         return false;
