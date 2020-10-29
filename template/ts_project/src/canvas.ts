@@ -64,20 +64,6 @@ class Box {
         this.h += 2 * delta;
     }
 
-    // is there intersect between this and box ?
-    intersect(box: Box): boolean {
-        // box1 == this, box2 == box
-        if (box.x > this.x + this.w)
-            return false;
-        if (this.x > box.x + box.w)
-            return false;
-        if (box.y > this.y + this.h)
-            return false;
-        if (this.y > box.y + box.h)
-            return false;
-        return true;
-    }
-
     // Bounding Box for two points
     static bbox(p1: Point, p2: Point): Box {
         let box = new Box(0, 0, 0, 0);
@@ -185,6 +171,29 @@ class Polygon {
         return this.bbox().size();
     }
 
+    // here j is a JSON Object
+    loadJSON(j: any) {
+        let blob = new Polygon();
+        this.reset();
+        for (let key in j) {
+            if (!j.hasOwnProperty(key))
+                continue;
+            // key == "label" || "points" ...
+            if (key == "label") {
+                this.label = parseInt(j[key]);
+                continue;
+            }
+            if (key != "points")
+                continue;
+            // now key === points
+            for (let k4 in j[key]) {
+                if (!j[key].hasOwnProperty(k4))
+                    continue;
+                this.push(new Point(j[key][k4].x, j[key][k4].y));
+            }
+        }
+    }
+
     // p is inside of polygon ?
     inside(p: Point): boolean {
         let cross = 0;
@@ -226,7 +235,7 @@ class Polygon {
     onVertex(p: Point): number {
         let n = this.points.length;
         for (let i = 0; i < n; i++) {
-            if (p.distance(this.points[i]) <= 2*Point.THRESHOLD)
+            if (p.distance(this.points[i]) <= 2 * Point.THRESHOLD)
                 return i;
         }
         return -1;
@@ -272,6 +281,24 @@ class Polygon {
         brush.restore();
     }
 
+    drawShiftBorder(brush: CanvasRenderingContext2D) {
+        let n = this.points.length;
+        if (n < 1)
+            return;
+        this.fillVertex(brush);
+        brush.save();
+        brush.strokeStyle = Polygon.LINE_COLOR;
+        brush.lineWidth = Polygon.LINE_WIDTH;
+        brush.setLineDash([1, 1]);
+        brush.translate(0.5, 0.5);
+        brush.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 1; i < n; ++i)
+            brush.lineTo(this.points[i].x, this.points[i].y);
+        brush.stroke();
+        brush.restore();
+    }
+
+
     fillRegion(brush: CanvasRenderingContext2D) {
         brush.save();
         brush.fillStyle = Polygon.FILL_COLOR;
@@ -311,7 +338,7 @@ class Shape {
     }
 
     // s is a JSON string
-    load(s: string) {
+    loadJSON(s: string) {
         try {
             let j = JSON.parse(s);
             this.blobs.length = 0; // reset
@@ -330,27 +357,10 @@ class Shape {
                         continue;
                     // Here k2 is number 0, 1 ...
                     let blob = new Polygon();
-                    for (let k3 in j[k1][k2]) {
-                        if (!j[k1][k2].hasOwnProperty(k3))
-                            continue;
-                        // k3 == "label" || "points" ...
-                        if (k3 == "label") {
-                            blob.label = parseInt(j[k1][k2][k3]);
-                            continue;
-                        }
-                        if (k3 != "points")
-                            continue;
-                        // now k3 === points
-                        for (let k4 in j[k1][k2][k3]) {
-                            if (!j[k1][k2][k3].hasOwnProperty(k4))
-                                continue;
-                            blob.push(new Point(j[k1][k2][k3][k4].x, j[k1][k2][k3][k4].y));
-                        }
-                        this.push(blob);
-                    }
+                    blob.loadJSON(j[k1][k2]);
+                    this.push(blob);
                 } // end of k2
             }
-
         } catch {
             console.log("JSON Parse error.");
             return;
@@ -376,38 +386,6 @@ class Shape {
     draw(brush: CanvasRenderingContext2D) {
         for (let i = 0; i < this.blobs.length; i++)
             this.blobs[i].draw(brush, (i == this.selected_index));
-    }
-
-    // Region draw speed up drawing ...
-    regionDraw(brush: CanvasRenderingContext2D, rect: Box) {
-        for (let i = 0; i < this.blobs.length; i++) {
-            let bbox = this.blobs[i].bbox();
-            if (!rect.intersect(bbox))
-                continue;
-            this.blobs[i].draw(brush, (i == this.selected_index));
-        }
-    }
-
-    // Region Bounding Box
-    regionBbox(rect: Box): Box {
-        let x1 = rect.x;
-        let y1 = rect.y;
-        let x2 = rect.x + rect.w;
-        let y2 = rect.y + rect.h;
-        for (let i = 0; i < this.blobs.length; i++) {
-            let bbox = this.blobs[i].bbox();
-            if (!rect.intersect(bbox))
-                continue;
-            if (bbox.x < x1)
-                x1 = bbox.x;
-            if (bbox.y < y1)
-                y1 = bbox.y;
-            if (bbox.x + bbox.w > x2)
-                x2 = bbox.x + bbox.w;
-            if (bbox.y + bbox.h > y2)
-                y2 = bbox.y + bbox.h;
-        }
-        return new Box(x1, y1, x2 - x1, y2 - y1);
     }
 
     // find blob via point ...
@@ -559,24 +537,19 @@ class Canvas {
     canvas: HTMLCanvasElement; // canvas element
     private brush: CanvasRenderingContext2D;
 
-    private background: HTMLImageElement; // Image;
+    background: HTMLImageElement; // Image;
     private background_loaded: boolean;
-    shape_blobs: Shape;
-    shift_blob: Polygon;
+    shape_blobs: Shape; // shape
 
-    mode_index: number;
-
-    // Polygon container
-    private image_stack: ImageStack;
-
+    private mode_index: number;
     // Zoom control
-    zoom_index: number;
+    private zoom_index: number;
 
+    private shift_blob: Polygon;
+    private image_stack: ImageStack;
     // Handle mouse
     private mouse: Mouse;
     private keyboard: Keyboard;
-
-    // Key
     key: string;
 
     constructor(id: string) {
@@ -630,7 +603,7 @@ class Canvas {
     }
 
     loadBlobs(blobs: string) {
-        this.shape_blobs.load(blobs);
+        this.shape_blobs.loadJSON(blobs);
     }
 
     saveBlobs(): string {
@@ -660,7 +633,7 @@ class Canvas {
     // 3. Alt mode -- alt key pressed: AI create polygon ...
     // 4. Normal mode -- others: create 2x2, select or not, drag/delete selected ...
     // Generally keyboard.mode() return current mode: KeyboardMode.CtrlKeydown, ...
-    ctrlModeStartHandle() {
+    ctrlModeStart() {
         // nothing to do
     }
 
@@ -718,30 +691,27 @@ class Canvas {
         } // end of dragged
     }
 
-    ctrlModeStopHandle() {
+    ctrlModeStop() {
         this.keyboard.pop();
     }
 
-    shiftModeStartHandle() {
+    shiftModeStart() {
         this.shift_blob.reset();
     }
 
     shiftModeMouseMoveHandle() {
-        this.fastDrawMovingObject(this.shift_blob);
+        let box = this.shift_blob.bbox();
+        box.extend(Polygon.LINE_WIDTH * 2);
+        this.image_stack.restore(this.brush);
+        this.image_stack.save(this.brush, box);
+        this.shift_blob.drawShiftBorder(this.brush);
     }
 
     shiftModeMouseUpHandle() {
-        // Click add one point, drag add two points
-        if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
-            this.shift_blob.push(this.mouse.stop);
-        } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
-            this.shift_blob.push(this.mouse.start);
-            this.shift_blob.push(this.mouse.stop);
-        }
+        this.shift_blob.push(this.mouse.stop);
     }
 
-    shiftModeStopHandle() {
-        // is valid ?
+    shiftModeStop() {
         if (this.shift_blob.points.length >= 3) {
             this.shape_blobs.push(this.shift_blob);
             this.redraw();
@@ -749,7 +719,7 @@ class Canvas {
         this.keyboard.pop();
     }
 
-    altModeStartHandle() {
+    altModeStart() {
         // todo
     }
 
@@ -761,7 +731,7 @@ class Canvas {
         // todo
     }
 
-    altModeStopHandle() {
+    altModeStop() {
         // todo
         this.keyboard.pop();
     }
@@ -769,8 +739,7 @@ class Canvas {
     normalModeMouseMoveHandle() {
         if (!this.mouse.pressed()) // Dragging status
             return;
-        // drag whole blob ?
-        let s = new Polygon();
+
         let t = new Polygon();
         if (this.shape_blobs.blobDragging(this.mouse.start, this.mouse.moving, t)) {
             this.fastDrawMovingObject(t);
@@ -789,7 +758,6 @@ class Canvas {
                 return;
             }
         } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
-            // whole blob could be dragged ?
             if (this.shape_blobs.blobDragOver(this.mouse.start, this.mouse.stop)) {
                 this.redraw();
                 return;
@@ -806,28 +774,19 @@ class Canvas {
     }
 
     private viewModeMouseMoveHandler(e: MouseEvent) {
-        if (this.mouse.pressed()) {
-            this.canvas.style.cursor = "pointer";
-            // this.canvas.start = new Point(this.mouse.stop.x, this.mouse.stop.y);
-        } else {
-            this.canvas.style.cursor = "default";
-        }
+        this.canvas.style.cursor = this.mouse.pressed()? "pointer" : "default";
     }
 
     private viewModeMouseUpHandler(e: MouseEvent) {
         if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
-            console.log("Canvas: dragging ..., which src object ? moving background ?");
         }
     }
 
     private editModeMouseDownHandler(e: MouseEvent) {
-        // Start:  On selected vertex, On selected Edge, Inside, Blank area
-        // e.ctrlKey, e.altKey -- boolean
         this.image_stack.reset();
     }
 
     private editModeMouseMoveHandler(e: MouseEvent) {
-        // Set mouse pointer
         this.canvas.style.cursor = this.mouse.pressed() ? "pointer" : "default";
 
         if (this.keyboard.mode() == KeyboardMode.CtrlKeydown) {
@@ -836,8 +795,7 @@ class Canvas {
             this.shiftModeMouseMoveHandle();
         } else if (this.keyboard.mode() == KeyboardMode.AltKeydown) {
             this.altModeMouseMoveHandle();
-        } else {
-            // Normal mode
+        } else { // Normal mode
             this.normalModeMouseMoveHandle();
         }
     }
@@ -855,7 +813,6 @@ class Canvas {
     }
 
     private viewModeKeyDownHandler(e: KeyboardEvent) {
-        // console.log("viewModeKeydownHandler ...");
         e.preventDefault();
     }
 
@@ -868,7 +825,6 @@ class Canvas {
             this.setZoom(this.zoom_index - 1);
         } else if (e.key === 'F1') { // F1 for help
             this.canvas.style.cursor = "help";
-            // todo
         } else {
             // todo
         }
@@ -879,11 +835,11 @@ class Canvas {
         if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
             this.keyboard.push(e);
             if (e.key == "Control") {
-                this.ctrlModeStartHandle();
+                this.ctrlModeStart();
             } else if (e.key == "Shift") {
-                this.shiftModeStartHandle();
+                this.shiftModeStart();
             } else {
-                this.altModeStartHandle();
+                this.altModeStart();
             }
         }
     }
@@ -892,11 +848,11 @@ class Canvas {
         if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
             this.keyboard.push(e);
             if (e.key == "Control") {
-                this.ctrlModeStopHandle();
+                this.ctrlModeStop();
             } else if (e.key == "Shift") {
-                this.shiftModeStopHandle();
+                this.shiftModeStop();
             } else {
-                this.altModeStopHandle();
+                this.altModeStop();
             }
             return;
         }
@@ -983,11 +939,11 @@ class Canvas {
             if (e.key == "Control" || e.key == "Shift" || e.key == "Alt") {
                 this.keyboard.push(e);
                 if (e.key == "Control") {
-                    this.ctrlModeStopHandle();
+                    this.ctrlModeStop();
                 } else if (e.key == "Shift") {
-                    this.shiftModeStopHandle();
+                    this.shiftModeStop();
                 } else {
-                    this.altModeStopHandle();
+                    this.altModeStop();
                 }
             } else {
                 if (this.isEditMode())
@@ -1001,12 +957,9 @@ class Canvas {
 
     setZoom(index: number) {
         // Bad case: (-1 % ZOOM_LEVELS.length) == -1
-        if (index < 0) {
+        if (index < 0)
             index = Canvas.ZOOM_LEVELS.length - 1;
-        }
-        index = index % Canvas.ZOOM_LEVELS.length;
-
-        this.zoom_index = index;
+        this.zoom_index = index % Canvas.ZOOM_LEVELS.length;
 
         this.canvas.width = this.background.naturalWidth * Canvas.ZOOM_LEVELS[this.zoom_index];
         this.canvas.height = this.background.naturalHeight * Canvas.ZOOM_LEVELS[this.zoom_index];
@@ -1019,13 +972,11 @@ class Canvas {
 
     redraw() {
         this.brush.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        // Draw image ...
         if (this.background_loaded) {
             let w = this.background.naturalWidth;
             let h = this.background.naturalHeight;
             this.brush.drawImage(this.background, 0, 0, w, h, 0, 0, w, h);
         }
-        // Draw blobs ...
         this.shape_blobs.draw(this.brush);
     }
 
