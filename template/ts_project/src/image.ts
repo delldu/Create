@@ -185,7 +185,7 @@ class Project {
         return this.project_index;
     }
 
-    indexOKk(): boolean {
+    indexOK(): boolean {
         return this.project_index >= 0 && this.project_index < this.items.length;
     }
 
@@ -279,8 +279,8 @@ class Project {
         return html.join("\n");
     }
 
-    // JSON format file
-    loadFromJSON(text: string) {
+    // JSON string
+    loadJSON(text: string) {
         try {
             let d = JSON.parse(text);
             // Reference this.save()
@@ -312,7 +312,7 @@ class Project {
             this.refresh.notify("refresh_file_name_list");
             this.go(0);
         } catch {
-            console.log("Project loadFromJSON: error");
+            console.log("Project loadJSON: error");
             return;
         }
     }
@@ -330,7 +330,7 @@ class Project {
             if (input.files != undefined) {
                 let file = input.files[0];
                 loadTextFromFile(file).then((text) => {
-                        this.loadFromJSON(text);
+                        this.loadJSON(text);
                         this.refresh.notify("refresh_project_name");
                     })
                     .catch((error) => {

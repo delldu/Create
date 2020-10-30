@@ -77,15 +77,11 @@ class Box {
 
 // AMD Mode -- A: add, M: move, D: delete
 class Polygon {
-    static LINE_WIDTH = 1;
-    static LINE_COLOR = "#FF0000";
-    static FILL_COLOR = "#FF00FF";
-
-    label: number;
+    label: string;
     points: Array < Point > ;
 
     constructor() {
-        this.label = 0;
+        this.label = "";
         this.points = new Array < Point > ();
     }
 
@@ -170,7 +166,7 @@ class Polygon {
                 continue;
             // key == "label" || "points" ...
             if (key == "label") {
-                this.label = parseInt(j[key]);
+                this.label = j[key];
                 continue;
             }
             if (key != "points")
@@ -231,7 +227,8 @@ class Polygon {
         return -1;
     }
 
-    setPath(brush: CanvasRenderingContext2D) {
+    // Draw with custom color
+    private setPath(brush: CanvasRenderingContext2D) {
         let n = this.points.length;
         if (n < 1)
             return;
@@ -252,22 +249,40 @@ class Polygon {
         this.fillVertex(brush);
     }
 
+    drawText(brush: CanvasRenderingContext2D, text: string) {
+        brush.save();
+        // brush.font = "12px Comic Sans MS";
+        brush.fillStyle = Canvas.LINE_COLOR;
+        let box = this.bbox();
+        box.y -= 6;
+        if (box.y < 0) {
+            box.x += 6;
+            box.y = 0;
+        }
+        brush.fillText(text, box.x, box.y);
+        brush.restore();
+    }
+
     drawBorder(brush: CanvasRenderingContext2D) {
         brush.save();
-        brush.strokeStyle = Polygon.LINE_COLOR;
-        brush.lineWidth = Polygon.LINE_WIDTH;
+
+        brush.strokeStyle = Canvas.LINE_COLOR;
+        brush.lineWidth = Canvas.LINE_WIDTH;
         this.setPath(brush);
         brush.stroke();
+
         brush.restore();
     }
 
     drawDashBorder(brush: CanvasRenderingContext2D) {
         brush.save();
-        brush.strokeStyle = Polygon.LINE_COLOR;
-        brush.lineWidth = Polygon.LINE_WIDTH;
+
+        brush.strokeStyle = Canvas.LINE_COLOR;
+        brush.lineWidth = Canvas.LINE_WIDTH;
         brush.setLineDash([1, 1]);
         this.setPath(brush);
         brush.stroke();
+
         brush.restore();
     }
 
@@ -276,30 +291,31 @@ class Polygon {
         if (n < 1)
             return;
         this.fillVertex(brush);
+
         brush.save();
-        brush.strokeStyle = Polygon.LINE_COLOR;
-        brush.lineWidth = Polygon.LINE_WIDTH;
+        brush.strokeStyle = Canvas.LINE_COLOR;
+        brush.lineWidth = Canvas.LINE_WIDTH;
         brush.setLineDash([1, 1]);
-        brush.translate(0.5, 0.5);
         brush.moveTo(this.points[0].x, this.points[0].y);
         for (let i = 1; i < n; ++i)
             brush.lineTo(this.points[i].x, this.points[i].y);
+        // NO Close path
         brush.stroke();
         brush.restore();
     }
 
-    fillRegion(brush: CanvasRenderingContext2D) {
+    private fillRegion(brush: CanvasRenderingContext2D) {
         brush.save();
-        brush.fillStyle = Polygon.FILL_COLOR;
+        brush.fillStyle = Canvas.FILL_COLOR;
         brush.globalAlpha = 0.25;
         this.setPath(brush);
         brush.fill();
         brush.restore();
     }
 
-    fillVertex(brush: CanvasRenderingContext2D) {
+    private fillVertex(brush: CanvasRenderingContext2D) {
         brush.save();
-        brush.fillStyle = Polygon.FILL_COLOR;
+        brush.fillStyle = Canvas.FILL_COLOR;
         brush.globalAlpha = 1.0;
         brush.translate(0.5, 0.5);
         for (let p of this.points) {
@@ -315,17 +331,18 @@ class Polygon {
 class Shape {
     blobs: Array < Polygon > ;
     selected_index: number;
-    refresh: Refresh;
+    need_saving: boolean;
 
     constructor() {
         this.blobs = new Array < Polygon > ();
         this.selected_index = -1;
-        this.refresh = Refresh.getInstance();
+        this.need_saving = false;
     }
 
     reset() {
         this.blobs.length = 0;
         this.selected_index = -1;
+        this.need_saving = false;
     }
 
     go(index: number): boolean {
@@ -335,7 +352,7 @@ class Shape {
             this.selected_index = index;
         }
         return true;
-    }    
+    }
 
     // here s is a JSON string
     loadJSON(s: string) {
@@ -369,23 +386,30 @@ class Shape {
 
     push(s: Polygon) {
         this.blobs.push(s.clone());
+        this.need_saving = true;
     }
 
     addBlob(index: number, s: Polygon) {
         this.blobs.splice(index, 0, s.clone());
+        this.need_saving = true;
     }
 
     delBlob(index: number) {
         this.blobs.splice(index, 1);
+        this.need_saving = true;
     }
 
     pop() {
         this.blobs.pop();
+        this.need_saving = true;
     }
 
     draw(brush: CanvasRenderingContext2D) {
-        for (let i = 0; i < this.blobs.length; i++)
+        for (let i = 0; i < this.blobs.length; i++) {
             this.blobs[i].draw(brush, (i == this.selected_index));
+            let text = (i + 1).toString() + "-" + this.blobs[i].label;
+            this.blobs[i].drawText(brush, text);
+        }
     }
 
     // find blob via point ...
@@ -432,6 +456,8 @@ class Shape {
         if (v_index >= 0 && v_sub_index >= 0) {
             // Delete vertex
             this.blobs[v_index].delPoint(v_sub_index);
+            this.need_saving = true;
+
             // Delete more ... whole blob ?
             if (this.blobs[v_index].points.length < 3)
                 this.delBlob(v_index);
@@ -446,6 +472,8 @@ class Shape {
         let [e_index, e_sub_index] = this.findEdge(from);
         if (e_index >= 0 && e_sub_index >= 0) {
             this.blobs[e_index].addPoint(e_sub_index + 1, from);
+            this.need_saving = true;
+
             return true;
         }
         return false;
@@ -512,6 +540,7 @@ class Shape {
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
             this.blobs[v_index].points[v_sub_index].offset(to.x - from.x, to.y - from.y);
+            this.need_saving = true;
             return true;
         }
         return false;
@@ -522,6 +551,7 @@ class Shape {
         let b_index = this.findBlob(from);
         if (b_index >= 0) {
             this.blobs[b_index].offset(to.x - from.x, to.y - from.y);
+            this.need_saving = true;
             return true;
         }
         return false;
@@ -533,6 +563,7 @@ class Shape {
         let blob = new Polygon();
         blob.set3x3(box);
         this.push(blob);
+        // this.need_saving = true;
         return true;
     }
 }
@@ -540,6 +571,9 @@ class Shape {
 class Canvas {
     static ZOOM_LEVELS = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 4, 5, 6, 7, 8, 9, 10];
     static DEFAULT_ZOOM_LEVEL = 3; // 1.0 index
+    static LINE_WIDTH = 1;
+    static LINE_COLOR = "#FF0000";
+    static FILL_COLOR = "#FF00FF";
 
     canvas: HTMLCanvasElement; // canvas element
     private brush: CanvasRenderingContext2D;
@@ -570,9 +604,10 @@ class Canvas {
         this.shift_blob = new Polygon();
 
         // Default brush line width, color
-        this.brush.strokeStyle = Polygon.LINE_COLOR;
-        this.brush.lineWidth = Polygon.LINE_WIDTH;
-        this.brush.fillStyle = Polygon.FILL_COLOR;
+        this.brush.strokeStyle = Canvas.LINE_COLOR;
+        this.brush.lineWidth = Canvas.LINE_WIDTH;
+        this.brush.fillStyle = Canvas.FILL_COLOR;
+        this.brush.save();
 
         this.zoom_index = Canvas.DEFAULT_ZOOM_LEVEL;
 
@@ -636,6 +671,14 @@ class Canvas {
         return this.mode_index > 0;
     }
 
+    setLineColor(color:string) {
+        Canvas.LINE_COLOR = color;
+    }
+
+    setFillColor(color: string) {
+        Canvas.FILL_COLOR = color;
+    }
+
     // EditMode has 4 sub mode:
     // 1. Ctrl mode -- control key pressed: edit polygon, add 3x3, add vertex, delete vertex, drag ...
     // 2. Shift mode -- shift key pressed: free click for polygon ...
@@ -643,8 +686,7 @@ class Canvas {
     // 4. Normal mode -- others: create 2x2, select or not, drag/delete selected ...
     // Generally keyboard.mode() return current mode: KeyboardMode.CtrlKeydown, ...
 
-    ctrlModeStart() {
-    }
+    ctrlModeStart() {}
 
     ctrlModeMouseMoveHandle() {
         if (!this.mouse.pressed()) // Dragging status
@@ -706,7 +748,7 @@ class Canvas {
 
     shiftModeMouseMoveHandle() {
         let box = this.shift_blob.bbox();
-        box.extend(Polygon.LINE_WIDTH * 2);
+        box.extend(Canvas.LINE_WIDTH * 2);
         this.image_stack.restore(this.brush);
         this.image_stack.save(this.brush, box);
         this.shift_blob.drawShiftBorder(this.brush);
@@ -724,14 +766,11 @@ class Canvas {
         this.keyboard.pop();
     }
 
-    altModeStart() {
-    }
+    altModeStart() {}
 
-    altModeMouseMoveHandle() {
-    }
+    altModeMouseMoveHandle() {}
 
-    altModeMouseUpHandle() {
-    }
+    altModeMouseUpHandle() {}
 
     altModeStop() {
         this.keyboard.pop();
@@ -775,12 +814,11 @@ class Canvas {
     }
 
     private viewModeMouseMoveHandler(e: MouseEvent) {
-        this.canvas.style.cursor = this.mouse.pressed()? "pointer" : "default";
+        this.canvas.style.cursor = this.mouse.pressed() ? "pointer" : "default";
     }
 
     private viewModeMouseUpHandler(e: MouseEvent) {
-        if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
-        }
+        if (this.mouse.overStatus() == MouseOverStatus.DragOver) {}
     }
 
     private editModeMouseDownHandler(e: MouseEvent) {
@@ -866,7 +904,7 @@ class Canvas {
             return;
         }
 
-        this.viewModeKeyUpHandler(e);   // Support zoom +/-/= or help ?
+        this.viewModeKeyUpHandler(e); // Support zoom +/-/= or help ?
         e.preventDefault();
     }
 
@@ -980,7 +1018,7 @@ class Canvas {
 
     fastDrawMovingObject(t: Polygon) {
         let box = t.bbox();
-        box.extend(Polygon.LINE_WIDTH * 2);
+        box.extend(Canvas.LINE_WIDTH * 2);
         this.image_stack.restore(this.brush);
         this.image_stack.save(this.brush, box);
 
