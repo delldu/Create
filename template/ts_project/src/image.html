@@ -76,7 +76,7 @@
 </body>
 <script type="text/javascript">
 "use strict";
-const project = new ImageProject(defaultProjectName());
+const project = new Project(defaultProjectName());
 const message = new Message("message_id");
 const progress = new Progress(0);
 const canvas = new Canvas("canvas_id");
@@ -160,11 +160,12 @@ function projectDeleteFile() {
     document.getElementById("file_name_list_id").innerHTML = project.listHtml();
 }
 
-function canvasRefresh(index) {
+function canvasRefresh() {
+    // Please make sure project.indexOK;
     canvas.reset();
     canvas.setMode(1);
-    canvas.loadBackground(project.items[index].data);
-    canvas.loadBlobs(project.items[index].blobs);
+    canvas.setBackground(project.get().data);
+    canvas.setBlobs(project.get().blobs);
     canvas.key = project.key();
     // waiting for image decode finish ...
     sleep(100).then(() => { canvasShow(true);
@@ -191,13 +192,12 @@ function projectRefresh() {
         canvas.reset();
         canvas.redraw();
     } else {
-        if (project.indexOk()) {
-            let index = project.current_index;
-            if (canvas.key != project.key()) {
-                canvasRefresh(index);
+        if (project.indexOK()) {
+            if (project.key() != canvas.key) {
+                canvasRefresh();
             } else {
                 // Auto save canvas result...
-                project.items[index].blobs = canvas.saveBlobs();
+                project.get().blobs = canvas.blobs();
             }
         }
     }
@@ -207,7 +207,7 @@ function jump_to_image(index) {
     if (project.go(index)) {
         document.getElementById("file_name_list_id").innerHTML = project.listHtml();
         if (canvas.key != project.key())
-            canvasRefresh(index);
+            canvasRefresh();
     }
 }
 

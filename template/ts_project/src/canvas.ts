@@ -19,11 +19,6 @@ class Point {
         this.y += deltaY;
     }
 
-    zoom(s: number) {
-        this.x *= s;
-        this.y *= s;
-    }
-
     // euclid distance
     distance(p: Point): number {
         return Math.sqrt((p.x - this.x) * (p.x - this.x) + (p.y - this.y) * (p.y - this.y));
@@ -168,7 +163,7 @@ class Polygon {
 
     // here j is a JSON Object
     loadJSON(j: any) {
-        let blob = new Polygon();
+        // let blob = new Polygon();
         this.reset();
         for (let key in j) {
             if (!j.hasOwnProperty(key))
@@ -180,7 +175,7 @@ class Polygon {
             }
             if (key != "points")
                 continue;
-            // now key === points
+            // now key === "points"
             for (let k4 in j[key]) {
                 if (!j[key].hasOwnProperty(k4))
                     continue;
@@ -320,16 +315,27 @@ class Polygon {
 class Shape {
     blobs: Array < Polygon > ;
     selected_index: number;
+    refresh: Refresh;
 
     constructor() {
         this.blobs = new Array < Polygon > ();
         this.selected_index = -1;
+        this.refresh = Refresh.getInstance();
     }
 
     reset() {
         this.blobs.length = 0;
         this.selected_index = -1;
     }
+
+    go(index: number): boolean {
+        if (index < 0 || index >= this.blobs.length)
+            return false;
+        if (this.selected_index != index) {
+            this.selected_index = index;
+        }
+        return true;
+    }    
 
     // here s is a JSON string
     loadJSON(s: string) {
@@ -420,7 +426,7 @@ class Shape {
     }
 
     // Edit Vertex/Delete
-    vertextClickOver(from: Point): boolean {
+    vertexClickOver(from: Point): boolean {
         // if hit vertex, delete it
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
@@ -433,10 +439,10 @@ class Shape {
         }
         return false;
     }
-    
+
     // Edit Vertex/Add
     edgeClickOver(from: Point): boolean {
-        // if hit edge, add one vertext
+        // if hit edge, add one vertex
         let [e_index, e_sub_index] = this.findEdge(from);
         if (e_index >= 0 && e_sub_index >= 0) {
             this.blobs[e_index].addPoint(e_sub_index + 1, from);
@@ -460,8 +466,8 @@ class Shape {
         return false;
     }
 
-    // Edit Vertext/Change Position
-    vertextDragging(from: Point, to: Point, target: Polygon): boolean {
+    // Edit Vertex/Change Position
+    vertexDragging(from: Point, to: Point, target: Polygon): boolean {
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
             let n = this.blobs[v_index].points.length;
@@ -481,9 +487,8 @@ class Shape {
         // dragging exist blob ?
         let b_index = this.findBlob(from);
         if (b_index >= 0) {
-            let deltaX = to.x - from.x;
-            let deltaY = to.y - from.y;
-
+            // let deltaX = to.x - from.x;
+            // let deltaY = to.y - from.y;
             target.reset(); // Clone
             for (let i = 0; i < this.blobs[b_index].points.length; i++)
                 target.push(this.blobs[b_index].points[i].clone());
@@ -502,7 +507,7 @@ class Shape {
     }
 
     // Edit Blob/Change Position
-    vertextDragOver(from: Point, to: Point): boolean {
+    vertexDragOver(from: Point, to: Point): boolean {
         // vertex could be dragged ? yes will change blob
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
@@ -593,10 +598,11 @@ class Canvas {
         this.mode_index = 0;
         this.image_stack.reset();
         this.background_loaded = false;
+        this.keyboard.reset();
         this.key = "";
     }
 
-    loadBackground(dataurl: string) {
+    setBackground(dataurl: string) {
         this.background_loaded = false;
         this.background.src = dataurl;
         this.canvas.width = this.background.naturalWidth;
@@ -605,11 +611,11 @@ class Canvas {
         this.background_loaded = true;
     }
 
-    loadBlobs(blobs: string) {
+    setBlobs(blobs: string) {
         this.shape.loadJSON(blobs);
     }
 
-    saveBlobs(): string {
+    blobs(): string {
         return JSON.stringify(this.shape, undefined, 2);
     }
 
@@ -631,7 +637,7 @@ class Canvas {
     }
 
     // EditMode has 4 sub mode:
-    // 1. Ctrl mode -- control key pressed: edit polygon, add 3x3, add vertex, dete vertex, drag ...
+    // 1. Ctrl mode -- control key pressed: edit polygon, add 3x3, add vertex, delete vertex, drag ...
     // 2. Shift mode -- shift key pressed: free click for polygon ...
     // 3. Alt mode -- alt key pressed: AI create polygon ...
     // 4. Normal mode -- others: create 2x2, select or not, drag/delete selected ...
@@ -646,7 +652,7 @@ class Canvas {
 
         let t = new Polygon();
 
-        if (this.shape.vertextDragging(this.mouse.start, this.mouse.moving, t)) {
+        if (this.shape.vertexDragging(this.mouse.start, this.mouse.moving, t)) {
             this.fastDrawMovingObject(t);
             return;
         }
@@ -664,7 +670,7 @@ class Canvas {
 
     ctrlModeMouseUpHandle() {
         if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
-            if (this.shape.vertextClickOver(this.mouse.start)) {
+            if (this.shape.vertexClickOver(this.mouse.start)) {
                 this.redraw();
                 return;
             }
@@ -673,7 +679,7 @@ class Canvas {
                 return;
             }
         } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
-            if (this.shape.vertextDragOver(this.mouse.start, this.mouse.stop)) {
+            if (this.shape.vertexDragOver(this.mouse.start, this.mouse.stop)) {
                 this.redraw();
                 return;
             }
@@ -1066,10 +1072,6 @@ class Mouse {
         return (this.pressed() && d > Point.THRESHOLD) ?
             MouseOverStatus.DragOver : MouseOverStatus.ClickOver;
     }
-
-    bbox(): Box {
-        return Box.bbox(this.start, this.stop);
-    }
 }
 
 enum KeyboardMode {
@@ -1124,7 +1126,7 @@ class Keyboard {
             this.stack.push(m); // Restore stack
             return;
         }
-        let s = KeyboardMode.Normal; // Search 
+        let s = KeyboardMode.Normal; // Search
         switch (m) {
             case KeyboardMode.CtrlKeyup:
                 s = KeyboardMode.CtrlKeydown;

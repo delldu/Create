@@ -107,8 +107,8 @@ function loadTextFromFile(file: File): Promise < string > {
     });
 }
 
-class ImageProjectItem {
-    name: string;
+class ProjectItem {
+    readonly name: string;
     readonly size: number;
     readonly height: number;
     readonly width: number;
@@ -125,14 +125,14 @@ class ImageProjectItem {
     }
 }
 
-class ImageProject {
+class Project {
     static version = "1.0.0";
     name: string;
     create: Date;
-    private items: Array < ImageProjectItem > ;
+    private items: Array < ProjectItem > ;
 
     // Current item
-    private current_index: number;
+    private project_index: number;
     private readonly current_image: HTMLImageElement;
 
     // Statics
@@ -149,9 +149,9 @@ class ImageProject {
     constructor(name: string) {
         this.name = name;
         this.create = new Date();
-        this.items = new Array < ImageProjectItem > ();
+        this.items = new Array < ProjectItem > ();
 
-        this.current_index = -1;
+        this.project_index = -1;
         this.current_image = new Image() as HTMLImageElement;
 
         this.image_loading = 0;
@@ -167,19 +167,26 @@ class ImageProject {
         return this.items.length;
     }
 
-    // ONLY Current Write Interface
+    empty(): boolean {
+        return this.items.length < 1;
+    }
+
+    // ONLY Write Interface for project_index
     go(index: number): boolean {
         if (index < 0 || index >= this.items.length)
             return false;
-        if (this.current_index != index) {
-            this.current_index = index;
-            // this.current_image.src = this.items[index].data;
+        if (this.project_index != index) {
+            this.project_index = index;
         }
         return true;
     }
 
-    indexOk(): boolean {
-        return this.current_index >= 0 && this.current_index < this.items.length;
+    index(): number {
+        return this.project_index;
+    }
+
+    indexOKk(): boolean {
+        return this.project_index >= 0 && this.project_index < this.items.length;
     }
 
     goFirst(): boolean {
@@ -187,23 +194,23 @@ class ImageProject {
     }
 
     goPrev(): boolean {
-        return this.go(this.current_index - 1);
+        return this.go(this.project_index - 1);
     }
 
     goNext(): boolean {
-        return this.go(this.current_index + 1);
+        return this.go(this.project_index + 1);
     }
 
     goLast(): boolean {
         return this.go(this.items.length - 1);
     }
 
-    empty(): boolean {
-        return this.items.length < 1;
+    get(): ProjectItem {
+        return this.items[this.project_index];
     }
 
     key(): string {
-        let i = this.current_index;
+        let i = this.project_index;
         if (i >= 0 && i < this.items.length)
             return this.items[i].name + "_" + this.items[i].size.toString();
         return "";
@@ -225,10 +232,10 @@ class ImageProject {
         loadDataURLFromFile(file).then((url: string) => {
                 // dataURL ok ?
                 dataURLToImage(url).then((img: HTMLImageElement) => {
-                        let unit = new ImageProjectItem(file.name, file.size, img.height, img.width, url, "");
+                        let unit = new ProjectItem(file.name, file.size, img.height, img.width, url, "");
                         this.items.push(unit);
                         // Goto first ?
-                        if (this.current_index < 0 || this.current_index >= this.items.length)
+                        if (this.project_index < 0 || this.project_index >= this.items.length)
                             this.go(0);
                         this.image_load_ok++;
                         this.image_loading--;
@@ -260,7 +267,7 @@ class ImageProject {
         html.push("<ul>");
         for (let i = 0; i < this.items.length; i++) {
             let s = "<li onclick='jump_to_image(" + i + ")'";
-            if (i == this.current_index)
+            if (i == this.project_index)
                 s += " class='sel'";
             let no = (i + 1).toString();
             while (no.length < 3)
@@ -288,7 +295,7 @@ class ImageProject {
                 this.create = new Date(Date.parse(d['create']));
             if (d['items']) {
                 // this.items = ...
-                this.items.length = 0; // reset() = new Array < ImageProjectItem > ();
+                this.items.length = 0; // reset() = new Array < ProjectItem > ();
                 for (let i in d['items']) {
                     if (!d['items'].hasOwnProperty(i))
                         continue;
@@ -296,7 +303,7 @@ class ImageProject {
                     if (!x.hasOwnProperty('name') || !x.hasOwnProperty('height') ||
                         !x.hasOwnProperty('width') || !x.hasOwnProperty('data') || !x.hasOwnProperty('blobs'))
                         continue;
-                    let unit = new ImageProjectItem(x.name,
+                    let unit = new ProjectItem(x.name,
                         parseInt(x.size), parseInt(x.height), parseInt(x.width), x.data, x.blobs);
                     this.items.push(unit);
                 }
@@ -305,7 +312,7 @@ class ImageProject {
             this.refresh.notify("refresh_file_name_list");
             this.go(0);
         } catch {
-            console.log("ImageProject loadFromJSON: error");
+            console.log("Project loadFromJSON: error");
             return;
         }
     }
@@ -327,10 +334,10 @@ class ImageProject {
                         this.refresh.notify("refresh_project_name");
                     })
                     .catch((error) => {
-                        console.log("ImageProject open: file reading error.", error);
+                        console.log("Project open: file reading error.", error);
                     });
             } else {
-                console.log("ImageProject open: error.");
+                console.log("Project open: error.");
             }
         }, false);
         input.click();
@@ -342,7 +349,7 @@ class ImageProject {
         let save_project = {
             'name': this.name,
             'create': this.create,
-            'version': ImageProject.version,
+            'version': Project.version,
             'items': this.items
         };
         saveTextAsFile(JSON.stringify(save_project, undefined, 2), filename);
@@ -361,7 +368,7 @@ class ImageProject {
                 for (let i = 0; i < input.files.length; i++)
                     this.load(input.files[i]);
             } else {
-                console.log("ImageProject addFiles: error.");
+                console.log("Project addFiles: error.");
             }
         }, false);
         // input.dispatchEvent(new MouseEvent('click'));
@@ -370,7 +377,7 @@ class ImageProject {
 
     // Delete current file
     deleteFile() {
-        let index = this.current_index;
+        let index = this.project_index;
         this.items.splice(index, 1); // delete index
         if (index > this.items.length - 1)
             this.goLast();
