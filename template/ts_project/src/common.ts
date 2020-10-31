@@ -97,18 +97,18 @@ function saveTextAsFile(text: string, filename: string) {
     URL.revokeObjectURL(href);
 }
 
-function saveDataURLAsImage(dataurl: string, filename: string) {
+function saveDataURLAsImage(dataURL: string, filename: string) {
     // mime --  MIME(Multipurpose Internet Mail Extensions)
     let mime = 'image/png';
 
-    if (dataurl.startsWith('data:')) {
-        let c1 = dataurl.indexOf(':', 0);
-        let c2 = dataurl.indexOf(';', c1);
-        mime = dataurl.substring(c1 + 1, c2);
+    if (dataURL.startsWith('data:')) {
+        let c1 = dataURL.indexOf(':', 0);
+        let c2 = dataURL.indexOf(';', c1);
+        mime = dataURL.substring(c1 + 1, c2);
     }
 
-    dataurl.replace(mime, "image/octet-stream");
-    download(dataurl, filename);
+    dataURL.replace(mime, "image/octet-stream");
+    download(dataURL, filename);
 }
 
 function saveCanvasAsImage(id: string, filename: string): boolean {
@@ -120,15 +120,15 @@ function saveCanvasAsImage(id: string, filename: string): boolean {
 
     // extract image data from canvas
     let mime = 'image/png';
-    let dataurl = canvas.toDataURL(mime);
-    saveDataURLAsImage(dataurl, filename);
+    let dataURL = canvas.toDataURL(mime);
+    saveDataURLAsImage(dataURL, filename);
     return true;
 }
 
 class Refresh {
     static THRESHOLD = 2048;
     static instance = new Refresh();
-    private event_queue: Array < string > ;
+    private readonly event_queue: Array < string > ;
 
     private constructor() {
         this.event_queue = new Array < string > ();

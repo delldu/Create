@@ -67,12 +67,12 @@
             </canvas>
         </workspace>
     </main>
-    <footer1 id="footer_id">
+    <footer id="footer_id">
         <div style="display:flex;justify-content: space-around;">
             @2020 AI Image Video</div>
         <div id="message_id" class="matter-message" style="display:none">message</div>
         <progress class="matter-progress-linear" value="0" max="100" style="display:none">Cleaning ...</progress>
-    </footer1>
+    </footer>
 </body>
 <script type="text/javascript">
 "use strict";
@@ -88,7 +88,7 @@ function load() {
     document.getElementById("project_name").value = project.name;
     window.addEventListener("keydown", (e) => {
         // e : KeyboardEvent
-        if (e.key === 'Tab' || e.key === 'Escape') {
+        if (e.key === 'Escape') {
             fullScreenToggle();
         }
     }, false);
@@ -111,23 +111,6 @@ function canvasShow(yes) {
         console.log("Error: element canvas not exists.");
     }
     e.focus();
-}
-
-function canvasResize() {
-    // canvas size adjust with background image ...
-    let w = document.documentElement.clientWidth;
-    let h = document.documentElement.clientHeight;
-    let header = document.getElementById("header_id");
-    let footer = document.getElementById("footer_id");
-    let leftside = document.getElementById("left_side_id");
-    let canvas = document.getElementById("canvas_id");
-
-    h -= header.clientHeight;
-    h -= footer.clientHeight;
-    w -= leftside.clientWidth;
-
-    canvas.style.height = h + 'px';
-    canvas.style.width = w + 'px';
 }
 
 function projectSave() {
@@ -168,8 +151,10 @@ function canvasRefresh() {
     canvas.setBlobs(project.get().blobs);
     canvas.key = project.key();
     // waiting for image decode finish ...
-    sleep(100).then(() => { canvasShow(true);
-    canvas.redraw(); });
+    sleep(100).then(() => {
+        canvasShow(true);
+        canvas.redraw();
+    });
 }
 
 function projectRefresh() {
@@ -234,5 +219,4 @@ function number_padding_with_zeros(num, n) {
     return num;
 }
 </script>
-
 </html>

@@ -53,7 +53,7 @@ header {
 main {
     display: flex;
     flex-flow: row nowrap;
-    height: 100vh - 64;
+    height: 100vh;
 }
 
 main leftside {
@@ -397,7 +397,7 @@ footer {
     vertical-align: middle;
     text-align: center;
     text-overflow: ellipsis;
-    color: var(--matter-primary-fg));
+    color: rgb(var(--matter-primary-fg));
     background-color: rgb(var(--matter-primary-bg));
     line-height: 32px;
     outline: none;
@@ -805,13 +805,13 @@ footer {
 /* Checked, Indeterminate */
 .matter-checkbox>input:checked,
 .matter-checkbox>input:indeterminate {
-    border-color: rgb(var(--var(--matter-primary-fg)));
-    background-color: rgb(var(--var(--matter-primary-bg)));
+    border-color: rgb(var(var(--matter-primary-fg)));
+    background-color: rgb(var(var(--matter-primary-bg)));
 }
 
 .matter-checkbox>input:checked+span::before,
 .matter-checkbox>input:indeterminate+span::before {
-    background-color: rgb(var(--var(--matter-primary-bg)));
+    background-color: rgb(var(var(--matter-primary-bg)));
 }
 
 .matter-checkbox>input:checked+span::after,
@@ -938,18 +938,18 @@ footer {
     border-radius: 50%;
     width: 10px;
     height: 10px;
-    background-color: rgb(var(----matter-primary-bg));
+    background-color: rgb(var(--matter-primary-bg));
     transform: translate(5px, 5px) scale(0);
     transition: transform 0.2s;
 }
 
 /* Checked */
 .matter-radio>input:checked {
-    border-color: rgb(var(----matter-primary-fg));
+    border-color: rgb(var(--matter-primary-fg));
 }
 
 .matter-radio>input:checked+span::before {
-    background-color: rgb(var(----matter-primary-fg));
+    background-color: rgb(var(--matter-primary-fg));
 }
 
 .matter-radio>input:checked+span::after {
@@ -974,7 +974,7 @@ footer {
 
 /* Active */
 .matter-radio:active>input {
-    border-color: rgb(var(----matter-primary-fg));
+    border-color: rgb(var(--matter-primary-fg));
 }
 
 .matter-radio:active>input+span::before,
@@ -1078,16 +1078,16 @@ footer {
 
 /* Checked */
 .matter-switch>input:checked {
-    background-color: rgba(var(----matter-primary-bg), 0.6);
+    background-color: rgba(var(--matter-primary-bg), 0.6);
 }
 
 .matter-switch>input:checked+span::before {
     right: -5px;
-    background-color: rgb(var(----matter-primary-bg));
+    background-color: rgb(var(--matter-primary-bg));
 }
 
 .matter-switch>input:checked+span::after {
-    background-color: rgb(var(----matter-primary-bg));
+    background-color: rgb(var(--matter-primary-bg));
     transform: translateX(16px);
 }
 
@@ -1106,7 +1106,7 @@ footer {
 
 /* Active */
 .matter-switch:active>input {
-    background-color: rgba(var(----matter-primary-bg), 0.6);
+    background-color: rgba(var(--matter-primary-bg), 0.6);
 }
 
 .matter-switch:active>input:checked {

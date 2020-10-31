@@ -129,7 +129,8 @@ class Project {
     static version = "1.0.0";
     name: string;
     create: Date;
-    private items: Array < ProjectItem > ;
+    labels: string;
+    private readonly items: Array < ProjectItem > ;
 
     // Current item
     private project_index: number;
@@ -153,6 +154,7 @@ class Project {
 
         this.project_index = -1;
         this.current_image = new Image() as HTMLImageElement;
+        this.labels = "bg,fg";
 
         this.image_loading = 0;
         this.image_load_ok = 0;
