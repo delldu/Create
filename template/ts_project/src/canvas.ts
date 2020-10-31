@@ -7,7 +7,7 @@
 // ***********************************************************************************
 
 class Point {
-    static THRESHOLD = 1;
+    static THRESHOLD = 2;
     constructor(public x: number, public y: number) {}
 
     clone(): Point {
@@ -187,19 +187,25 @@ class Polygon {
         if (n < 3)
             return false;
 
+        // Fast check
+        let box = this.bbox();
+        if (p.x < box.x || p.x > box.x + box.w)
+            return false;
+        if (p.y < box.y || p.y > box.y + box.h)
+            return false;
+
+        // Slow check
         for (let i = 0; i < n; i++) {
             let p1 = this.points[i];
             let p2 = this.points[(i + 1) % n];
-
             if (p1.y == p2.y)
                 continue;
-            if (p.y < Math.min(p1.y, p2.y) - Point.THRESHOLD)
+            if (p.y < Math.min(p1.y, p2.y))
                 continue;
-            if (p.y > Math.max(p1.y, p2.y) + Point.THRESHOLD)
+            if (p.y > Math.max(p1.y, p2.y))
                 continue;
-
             let x = (p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
-            if (x > p.x - Point.THRESHOLD)
+            if (x > p.x)
                 cross++;
         }
         return (cross % 2 == 1);
@@ -221,7 +227,7 @@ class Polygon {
     onVertex(p: Point): number {
         let n = this.points.length;
         for (let i = 0; i < n; i++) {
-            if (p.distance(this.points[i]) <= 2 * Point.THRESHOLD)
+            if (p.distance(this.points[i]) <= Point.THRESHOLD)
                 return i;
         }
         return -1;
@@ -320,7 +326,7 @@ class Polygon {
         brush.translate(0.5, 0.5);
         for (let p of this.points) {
             brush.beginPath();
-            brush.arc(p.x, p.y, 2*Point.THRESHOLD, 0, 2 * Math.PI, false);
+            brush.arc(p.x, p.y, Point.THRESHOLD, 0, 2 * Math.PI, false);
             brush.closePath();
             brush.fill();
         }
@@ -514,6 +520,22 @@ class Shape {
     blobClickOver(from: Point): boolean {
         // if hit it, select/remove selected flag
         let b_index = this.findBlob(from);
+
+        if (b_index < 0) {
+            // Continue search on edge, vertex ...
+            for (let i = 0; i < this.blobs.length; i++) {
+                let sub_index = this.blobs[i].onEdge(from);
+                if (sub_index >= 0) {
+                    b_index = i;
+                    break;
+                }
+                sub_index = this.blobs[i].onVertex(from);
+                if (sub_index >= 0) {
+                    b_index = i;
+                    break;
+                }
+            }
+        }
         if (b_index >= 0) {
             if (this.selected_index == b_index) {
                 this.selected_index = -1;
@@ -522,6 +544,7 @@ class Shape {
             }
             return true;
         }
+
         return false;
     }
 
@@ -591,7 +614,7 @@ class Shape {
         let box = Box.bbox(from, to);
         target.set3x3(box);
         if (box.w < 8 * Canvas.LINE_WIDTH || box.h < 8 * Canvas.LINE_WIDTH)
-            return false;   // Discard small objects
+            return false; // Discard small objects
         // this.need_saving = true;
         return true;
     }
@@ -719,8 +742,7 @@ class Canvas {
     // 4. Normal mode -- others: create 3x3, select or not, drag/delete selected ...
     // Generally keyboard.mode() return current mode: CanvasEditMode.Ctrl, ...
 
-    ctrlModeStart() {
-    }
+    ctrlModeStart() {}
 
     ctrlModeMouseMoveHandle() {
         if (!this.mouse.pressed()) // Dragging status
@@ -747,18 +769,18 @@ class Canvas {
     ctrlModeMouseUpHandle() {
         if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
             if (this.shape.vertexClickOver(this.mouse.start)) {
-                this.redraw();  // This blob be deleted, so redraw it
+                this.redraw(); // This blob be deleted, so redraw it
                 return;
             }
             if (this.shape.edgeClickOver(this.mouse.start)) {
-                this.redraw();  // added vertex could be not exactly on edge, so redraw it
+                this.redraw(); // added vertex could be not exactly on edge, so redraw it
                 return;
             }
             // Click whole blob for edit label ?
             let b_index = this.shape.findBlob(this.mouse.start);
             if (b_index >= 0) {
-                this.shape.blobs[b_index].draw(this.brush, false);    // pre-draw
-                this.shape.blobs[b_index].inputLabel(this.labels).then((label:string) => {
+                this.shape.blobs[b_index].draw(this.brush, false); // pre-draw
+                this.shape.blobs[b_index].inputLabel(this.labels).then((label: string) => {
                     this.shape.blobs[b_index].label = label;
                     this.canvas.focus();
                     this.shape.blobs[b_index].draw(this.brush, b_index == this.shape.selected_index);
@@ -780,20 +802,19 @@ class Canvas {
             let target = new Polygon();
             if (this.shape.newBlobDragOver(this.mouse.start, this.mouse.stop, target)) {
                 this.shape.push(target);
-                target.draw(this.brush, false);   // pre-draw
-                target.inputLabel(this.labels).then((label:string) => {
+                target.draw(this.brush, false); // pre-draw
+                target.inputLabel(this.labels).then((label: string) => {
                     target.label = label;
                     this.canvas.focus();
                     this.redraw();
                 });
             } else {
-                this.image_stack.restore(this.brush);   // restore dragging small box
+                this.image_stack.restore(this.brush); // restore dragging small box
             }
         }
     }
 
-    ctrlModeStop() {
-    }
+    ctrlModeStop() {}
 
     shiftModeStart() {
         this.shift_blob.reset();
@@ -814,8 +835,8 @@ class Canvas {
     shiftModeStop() {
         if (this.shift_blob.points.length >= 3) {
             let blob = this.shift_blob.clone();
-            blob.draw(this.brush, false);   // pre-draw
-            blob.inputLabel(this.labels).then((label:string) => {
+            blob.draw(this.brush, false); // pre-draw
+            blob.inputLabel(this.labels).then((label: string) => {
                 blob.label = label;
                 this.shape.push(blob);
                 this.canvas.focus();
@@ -830,8 +851,7 @@ class Canvas {
 
     altModeMouseUpHandle() {}
 
-    altModeStop() {
-    }
+    altModeStop() {}
 
     normalModeMouseMoveHandle() {
         if (!this.mouse.pressed()) // Dragging status
@@ -851,6 +871,7 @@ class Canvas {
     normalModeMouseUpHandle() {
         if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
             if (this.shape.blobClickOver(this.mouse.start)) {
+                console.log("Mouse: ", this.mouse, "overStatus", this.mouse.overStatus());
                 this.redraw(); // NO Fast redraw method for select widely, so redraw
                 return;
             }
@@ -864,13 +885,13 @@ class Canvas {
             if (this.shape.newBlobDragOver(this.mouse.start, this.mouse.stop, target)) {
                 this.shape.push(target);
                 target.draw(this.brush, false); // pre-draw
-                 target.inputLabel(this.labels).then((label:string) => {
+                target.inputLabel(this.labels).then((label: string) => {
                     target.label = label;
                     this.canvas.focus();
                     this.redraw();
                 });
             } else {
-                this.image_stack.restore(this.brush);   // restore dragging small box
+                this.image_stack.restore(this.brush); // restore dragging small box
             }
         }
     }
