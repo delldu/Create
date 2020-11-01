@@ -10,10 +10,6 @@ class Point {
     static THRESHOLD = 2;
     constructor(public x: number, public y: number) {}
 
-    clone(): Point {
-        return new Point(this.x, this.y);
-    }
-
     offset(deltaX: number, deltaY: number) {
         this.x += deltaX;
         this.y += deltaY;
@@ -44,12 +40,8 @@ class Box {
     }
 
     extend(delta: number) {
-        this.x = this.x - delta;
-        this.y = this.y - delta;
-        if (this.x < 0)
-            this.x = 0;
-        if (this.y < 0)
-            this.y = 0;
+        this.x = Math.max(this.x - delta, 0);
+        this.y = Math.max(this.y - delta, 0);
         this.w += 2 * delta;
         this.h += 2 * delta;
     }
@@ -57,20 +49,24 @@ class Box {
     // Bounding Box for two points
     static bbox(p1: Point, p2: Point): Box {
         let box = new Box(0, 0, 0, 0);
-        if (p1.x > p2.x) {
-            box.x = p2.x;
-            box.w = p1.x - p2.x;
-        } else {
-            box.x = p1.x;
-            box.w = p2.x - p1.x;
-        }
-        if (p1.y > p2.y) {
-            box.y = p2.y;
-            box.h = p1.y - p2.y;
-        } else {
-            box.y = p1.y;
-            box.h = p2.y - p1.y;
-        }
+        box.x = Math.min(p1.x, p2.x);
+        box.w = Math.abs(p1.x - p2.x);
+        box.y = Math.min(p1.y, p2.y);
+        box.h = Math.abs(p1.y - p2.y);
+        // if (p1.x > p2.x) {
+        //     box.x = p2.x;
+        //     box.w = p1.x - p2.x;
+        // } else {
+        //     box.x = p1.x;
+        //     box.w = p2.x - p1.x;
+        // }
+        // if (p1.y > p2.y) {
+        //     box.y = p2.y;
+        //     box.h = p1.y - p2.y;
+        // } else {
+        //     box.y = p1.y;
+        //     box.h = p2.y - p1.y;
+        // }
         return box;
     }
 }
@@ -89,17 +85,17 @@ class Polygon {
         this.points.length = 0;
     }
 
-    clone(): Polygon {
-        let c = new Polygon();
-        c.label = this.label;
-        for (let p of this.points)
-            c.push(new Point(p.x, p.y)); // Clone Point
-        return c;
-    }
-
     offset(deltaX: number, deltaY: number) {
         for (let p of this.points)
             p.offset(deltaX, deltaY);
+    }
+
+    count():number {
+        return this.points.length;
+    }
+
+    get(i:number) {
+        return this.points[i];
     }
 
     // set 3x3 polygon via rectangle
@@ -127,28 +123,28 @@ class Polygon {
         this.points.splice(index, 1);
     }
 
-    pop() { // unused
+    pop() {
         this.points.pop();
     }
 
     // Bounding Box
     bbox(): Box {
-        let n = this.points.length;
+        let n = this.count();
         if (n < 1)
             return new Box(0, 0, 0, 0);
-        let x1 = this.points[0].x;
-        let y1 = this.points[0].y;
-        let x2 = this.points[0].x;
-        let y2 = this.points[0].y;
+        let x1 = this.get(0).x;
+        let y1 = this.get(0).y;
+        let x2 = x1;
+        let y2 = y1;
         for (let i = 1; i < n; i++) {
-            if (x1 > this.points[i].x)
-                x1 = this.points[i].x;
-            if (x2 < this.points[i].x)
-                x2 = this.points[i].x;
-            if (y1 > this.points[i].y)
-                y1 = this.points[i].y;
-            if (y2 < this.points[i].y)
-                y2 = this.points[i].y;
+            if (x1 > this.get(i).x)
+                x1 = this.get(i).x;
+            if (x2 < this.get(i).x)
+                x2 = this.get(i).x;
+            if (y1 > this.get(i).y)
+                y1 = this.get(i).y;
+            if (y2 < this.get(i).y)
+                y2 = this.get(i).y;
         }
         return new Box(x1, y1, x2 - x1, y2 - y1);
     }
@@ -159,7 +155,6 @@ class Polygon {
 
     // here j is a JSON Object
     loadJSON(j: any) {
-        // let blob = new Polygon();
         this.reset();
         for (let key in j) {
             if (!j.hasOwnProperty(key))
@@ -183,21 +178,19 @@ class Polygon {
     // p is inside of polygon ?
     inside(p: Point): boolean {
         let cross = 0;
-        let n = this.points.length;
+        let n = this.count();
         if (n < 3)
             return false;
 
-        // Fast check
+        // Fast check via bbox
         let box = this.bbox();
-        if (p.x < box.x || p.x > box.x + box.w)
-            return false;
-        if (p.y < box.y || p.y > box.y + box.h)
+        if (p.x < box.x || p.x > box.x + box.w || p.y < box.y || p.y > box.y + box.h)
             return false;
 
         // Slow check
         for (let i = 0; i < n; i++) {
-            let p1 = this.points[i];
-            let p2 = this.points[(i + 1) % n];
+            let p1 = this.get(i);
+            let p2 = this.get((i + 1) % n);
             if (p1.y == p2.y)
                 continue;
             if (p.y < Math.min(p1.y, p2.y))
@@ -213,11 +206,11 @@ class Polygon {
 
     // p is on edge of polygon ?
     onEdge(p: Point): number {
-        let n = this.points.length;
+        let n = this.count();
         if (n < 3)
             return -1;
         for (let i = 0; i < n; i++) {
-            if (p.onLine(this.points[i], this.points[(i + 1) % n]))
+            if (p.onLine(this.get(i), this.get((i + 1) % n)))
                 return i;
         }
         return -1;
@@ -225,25 +218,24 @@ class Polygon {
 
     // p is on vertex ?
     onVertex(p: Point): number {
-        let n = this.points.length;
-        for (let i = 0; i < n; i++) {
-            if (p.distance(this.points[i]) <= Point.THRESHOLD)
+        for (let i = 0; i < this.count(); i++) {
+            if (p.distance(this.get(i)) <= Point.THRESHOLD)
                 return i;
         }
         return -1;
     }
 
-    // Draw with custom color
-    private setPath(brush: CanvasRenderingContext2D) {
-        let n = this.points.length;
+    private setPath(brush: CanvasRenderingContext2D, close: boolean) {
+        let n = this.count();
         if (n < 1)
             return;
         brush.translate(0.5, 0.5);
         brush.beginPath();
-        brush.moveTo(this.points[0].x, this.points[0].y);
+        brush.moveTo(this.get(0).x, this.get(0).y);
         for (let i = 1; i < n; ++i)
-            brush.lineTo(this.points[i].x, this.points[i].y);
-        brush.closePath();
+            brush.lineTo(this.get(i).x, this.get(i).y);
+        if (close)
+            brush.closePath();
     }
 
     draw(brush: CanvasRenderingContext2D, selected: boolean) {
@@ -258,7 +250,7 @@ class Polygon {
     drawText(brush: CanvasRenderingContext2D, text: string) {
         brush.save();
         brush.font = "12px Comic Sans MS";
-        brush.fillStyle = Canvas.LINE_COLOR;
+        brush.fillStyle = Canvas.TEXT_COLOR;
         let box = this.bbox();
         box.y -= 6;
         if (box.y < 0) {
@@ -274,7 +266,7 @@ class Polygon {
 
         brush.strokeStyle = Canvas.LINE_COLOR;
         brush.lineWidth = Canvas.LINE_WIDTH;
-        this.setPath(brush);
+        this.setPath(brush, true); // close path
         brush.stroke();
 
         brush.restore();
@@ -286,26 +278,20 @@ class Polygon {
         brush.strokeStyle = Canvas.LINE_COLOR;
         brush.lineWidth = Canvas.LINE_WIDTH;
         brush.setLineDash([1, 1]);
-        this.setPath(brush);
+        this.setPath(brush, true);
         brush.stroke();
 
         brush.restore();
     }
 
     drawShiftBorder(brush: CanvasRenderingContext2D) {
-        let n = this.points.length;
-        if (n < 1)
-            return;
         this.fillVertex(brush);
 
         brush.save();
         brush.strokeStyle = Canvas.LINE_COLOR;
         brush.lineWidth = Canvas.LINE_WIDTH;
         brush.setLineDash([1, 1]);
-        brush.moveTo(this.points[0].x, this.points[0].y);
-        for (let i = 1; i < n; ++i)
-            brush.lineTo(this.points[i].x, this.points[i].y);
-        // NO Close path
+        this.setPath(brush, false); // NO Close Path
         brush.stroke();
         brush.restore();
     }
@@ -314,7 +300,7 @@ class Polygon {
         brush.save();
         brush.fillStyle = Canvas.FILL_COLOR;
         brush.globalAlpha = 0.25;
-        this.setPath(brush);
+        this.setPath(brush, true);
         brush.fill();
         brush.restore();
     }
@@ -338,6 +324,7 @@ class Polygon {
             let list = labels.split(",");
             if (list.length < 1)
                 reject("Bad Labels.");
+
             let html = [];
             html.push("<option></option>");
             for (let i = 0; i < list.length; i++)
@@ -346,7 +333,7 @@ class Polygon {
             let dialog = document.createElement("dialog") as HTMLDialogElement;
             dialog.appendChild(document.createTextNode("Label:"));
             let select = document.createElement("select") as HTMLSelectElement;
-            select.innerHTML = html.join("\n");
+            select.innerHTML = html.join("");
 
             dialog.appendChild(select);
             document.body.appendChild(dialog);
@@ -365,28 +352,44 @@ class Polygon {
 
 class Shape {
     blobs: Array < Polygon > ;
-    selected_index: number;
+    shape_index: number;
     need_saving: boolean;
 
     constructor() {
         this.blobs = new Array < Polygon > ();
-        this.selected_index = -1;
+        this.shape_index = -1;
         this.need_saving = false;
     }
 
     reset() {
         this.blobs.length = 0;
-        this.selected_index = -1;
+        this.shape_index = -1;
         this.need_saving = false;
     }
 
     go(index: number): boolean {
         if (index < 0 || index >= this.blobs.length)
             return false;
-        if (this.selected_index != index) {
-            this.selected_index = index;
+        if (this.shape_index != index) {
+            this.shape_index = index;
         }
         return true;
+    }
+
+    index(): number {
+        return this.shape_index;
+    }
+
+    indexOK(): boolean {
+        return this.shape_index >= 0 && this.shape_index < this.blobs.length;
+    }
+
+    get(i: number) {
+        return this.blobs[i];
+    }
+
+    count(): number {
+        return this.blobs.length;
     }
 
     // here s is a JSON string
@@ -397,8 +400,8 @@ class Shape {
             for (let k1 in j) {
                 if (!j.hasOwnProperty(k1))
                     continue;
-                if (k1 == "selected_index") {
-                    this.selected_index = parseInt(j[k1]);
+                if (k1 == "shape_index") {
+                    this.shape_index = parseInt(j[k1]);
                     continue;
                 }
                 if (k1 != "blobs")
@@ -424,7 +427,6 @@ class Shape {
         this.need_saving = true;
     }
 
-    // unused
     addBlob(index: number, s: Polygon) {
         this.blobs.splice(index, 0, s);
         this.need_saving = true;
@@ -435,17 +437,16 @@ class Shape {
         this.need_saving = true;
     }
 
-    // unused
     pop() {
         this.blobs.pop();
         this.need_saving = true;
     }
 
     draw(brush: CanvasRenderingContext2D) {
-        for (let i = 0; i < this.blobs.length; i++) {
-            this.blobs[i].draw(brush, (i == this.selected_index));
-            let text = (i + 1).toString() + "-" + this.blobs[i].label;
-            this.blobs[i].drawText(brush, text);
+        for (let i = 0; i < this.count(); i++) {
+            this.get(i).draw(brush, (i == this.index()));
+            let text = (i + 1).toString() + "-" + this.get(i).label;
+            this.get(i).drawText(brush, text);
         }
     }
 
@@ -453,11 +454,11 @@ class Shape {
     findBlob(p: Point): number {
         let index = -1;
         let smallest = 8196 * 8196; // big size
-        for (let i = 0; i < this.blobs.length; i++) {
-            if (!this.blobs[i].inside(p))
+        for (let i = 0; i < this.count(); i++) {
+            if (!this.get(i).inside(p))
                 continue;
             // Find smallest
-            let size = this.blobs[i].size();
+            let size = this.get(i).size();
             if (smallest >= size) {
                 index = i;
                 smallest = size;
@@ -468,8 +469,8 @@ class Shape {
 
     // find blob, vertex
     findVertex(p: Point): [number, number] {
-        for (let i = 0; i < this.blobs.length; i++) {
-            let vi = this.blobs[i].onVertex(p);
+        for (let i = 0; i < this.count(); i++) {
+            let vi = this.get(i).onVertex(p);
             if (vi >= 0)
                 return [i, vi];
         }
@@ -478,8 +479,8 @@ class Shape {
 
     // find edge via point
     findEdge(p: Point): [number, number] {
-        for (let i = 0; i < this.blobs.length; i++) {
-            let ei = this.blobs[i].onEdge(p);
+        for (let i = 0; i < this.count(); i++) {
+            let ei = this.get(i).onEdge(p);
             if (ei >= 0)
                 return [i, ei];
         }
@@ -492,11 +493,11 @@ class Shape {
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
             // Delete vertex
-            this.blobs[v_index].delPoint(v_sub_index);
+            this.get(v_index).delPoint(v_sub_index);
             this.need_saving = true;
 
             // Delete more ... whole blob ?
-            if (this.blobs[v_index].points.length < 3)
+            if (this.get(v_index).count() < 3)
                 this.delBlob(v_index);
             return true;
         }
@@ -508,7 +509,7 @@ class Shape {
         // if hit edge, add one vertex
         let [e_index, e_sub_index] = this.findEdge(from);
         if (e_index >= 0 && e_sub_index >= 0) {
-            this.blobs[e_index].addPoint(e_sub_index + 1, from);
+            this.get(e_index).addPoint(e_sub_index + 1, from);
             this.need_saving = true;
 
             return true;
@@ -523,25 +524,15 @@ class Shape {
 
         if (b_index < 0) {
             // Continue search on edge, vertex ...
-            for (let i = 0; i < this.blobs.length; i++) {
-                let sub_index = this.blobs[i].onEdge(from);
-                if (sub_index >= 0) {
-                    b_index = i;
-                    break;
-                }
-                sub_index = this.blobs[i].onVertex(from);
-                if (sub_index >= 0) {
+            for (let i = 0; i < this.count(); i++) {
+                if (this.get(i).onEdge(from) >= 0 || this.get(i).onVertex(from) >= 0) {
                     b_index = i;
                     break;
                 }
             }
         }
         if (b_index >= 0) {
-            if (this.selected_index == b_index) {
-                this.selected_index = -1;
-            } else {
-                this.selected_index = b_index;
-            }
+            this.shape_index = (this.shape_index == b_index) ? -1 : b_index;
             return true;
         }
 
@@ -552,12 +543,12 @@ class Shape {
     vertexDragging(from: Point, to: Point, target: Polygon): boolean {
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
-            let n = this.blobs[v_index].points.length;
+            let n = this.get(v_index).count();
             // Bad case -1 % n = -1 !!!
             // So we use (n + v_sub_index - 1)%n instead of (v_sub_index - 1) % n
             target.reset();
-            target.push(this.blobs[v_index].points[(n + v_sub_index - 1) % n]);
-            target.push(this.blobs[v_index].points[(v_sub_index + 1) % n]);
+            target.push(this.get(v_index).get((n + v_sub_index - 1) % n));
+            target.push(this.get(v_index).get((v_sub_index + 1) % n));
             target.push(to);
             return true;
         }
@@ -570,9 +561,8 @@ class Shape {
         let b_index = this.findBlob(from);
         if (b_index >= 0) {
             target.reset(); // Clone
-            for (let i = 0; i < this.blobs[b_index].points.length; i++)
-                target.push(this.blobs[b_index].points[i].clone());
-
+            for (let i = 0; i < this.get(b_index).count(); i++)
+                target.push(new Point(this.get(b_index).get(i).x, this.get(b_index).get(i).y));
             target.offset(to.x - from.x, to.y - from.y);
             return true;
         }
@@ -591,7 +581,7 @@ class Shape {
         // vertex could be dragged ? yes will change blob
         let [v_index, v_sub_index] = this.findVertex(from);
         if (v_index >= 0 && v_sub_index >= 0) {
-            this.blobs[v_index].points[v_sub_index].offset(to.x - from.x, to.y - from.y);
+            this.get(v_index).get(v_sub_index).offset(to.x - from.x, to.y - from.y);
             this.need_saving = true;
             return true;
         }
@@ -602,7 +592,7 @@ class Shape {
     blobDragOver(from: Point, to: Point): boolean {
         let b_index = this.findBlob(from);
         if (b_index >= 0) {
-            this.blobs[b_index].offset(to.x - from.x, to.y - from.y);
+            this.get(b_index).offset(to.x - from.x, to.y - from.y);
             this.need_saving = true;
             return true;
         }
@@ -615,7 +605,7 @@ class Shape {
         target.set3x3(box);
         if (box.w < 8 * Canvas.LINE_WIDTH || box.h < 8 * Canvas.LINE_WIDTH)
             return false; // Discard small objects
-        // this.need_saving = true;
+        this.need_saving = true;
         return true;
     }
 }
@@ -626,9 +616,10 @@ class Canvas {
     static LINE_WIDTH = 1;
     static LINE_COLOR = "#FF0000";
     static FILL_COLOR = "#FF00FF";
+    static TEXT_COLOR = "#FFFFFF";
 
     canvas: HTMLCanvasElement; // canvas element
-    private readonly brush: CanvasRenderingContext2D;
+    private brush: CanvasRenderingContext2D;
 
     background: HTMLImageElement; // Image;
     private background_loaded: boolean;
@@ -661,15 +652,10 @@ class Canvas {
         this.labels = "bg,fg";
 
         this.shape = new Shape();
-        // Default brush line width, color
-        // this.brush.strokeStyle = Canvas.LINE_COLOR;
-        // this.brush.lineWidth = Canvas.LINE_WIDTH;
-        // this.brush.fillStyle = Canvas.FILL_COLOR;
-        // this.brush.save();
 
         this.mode_index = 0;
 
-        // Temp variables
+        // Temperal variables
         this.mouse = new Mouse();
         this.keyboard = new Keyboard();
         this.shift_blob = new Polygon();
@@ -702,7 +688,7 @@ class Canvas {
         this.shape.loadJSON(blobs);
     }
 
-    blobs(): string {
+    getBlobs(): string {
         return JSON.stringify(this.shape, undefined, 2);
     }
 
@@ -733,6 +719,10 @@ class Canvas {
 
     setFillColor(color: string) {
         Canvas.FILL_COLOR = color;
+    }
+
+    setTextColor(color: string) {
+        Canvas.TEXT_COLOR = color;
     }
 
     // EditMode has 4 sub mode:
@@ -779,11 +769,11 @@ class Canvas {
             // Click whole blob for edit label ?
             let b_index = this.shape.findBlob(this.mouse.start);
             if (b_index >= 0) {
-                this.shape.blobs[b_index].draw(this.brush, false); // pre-draw
-                this.shape.blobs[b_index].inputLabel(this.labels).then((label: string) => {
-                    this.shape.blobs[b_index].label = label;
+                this.shape.get(b_index).draw(this.brush, false); // pre-draw
+                this.shape.get(b_index).inputLabel(this.labels).then((label: string) => {
+                    this.shape.get(b_index).label = label;
                     this.canvas.focus();
-                    this.shape.blobs[b_index].draw(this.brush, b_index == this.shape.selected_index);
+                    this.shape.get(b_index).draw(this.brush, b_index == this.shape.index());
                 });
                 return;
             }
@@ -833,8 +823,9 @@ class Canvas {
     }
 
     shiftModeStop() {
-        if (this.shift_blob.points.length >= 3) {
-            let blob = this.shift_blob.clone();
+        if (this.shift_blob.count() >= 3) {
+            let blob = new Polygon();
+            Object.assign(blob, this.shift_blob); // clone();
             blob.draw(this.brush, false); // pre-draw
             blob.inputLabel(this.labels).then((label: string) => {
                 blob.label = label;
@@ -871,7 +862,6 @@ class Canvas {
     normalModeMouseUpHandle() {
         if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
             if (this.shape.blobClickOver(this.mouse.start)) {
-                console.log("Mouse: ", this.mouse, "overStatus", this.mouse.overStatus());
                 this.redraw(); // NO Fast redraw method for select widely, so redraw
                 return;
             }
@@ -988,9 +978,9 @@ class Canvas {
             return;
         }
         if (e.key === "d") {
-            if (this.shape.selected_index >= 0) {
-                this.shape.delBlob(this.shape.selected_index);
-                this.shape.selected_index = -1;
+            if (this.shape.index() >= 0) {
+                this.shape.delBlob(this.shape.index());
+                this.shape.go(this.shape.index());
                 this.redraw();
             }
             return;
@@ -1065,7 +1055,6 @@ class Canvas {
 
         this.canvas.addEventListener('keyup', (e: KeyboardEvent) => {
             e.preventDefault();
-            console.log("Canvas: addEventListener keyup ...", e);
             if (this.isEditMode())
                 this.editModeKeyUpHandler(e);
             else

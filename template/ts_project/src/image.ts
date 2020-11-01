@@ -112,7 +112,7 @@ class ProjectItem {
     readonly size: number;
     readonly height: number;
     readonly width: number;
-    readonly data: string; // dataURL format: RFC 2397
+    data: string; // dataURL format: RFC 2397
     blobs: string;
 
     constructor(name: string, size: number, height: number, width: number, data: string, blobs: string) {
@@ -134,7 +134,6 @@ class Project {
 
     // Current item
     private project_index: number;
-    private readonly current_image: HTMLImageElement;
 
     // Statics
     image_loading: number;
@@ -153,7 +152,6 @@ class Project {
         this.items = new Array < ProjectItem > ();
 
         this.project_index = -1;
-        this.current_image = new Image() as HTMLImageElement;
         this.labels = "bg,fg";
 
         this.image_loading = 0;
@@ -191,36 +189,36 @@ class Project {
         return this.project_index >= 0 && this.project_index < this.items.length;
     }
 
-    goFirst(): boolean {
-        return this.go(0);
-    }
-
-    goPrev(): boolean {
-        return this.go(this.project_index - 1);
-    }
-
-    goNext(): boolean {
-        return this.go(this.project_index + 1);
-    }
+    // goFirst(): boolean {
+    //     return this.go(0);
+    // }
+    //
+    // goPrev(): boolean {
+    //     return this.go(this.project_index - 1);
+    // }
+    //
+    // goNext(): boolean {
+    //     return this.go(this.project_index + 1);
+    // }
 
     goLast(): boolean {
         return this.go(this.items.length - 1);
     }
 
-    get(): ProjectItem {
-        return this.items[this.project_index];
+    get(i: number): ProjectItem {
+        return this.items[i];
     }
 
     key(): string {
         let i = this.project_index;
-        if (i >= 0 && i < this.items.length)
-            return this.items[i].name + "_" + this.items[i].size.toString();
+        if (i >= 0 && i < this.count())
+            return this.get(i).name + "_" + this.get(i).size.toString();
         return "";
     }
 
     find(name: string, size: number): boolean {
-        for (let i = 0; i < this.items.length; i++) {
-            if (this.items[i].name == name && this.items[i].size == size)
+        for (let i = 0; i < this.count(); i++) {
+            if (this.get(i).name == name && this.get(i).size == size)
                 return true;
         }
         return false;
@@ -267,14 +265,14 @@ class Project {
     listHtml(): string {
         let html = [];
         html.push("<ul>");
-        for (let i = 0; i < this.items.length; i++) {
+        for (let i = 0; i < this.count(); i++) {
             let s = "<li onclick='jump_to_image(" + i + ")'";
             if (i == this.project_index)
                 s += " class='sel'";
             let no = (i + 1).toString();
             while (no.length < 3)
                 no = "0" + no;
-            s += ">[" + no + '] ' + this.items[i].name + "</li>";
+            s += ">[" + no + '] ' + this.get(i).name + "</li>";
             html.push(s);
         }
         html.push("</ul>");
