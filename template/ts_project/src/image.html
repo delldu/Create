@@ -145,11 +145,12 @@ function projectDeleteFile() {
 
 function canvasRefresh() {
     // Please make sure project.indexOK;
+    let i = project.index();
     canvas.reset();
     canvas.setMode(1);
-    canvas.setBackground(project.get().data);
-    canvas.setBlobs(project.get().blobs);
-    canvas.key = project.key();
+    canvas.setBackground(project.get(i).data);
+    canvas.setBlobs(project.get(i).blobs);
+    canvas.key = project.key(i);
     // waiting for image decode finish ...
     sleep(100).then(() => {
         canvasShow(true);
@@ -178,7 +179,7 @@ function projectRefresh() {
         canvas.redraw();
     } else {
         if (project.indexOK()) {
-            if (project.key() != canvas.key) {
+            if (project.key(project.index()) != canvas.key) {
                 canvasRefresh();
             } else {
                 // Auto save canvas result...
@@ -191,7 +192,7 @@ function projectRefresh() {
 function jump_to_image(index) {
     if (project.go(index)) {
         document.getElementById("file_name_list_id").innerHTML = project.listHtml();
-        if (canvas.key != project.key())
+        if (canvas.key != project.key(index))
             canvasRefresh();
     }
 }

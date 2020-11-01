@@ -209,8 +209,7 @@ class Project {
         return this.items[i];
     }
 
-    key(): string {
-        let i = this.project_index;
+    key(i: number): string {
         if (i >= 0 && i < this.count())
             return this.get(i).name + "_" + this.get(i).size.toString();
         return "";
