@@ -130,7 +130,7 @@ class Project {
     name: string;
     create: Date;
     labels: string;
-    private readonly items: Array < ProjectItem > ;
+    private items: Array < ProjectItem > ;
 
     // Current item
     private project_index: number;

@@ -183,7 +183,7 @@ function projectRefresh() {
                 canvasRefresh();
             } else {
                 // Auto save canvas result...
-                project.get().blobs = canvas.blobs();
+                project.get(project.index()).blobs = canvas.getBlobs();
             }
         }
     }

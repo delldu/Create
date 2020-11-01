@@ -53,20 +53,6 @@ class Box {
         box.w = Math.abs(p1.x - p2.x);
         box.y = Math.min(p1.y, p2.y);
         box.h = Math.abs(p1.y - p2.y);
-        // if (p1.x > p2.x) {
-        //     box.x = p2.x;
-        //     box.w = p1.x - p2.x;
-        // } else {
-        //     box.x = p1.x;
-        //     box.w = p2.x - p1.x;
-        // }
-        // if (p1.y > p2.y) {
-        //     box.y = p2.y;
-        //     box.h = p1.y - p2.y;
-        // } else {
-        //     box.y = p1.y;
-        //     box.h = p2.y - p1.y;
-        // }
         return box;
     }
 }
@@ -757,7 +743,7 @@ class Canvas {
     }
 
     ctrlModeMouseUpHandle() {
-        if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
+        if (this.mouse.overStatus() == MouseStatus.ClickOver) {
             if (this.shape.vertexClickOver(this.mouse.start)) {
                 this.redraw(); // This blob be deleted, so redraw it
                 return;
@@ -777,7 +763,7 @@ class Canvas {
                 });
                 return;
             }
-        } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
+        } else if (this.mouse.overStatus() == MouseStatus.DragOver) {
             if (this.shape.vertexDragOver(this.mouse.start, this.mouse.stop)) {
                 this.redraw();
                 return;
@@ -860,12 +846,12 @@ class Canvas {
     }
 
     normalModeMouseUpHandle() {
-        if (this.mouse.overStatus() == MouseOverStatus.ClickOver) {
+        if (this.mouse.overStatus() == MouseStatus.ClickOver) {
             if (this.shape.blobClickOver(this.mouse.start)) {
                 this.redraw(); // NO Fast redraw method for select widely, so redraw
                 return;
             }
-        } else if (this.mouse.overStatus() == MouseOverStatus.DragOver) {
+        } else if (this.mouse.overStatus() == MouseStatus.DragOver) {
             if (this.shape.blobDragOver(this.mouse.start, this.mouse.stop)) {
                 this.redraw();
                 return;
@@ -1055,6 +1041,7 @@ class Canvas {
 
         this.canvas.addEventListener('keyup', (e: KeyboardEvent) => {
             e.preventDefault();
+            console.log("Canvas: addEventListener keyup ...", e);
             if (this.isEditMode())
                 this.editModeKeyUpHandler(e);
             else
@@ -1134,12 +1121,12 @@ class ImageStack {
     }
 }
 
-enum MouseOverStatus {
+enum MouseStatus {
     DragOver,
     ClickOver,
 }
 
-// How to get mouse overStatus out of event handlers ? Record it !
+// How to get mouse status out of event handlers ? Record it !
 class Mouse {
     start: Point;
     moving: Point;
@@ -1179,7 +1166,7 @@ class Mouse {
     overStatus(): number {
         let d = this.start.distance(this.stop);
         return (this.pressed() && d > Point.THRESHOLD) ?
-            MouseOverStatus.DragOver : MouseOverStatus.ClickOver;
+            MouseStatus.DragOver : MouseStatus.ClickOver;
     }
 }
 
