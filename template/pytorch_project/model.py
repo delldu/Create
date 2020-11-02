@@ -237,7 +237,6 @@ def model_setenv():
 
     print("Running Environment:")
     print("----------------------------------------------")
-    print("  USER: ", os.environ["USER"])
     print("  PWD: ", os.environ["PWD"])
     print("  DEVICE: ", os.environ["DEVICE"])
     print("  ONLY_USE_CPU: ", os.environ["ONLY_USE_CPU"])
