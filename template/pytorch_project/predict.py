@@ -38,7 +38,8 @@ if __name__ == "__main__":
     model.eval()
 
     if os.environ["ENABLE_APEX"] == "YES":
-        model, = amp.initialize(model, opt_level="O1")
+        from apex import amp
+        model = amp.initialize(model, opt_level="O1")
 
     totensor = transforms.ToTensor()
     toimage = transforms.ToPILImage()
