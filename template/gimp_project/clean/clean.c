@@ -56,6 +56,18 @@ GimpPlugInInfo PLUG_IN_INFO = {
 
 MAIN()
 
+static void
+init_proc(void)
+{
+	g_print("Init clean ...\n");
+}
+
+static void
+quit_proc(void)
+{
+	g_print("Exit clean ...\n");
+}
+
 static void query(void)
 {
 	static GimpParamDef args[] = {
