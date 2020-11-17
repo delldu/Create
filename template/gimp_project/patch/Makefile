@@ -6,20 +6,19 @@
 #***
 #************************************************************************************/
 #
-INSTALL_DIR := ~/snap/gimp/297/.config/GIMP/2.10/plug-ins
+INSTALL_DIR := ~/snap/gimp/current/.config/GIMP/2.10/plug-ins
 
 TARGET := patch
 
 SOURCE :=  \
 	patch.c
 
-INCS	:= $(shell gimptool-2.0 --cflags)
-LIBS	:= $(shell gimptool-2.0 --libs)
+INCS	:= $(shell gimptool-2.0 --cflags) -I../common
+LIBS	:= $(shell gimptool-2.0 --libs) -lnimage -ljpeg -lpng -lm
 
 DEFINES :=
 
-# CFLAGS := -O2 -fPIC -Wall -Wextra
-CFLAGS := -O2 -fPIC -Wextra
+CFLAGS := -O2 -fPIC -Wall -Wextra
 LDFLAGS := -fPIC
 
 #****************************************************************************
@@ -38,7 +37,7 @@ all: ${TARGET}
 ${TARGET}: ${OBJECT}
 	${CC} ${LDFLAGS} -o ${TARGET} ${OBJECT} ${LIBS}
 
-install:
+install: ${TARGET}
 	install -m 755 ${TARGET} ${INSTALL_DIR}
 
 #****************************************************************************

@@ -7,17 +7,47 @@
 ************************************************************************************/
 
 #include <libgimp/gimp.h>
+#include <nimage.h>
 
-static void query (void);
-static void run   (const gchar      *name,
-                   gint              nparams,
-                   const GimpParam  *param,
-                   gint             *nreturn_vals,
-                   GimpParam       **return_vals);
-static void patch  (GimpDrawable     *drawable);
+#define PLUG_IN_PROC "plug-in-patch"
 
-GimpPlugInInfo PLUG_IN_INFO =
+static void query(void);
+static void run(const gchar * name,
+        gint nparams, const GimpParam * param, gint * nreturn_vals, GimpParam ** return_vals);
+
+
+static void patch(GimpDrawable * drawable)
 {
+  gint x, y, width, height;
+  IMAGE *image;
+  // gboolean has_alpha;
+
+  if (!gimp_drawable_mask_intersect(drawable->drawable_id, &x, &y, &width, &height) || width < 1 || height < 1) {
+    g_print("Drawable region is empty.\n");
+    return;
+  }
+  // has_alpha = gimp_drawable_has_alpha (drawable->drawable_id);
+
+  image = get_image(drawable, x, y, width, height);
+  if (image_valid(image)) {
+    gimp_progress_update(0.1);
+
+    color_togray(image);
+
+    gimp_progress_update(0.8);
+    set_image(image, drawable, x, y, width, height);
+
+    image_destroy(image);
+    gimp_progress_update(1.0);
+  }
+  // Update region
+  gimp_drawable_flush(drawable);
+  gimp_drawable_merge_shadow(drawable->drawable_id, TRUE);
+  gimp_drawable_update(drawable->drawable_id, x, y, width, height);
+}
+
+
+GimpPlugInInfo PLUG_IN_INFO = {
   NULL,
   NULL,
   query,
@@ -26,175 +56,73 @@ GimpPlugInInfo PLUG_IN_INFO =
 
 MAIN()
 
-static void
-query (void)
+static void query(void)
 {
-  static GimpParamDef args[] =
-  {
+  static GimpParamDef args[] = {
     {
-      GIMP_PDB_INT32,
-      "run-mode",
-      "Run mode"
-    },
+     GIMP_PDB_INT32,
+     "run-mode",
+     "Run mode"},
     {
-      GIMP_PDB_IMAGE,
-      "image",
-      "Input image"
-    },
+     GIMP_PDB_IMAGE,
+     "image",
+     "Input image"},
     {
-      GIMP_PDB_DRAWABLE,
-      "drawable",
-      "Input drawable"
-    }
+     GIMP_PDB_DRAWABLE,
+     "drawable",
+     "Input drawable"}
   };
 
-  gimp_install_procedure (
-    "plug-in-patch",
-    "Image Patch with Deep Learning",
-    "Patch image with AI",
-    "Dell Du",
-    "Copyright Dell Du",
-    "2020",
-    "Patch",
-    "RGB*, GRAY*",
-    GIMP_PLUGIN,
-    G_N_ELEMENTS (args), 0,
-    args, NULL);
+  gimp_install_procedure(PLUG_IN_PROC,
+               "Image Patch with Deep Learning",
+               "This plug-in patch image with deep learning technology",
+               "Dell Du <18588220928@163.com>",
+               "Copyright Dell Du <18588220928@163.com>",
+               "2020", "_Patch", "RGB*, GRAY*", GIMP_PLUGIN, G_N_ELEMENTS(args), 0, args, NULL);
 
-  gimp_plugin_menu_register ("plug-in-patch",
-                             "<Image>/Filters/AI");
+  gimp_plugin_menu_register(PLUG_IN_PROC, "<Image>/Filters/AI");
 }
 
 static void
-run (const gchar      *name,
-     gint              nparams,
-     const GimpParam  *param,
-     gint             *nreturn_vals,
-     GimpParam       **return_vals)
+run(const gchar * name, gint nparams, const GimpParam * param, gint * nreturn_vals, GimpParam ** return_vals)
 {
-  static GimpParam  values[1];
+  static GimpParam values[1];
   GimpPDBStatusType status = GIMP_PDB_SUCCESS;
-  GimpRunMode       run_mode;
-  GimpDrawable     *drawable;
+  GimpRunMode run_mode;
+  GimpDrawable *drawable;
 
   /* Setting mandatory output values */
   *nreturn_vals = 1;
-  *return_vals  = values;
-
+  *return_vals = values;
   values[0].type = GIMP_PDB_STATUS;
+
+  if (strcmp(name, PLUG_IN_PROC) != 0 || nparams < 3) {
+    values[0].data.d_status = GIMP_PDB_CALLING_ERROR;
+    return;
+  }
+
   values[0].data.d_status = status;
 
-  /* Getting run_mode - we won't display a dialog if
-   * we are in NONINTERACTIVE mode
-   */
   run_mode = param[0].data.d_int32;
+  drawable = gimp_drawable_get(param[2].data.d_drawable);
 
+  if (gimp_drawable_is_rgb(drawable->drawable_id) || gimp_drawable_is_gray(drawable->drawable_id)) {
+    gimp_progress_init("Patch...");
 
+    GTimer *timer;
+    timer = g_timer_new();
 
-  /*  Get the specified drawable  */
-  drawable = gimp_drawable_get (param[2].data.d_drawable);
+    patch(drawable);
 
-  gimp_progress_init ("Patch...");
+    g_print("image patch took %g seconds.\n", g_timer_elapsed(timer, NULL));
+    g_timer_destroy(timer);
 
-  GTimer *timer = g_timer_new();
-   
-  patch (drawable);
+    if (run_mode != GIMP_RUN_NONINTERACTIVE)
+      gimp_displays_flush();
+  } else {
+    status = GIMP_PDB_EXECUTION_ERROR;
+  }
+  values[0].data.d_status = status;
 
-  g_print ("patch() took %g seconds.\n", g_timer_elapsed (timer, NULL));
-  g_timer_destroy (timer);
-
-  gimp_displays_flush ();
-  gimp_drawable_detach (drawable);
-
-  return;
+  gimp_drawable_detach(drawable);
 }
-
-static void
-patch (GimpDrawable *drawable)
-{
-  gint         i, j, k, channels;
-  gint         x1, y1, x2, y2;
-  GimpPixelRgn rgn_in, rgn_out;
-  guchar      *row1, *row2, *row3;
-  guchar      *outrow;
-
-  gimp_drawable_mask_bounds (drawable->drawable_id,
-                             &x1, &y1,
-                             &x2, &y2);
-  channels = gimp_drawable_bpp (drawable->drawable_id);
-
-  gimp_pixel_rgn_init (&rgn_in,
-                       drawable,
-                       x1, y1,
-                       x2 - x1, y2 - y1,
-                       FALSE, FALSE);
-  gimp_pixel_rgn_init (&rgn_out,
-                       drawable,
-                       x1, y1,
-                       x2 - x1, y2 - y1,
-                       TRUE, TRUE);
-
-  /* Initialise enough memory for row1, row2, row3, outrow */
-  row1 = g_new (guchar, channels * (x2 - x1));
-  row2 = g_new (guchar, channels * (x2 - x1));
-  row3 = g_new (guchar, channels * (x2 - x1));
-  outrow = g_new (guchar, channels * (x2 - x1));
-
-  for (i = y1; i < y2; i++)
-    {
-      /* Get row i-1, i, i+1 */
-      gimp_pixel_rgn_get_row (&rgn_in,
-                              row1,
-                              x1, MAX (y1, i - 1),
-                              x2 - x1);
-      gimp_pixel_rgn_get_row (&rgn_in,
-                              row2,
-                              x1, i,
-                              x2 - x1);
-      gimp_pixel_rgn_get_row (&rgn_in,
-                              row3,
-                              x1, MIN (y2 - 1, i + 1),
-                              x2 - x1);
-
-      for (j = x1; j < x2; j++)
-        {
-          /* For each layer, compute the average of the nine
-           * pixels */
-          for (k = 0; k < channels; k++)
-            {
-              int sum = 0;
-              sum = row1[channels * MAX ((j - 1 - x1), 0) + k]           +
-                    row1[channels * (j - x1) + k]                        +
-                    row1[channels * MIN ((j + 1 - x1), x2 - x1 - 1) + k] +
-                    row2[channels * MAX ((j - 1 - x1), 0) + k]           +
-                    row2[channels * (j - x1) + k]                        +
-                    row2[channels * MIN ((j + 1 - x1), x2 - x1 - 1) + k] +
-                    row3[channels * MAX ((j - 1 - x1), 0) + k]           +
-                    row3[channels * (j - x1) + k]                        +
-                    row3[channels * MIN ((j + 1 - x1), x2 - x1 - 1) + k];
-              outrow[channels * (j - x1) + k] = sum / 9;
-            }
-        }
-
-      gimp_pixel_rgn_set_row (&rgn_out,
-                              outrow,
-                              x1, i,
-                              x2 - x1);
-
-      if (i % 10 == 0)
-        gimp_progress_update ((gdouble) (i - y1) / (gdouble) (y2 - y1));
-    }
-
-  g_free (row1);
-  g_free (row2);
-  g_free (row3);
-  g_free (outrow);
-
-  gimp_drawable_flush (drawable);
-  gimp_drawable_merge_shadow (drawable->drawable_id, TRUE);
-  gimp_drawable_update (drawable->drawable_id,
-                        x1, y1,
-                        x2 - x1, y2 - y1);
-}
-
-
