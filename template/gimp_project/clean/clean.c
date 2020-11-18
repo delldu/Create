@@ -14,6 +14,8 @@
 static void query(void);
 static void run(const gchar * name,
 				gint nparams, const GimpParam * param, gint * nreturn_vals, GimpParam ** return_vals);
+static void init_proc(void);
+static void quit_proc(void);
 
 
 static void clean(GimpDrawable * drawable)
@@ -28,14 +30,14 @@ static void clean(GimpDrawable * drawable)
 	}
 	// has_alpha = gimp_drawable_has_alpha (drawable->drawable_id);
 
-	image = get_image(drawable, x, y, width, height);
+	image = image_fromgimp(drawable, x, y, width, height);
 	if (image_valid(image)) {
 		gimp_progress_update(0.1);
 
 		color_togray(image);
 
 		gimp_progress_update(0.8);
-		set_image(image, drawable, x, y, width, height);
+		image_togimp(image, drawable, x, y, width, height);
 
 		image_destroy(image);
 		gimp_progress_update(1.0);
@@ -48,22 +50,20 @@ static void clean(GimpDrawable * drawable)
 
 
 GimpPlugInInfo PLUG_IN_INFO = {
-	NULL,
-	NULL,
+	init_proc,
+	quit_proc,
 	query,
 	run
 };
 
 MAIN()
 
-static void
-init_proc(void)
+static void init_proc(void)
 {
 	g_print("Init clean ...\n");
 }
 
-static void
-quit_proc(void)
+static void quit_proc(void)
 {
 	g_print("Exit clean ...\n");
 }

@@ -18,7 +18,8 @@ extern "C" {
 
 #define CheckPoint(fmt, arg...) printf("# CheckPoint: %d(%s): " fmt "\n", (int)__LINE__, __FILE__, ##arg)
 
-IMAGE *get_image(GimpDrawable * drawable, int x, int y, int width, int height)
+// Get image from Gimp
+IMAGE *image_fromgimp(GimpDrawable * drawable, int x, int y, int width, int height)
 {
 	gint i, j;
 	gint channels;
@@ -91,7 +92,8 @@ IMAGE *get_image(GimpDrawable * drawable, int x, int y, int width, int height)
 	return image;
 }
 
-int set_image(IMAGE * image, GimpDrawable * drawable, int x, int y, int width, int height)
+// Set image to gimp
+int image_togimp(IMAGE * image, GimpDrawable * drawable, int x, int y, int width, int height)
 {
 	gint i, j;
 	gint channels;
