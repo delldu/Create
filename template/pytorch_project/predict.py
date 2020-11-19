@@ -1,5 +1,4 @@
 """Model predict."""
-
 # coding=utf-8
 #
 # /************************************************************************************
@@ -16,7 +15,7 @@ import argparse
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from model import get_model, model_load, model_setenv
+from model import get_model, model_load, enable_amp, model_device
 from tqdm import tqdm
 
 if __name__ == "__main__":
@@ -29,17 +28,13 @@ if __name__ == "__main__":
     parser.add_argument('--input', type=str, required=True, help="input image")
     args = parser.parse_args()
 
-    # CPU or GPU ?
-    device = torch.device(os.environ["DEVICE"])
-
     model = get_model()
+    device = model_device()
     model_load(model, args.checkpoint)
     model.to(device)
     model.eval()
 
-    if os.environ["ENABLE_APEX"] == "YES":
-        from apex import amp
-        model = amp.initialize(model, opt_level="O1")
+    enable_amp(model)
 
     totensor = transforms.ToTensor()
     toimage = transforms.ToPILImage()

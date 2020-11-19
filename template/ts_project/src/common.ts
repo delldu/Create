@@ -311,9 +311,9 @@ class ShiftPanel {
         return -1;
     }
 
-    id():string {
+    id(): string {
         let index = this.clicked();
-        return (index >= 0)? this.panels[index] : "";
+        return (index >= 0) ? this.panels[index] : "";
     }
 
     shift() {
