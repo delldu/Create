@@ -115,7 +115,7 @@ run(const gchar * name, gint nparams, const GimpParam * param, gint * nreturn_va
 
 	values[0].data.d_status = status;
 
-	run_mode = param[0].data.d_int32;
+	run_mode = (GimpRunMode)param[0].data.d_int32;
 	drawable = gimp_drawable_get(param[2].data.d_drawable);
 
 	if (gimp_drawable_is_rgb(drawable->drawable_id) || gimp_drawable_is_gray(drawable->drawable_id)) {
