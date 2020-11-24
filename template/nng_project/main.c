@@ -27,11 +27,6 @@
 //         uint32_t id;
 // } nng_socket;
 
-// int image_data_size(IMAGE *image);
-// int image_abhead_encode(IMAGE *image, BYTE *buffer);
-// int image_abhead_decode(BYTE *buffer, AbHead *abhead);
-
-
 void fatal(const char *message, int errcode)
 {
 	syslog_error("%s: %s\n", message, nng_strerror(errcode));
@@ -43,11 +38,10 @@ int fast_send_image(nng_socket socket, IMAGE *image)
 {
 	int ret;
 	nng_msg *msg = NULL;
-
 	BYTE head_buf[sizeof(AbHead)];
 	size_t send_size;
 
-	image_abhead_encode(image, head_buf);
+	image_abhead(image, head_buf);
 	if ((ret = nng_msg_alloc(&msg, 0)) != 0) {
 		fatal("nng_msg_alloc", ret);
 	}
@@ -58,37 +52,23 @@ int fast_send_image(nng_socket socket, IMAGE *image)
 	if ((ret = nng_msg_append(msg, image->base, send_size)) != 0) {
 		fatal("nng_msg_append", ret);
 	}
-	if ((ret = nng_sendmsg(socket, msg, 0)) != 0) {
+	if ((ret = nng_sendmsg(socket, msg, NNG_FLAG_ALLOC)) != 0) {
 		fatal("nng_sendmsg", ret);
 	}
-	nng_msg_free(msg);
+	// nng_msg_free(msg); // NNG_FLAG_ALLOC means call it auto
 
 	return RET_OK;	
 }
 
-BYTE *pix2pix_service(BYTE *recv_buf, size_t recv_size, size_t *send_size)
+IMAGE *do_pix2pix_service(IMAGE *image)
 {
-	int ret;
-	AbHead abhead;
-	BYTE *send_buf;
-
-	// Check recv_buf is a image array buffer ?
-	ret = image_abhead_decode(recv_buf, &abhead);
-	if (ret != RET_OK || abhead.len + sizeof(AbHead) != recv_size) {
-		syslog_error("Bad ArrayBuffer data.");
-		return NULL;
-	}
-	// demo: echo service
-
-	*send_size = recv_size;
-	send_buf = (BYTE *)malloc(recv_size);
-	if (send_buf) {
-		memcpy(send_buf, recv_buf, recv_size);
-	}
-	return send_buf;
+	CHECK_IMAGE(image);
+	// Demo
+	color_togray(image);
+	return image_copy(image);
 }
 
-BYTE *pix2txt_service(IMAGE *image)
+BYTE *do_pix2txt_service(IMAGE *image)
 {
 	BYTE *response;
 	CHECK_IMAGE(image);
@@ -104,12 +84,13 @@ BYTE *pix2txt_service(IMAGE *image)
 
 // start_pix2pix_server
 // start_pix2txt_server
-int server()
+int start_pix2pix_server()
 {
 	int ret;
 	nng_socket socket;
-	BYTE *recv_buf, *send_buf = NULL;
-	size_t recv_size, send_size;
+	BYTE *recv_buf = NULL;
+	size_t recv_size;
+	IMAGE *recv_image, *send_image = NULL;
 
 	// sudo journalctl -u image.service -n 10
 	syslog(LOG_INFO, "Start image service on %s ...\n", URL);
@@ -126,15 +107,31 @@ int server()
 		if ((ret = nng_recv(socket, &recv_buf, &recv_size, NNG_FLAG_ALLOC)) != 0) {
 			fatal("nng_recv", ret);
 		}
+		if (valid_ab(recv_buf, recv_size)) {
+			recv_image = image_fromab(recv_buf);
 
-		if (send_buf)	// Keep for fast_send_image finished !!!
-			free(send_buf);
+			send_image = do_pix2pix_service(recv_image);
 
-		send_buf = pix2pix_service(recv_buf, recv_size, &send_size);
-		if ((ret = nng_send(socket, send_buf, send_size, 0)) != 0) {
-			fatal("nng_send", ret);
+			image_destroy(recv_image);
+
+			if (image_valid(send_image)) {
+#if 0				
+				BYTE *send_buf = image_toab(send_image);
+				if (send_buf) {
+					size_t send_size = sizeof(AbHead) + image_data_size(send_image);
+					ret = nng_send(socket, send_buf, send_size, NNG_FLAG_ALLOC);
+					if (ret != 0) {
+						fatal("nng_send", ret);
+					}
+					// free(send_buf); NNG_FLAG_ALLOC call it auto
+				}
+#else				
+				fast_send_image(socket, send_image);
+				image_destroy(send_image);
+#endif				
+			}
 		}
-		nng_free(recv_buf, recv_size);	// Data has been saved to recv_image ...
+		nng_free(recv_buf, recv_size);	// Data has been sent ...
 	}
 
 	syslog(LOG_INFO, "Image service shutdown.\n");
@@ -143,13 +140,14 @@ int server()
 	return RET_OK;
 }
 
-int run_pix2pix_service(nng_socket socket, IMAGE *send_image)
+IMAGE *call_pix2pix_service(nng_socket socket, IMAGE *send_image)
 {
 	int ret;
 	BYTE *recv_buf = NULL;
 	size_t recv_size;
+	IMAGE *recv_image = NULL;
 
-	check_image(send_image);
+	CHECK_IMAGE(send_image);
 
 	// Send ...
     fast_send_image(socket, send_image);
@@ -158,16 +156,19 @@ int run_pix2pix_service(nng_socket socket, IMAGE *send_image)
 	if ((ret = nng_recv(socket, &recv_buf, &recv_size, NNG_FLAG_ALLOC)) != 0) {
 		fatal("nng_recv", ret);
 	}
+	if (valid_ab(recv_buf, recv_size))
+		recv_image = image_fromab(recv_buf);
+
 	nng_free(recv_buf, recv_size); // release recv_buf ...
 
-	return RET_OK;
+	return recv_image;
 }
 
-int client(char *input_file, char *cmd)
+int client(char *input_file, char *cmd, char *output_file)
 {
 	int ret;
 	nng_socket socket;
-	IMAGE *send_image;
+	IMAGE *send_image, *recv_image;
 
 	if ((ret = nng_req0_open(&socket)) != 0) {
 		fatal("nng_socket", ret);
@@ -186,11 +187,18 @@ int client(char *input_file, char *cmd)
 	printf("Test image service performance ...\n");
 	for (k = 0; k < 100; k++) {
 		printf("%d ...\n", k);
-		run_pix2pix_service(socket, send_image);
+		recv_image = call_pix2pix_service(socket, send_image);
+
+		if (image_valid(recv_image))
+			image_destroy(recv_image);
 	}
 	time_spend("Image service 100 times");
 
-	run_pix2pix_service(socket, send_image);
+	recv_image = call_pix2pix_service(socket, send_image);
+	if (image_valid(recv_image)) {
+		image_save(recv_image, output_file);
+		image_destroy(recv_image);
+	}
 
 	image_destroy(send_image);
 
@@ -204,7 +212,7 @@ void help(char *cmd)
 	printf("Usage: %s [option]\n", cmd);
 	printf("    -h, --help                   Display this help.\n");
 	printf("    -s, --server                 Start server.\n");
-	printf("    -c, --client --input <file> --execute <clean|color|zoom|patch>\n");
+	printf("    -c, --client --input <file> --execute <clean|color|zoom|patch> --output <file>\n");
 	printf("                                 Start client.\n");
 
 	exit(1);
@@ -214,27 +222,29 @@ int main(int argc, char **argv)
 {
 	int optc;
 	int option_index = 0;
-	int run_client = 0;	// 0 -- server
+	int run_client = 0;	// 0 -- start_pix2pix_server
 	char *input_file = NULL;
 	char *command = NULL;
+	char *output_file = NULL;
 
 	struct option long_opts[] = {
 		{ "help", 0, 0, 'h'},
-		{ "server", 0, 0, 's'},
+		{ "start_pix2pix_server", 0, 0, 's'},
 		{ "client", 0, 0, 'c'},
 		{ "input", 1, 0, 'i'},
 		{ "execute", 1, 0, 'e'},
+		{ "output", 1, 0, 'o'},
 		{ 0, 0, 0, 0}
 	};
 
 	if (argc <= 1)
 		help(argv[0]);
 	
-	while ((optc = getopt_long(argc, argv, "h s c i: e:", long_opts, &option_index)) != EOF) {
+	while ((optc = getopt_long(argc, argv, "h s c i: e: o:", long_opts, &option_index)) != EOF) {
 		switch (optc) {
 		case 's':
 			run_client = 0;
-			return server();
+			return start_pix2pix_server();
 			break;
 		case 'c':
 			run_client = 1;
@@ -245,6 +255,9 @@ int main(int argc, char **argv)
 		case 'e':
 			command = optarg;
 			break;
+		case 'o':
+			output_file = optarg;
+			break;
 		case 'h':	// help
 		default:
 			help(argv[0]);
@@ -252,8 +265,8 @@ int main(int argc, char **argv)
 	    }
 	}
 
-	if (run_client && input_file && command) {
-		return client(input_file, command);
+	if (run_client && input_file && command && output_file) {
+		return client(input_file, command, output_file);
 	}
 
 	// error ？
