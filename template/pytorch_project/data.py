@@ -11,6 +11,7 @@
 #
 
 import os
+import math
 import torch
 from PIL import Image
 import torch.utils.data as data
@@ -20,6 +21,26 @@ import torchvision.utils as utils
 # xxxx--modify here
 train_dataset_rootdir = "dataset/train/"
 test_dataset_rootdir = "dataset/test/"
+
+def multiple_crop(data, multiple=32):
+    # Crop image to a multiple
+    C, H, W = data.shape
+    Hnew = int(H/multiple)*multiple
+    Wnew = int(W/multiple)*multiple
+    h = (H - Hnew)//2
+    w = (W - Wnew)//2
+    return data[:, h:h+Hnew, w:w+Wnew]
+
+
+def multiple_scale(data, multiple=32):
+    # Scale image to a multiple
+    C, H, W = data.shape
+    Hnew = int(multiple * math.ceil(H/multiple))
+    Wnew = int(multiple * math.ceil(W/multiple))
+    temp = data.new_zeros(C, Hnew, Wnew)
+    temp[:, 0:H, 0:W] = data
+    return temp
+
 
 def get_transform(train=True):
     """Transform images."""

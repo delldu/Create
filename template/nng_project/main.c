@@ -91,6 +91,7 @@ int start_pix2pix_server()
 	BYTE *recv_buf = NULL;
 	size_t recv_size;
 	IMAGE *recv_image, *send_image = NULL;
+	int count = 0;
 
 	// sudo journalctl -u image.service -n 10
 	syslog(LOG_INFO, "Start image service on %s ...\n", URL);
@@ -103,6 +104,9 @@ int start_pix2pix_server()
 	syslog(LOG_INFO, "Image service already ...\n");
 
 	for (;;) {
+		if (count % 50 == 0) {
+			printf("Do service %d times\n", count);
+		}
 		recv_buf = NULL;
 		if ((ret = nng_recv(socket, &recv_buf, &recv_size, NNG_FLAG_ALLOC)) != 0) {
 			fatal("nng_recv", ret);
@@ -132,6 +136,7 @@ int start_pix2pix_server()
 			}
 		}
 		nng_free(recv_buf, recv_size);	// Data has been sent ...
+		count++;
 	}
 
 	syslog(LOG_INFO, "Image service shutdown.\n");
@@ -184,9 +189,8 @@ int client(char *input_file, char *cmd, char *output_file)
 	// Test performance
 	int k;
 	time_reset();
-	printf("Test image service performance ...\n");
+	// printf("Test image service performance ...\n");
 	for (k = 0; k < 100; k++) {
-		printf("%d ...\n", k);
 		recv_image = call_pix2pix_service(socket, send_image);
 
 		if (image_valid(recv_image))

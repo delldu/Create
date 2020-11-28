@@ -37,7 +37,7 @@ OBJECT := $(addsuffix .o,$(basename ${SOURCE}))
 all: ${TARGET}
 
 ${TARGET}: ${OBJECT}
-	${CC} ${LDFLAGS} -o ${TARGET} ${OBJECT} ${LIBS}
+	${CXX} ${LDFLAGS} -o ${TARGET} ${OBJECT} ${LIBS}
 
 install:
 # 	${STRIP} ${TARGET}
@@ -53,7 +53,7 @@ install:
 	${CXX} ${CXXFLAGS} ${INCS} -c $< -o $@
 
 %.o : %.c
-	${CC} ${CFLAGS} ${INCS} -c $< -o $@
+	${CXX} ${CXXFLAGS} ${INCS} -c $< -o $@
 
 #****************************************************************************
 # Depend block
