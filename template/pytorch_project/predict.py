@@ -21,8 +21,6 @@ from tqdm import tqdm
 if __name__ == "__main__":
     """Predict."""
 
-    model_setenv()
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--checkpoint', type=str, default="output/{{ . }}.pth", help="checkpint file")
     parser.add_argument('--input', type=str, required=True, help="input image")

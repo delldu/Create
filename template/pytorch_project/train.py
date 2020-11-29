@@ -21,8 +21,6 @@ from model import get_model, model_load, model_save, train_epoch, valid_epoch, m
 if __name__ == "__main__":
     """Trainning model."""
     
-    model_setenv()    
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--outputdir', type=str, default="output", help="output directory")
     parser.add_argument('--checkpoint', type=str, default="output/{{ . }}.pth", help="checkpoint file")

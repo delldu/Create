@@ -16,6 +16,7 @@ import math
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+from apex import amp
 
 class {{ . }}Model(nn.Module):
     """{{ . }} Model."""
