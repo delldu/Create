@@ -168,12 +168,24 @@ pytorch_project()
 	project_name=`get_project_name`
 	echo "Creating pytorch_project project '${project_name}' ..."
 
-	create_view -f $TEMPLATE_DIR/data.py -v $project_name > data.py
-	create_view -f $TEMPLATE_DIR/model.py -v $project_name > model.py
-	create_view -f $TEMPLATE_DIR/train.py -v $project_name > train.py
-	create_view -f $TEMPLATE_DIR/test.py -v $project_name > test.py
-	create_view -f $TEMPLATE_DIR/predict.py -v $project_name > predict.py
-	create_view -f $TEMPLATE_DIR/readme.md -v $project_name > readme.md
+	# Create package name -- lower format
+	package_name=`echo ${project_name} | tr 'A-Z' 'a-z'`
+
+	# Create setup files ...
+	create_view -f $TEMPLATE_DIR/setup.py -v $package_name > setup.py
+	create_view -f $TEMPLATE_DIR/README.md -v $project_name > README.md
+
+	# Create project train/test/predict files ...
+	create_view -f $TEMPLATE_DIR/train.py -v $package_name > train.py
+	create_view -f $TEMPLATE_DIR/test.py -v $package_name > test.py
+	create_view -f $TEMPLATE_DIR/predict.py -v $package_name > predict.py
+
+	# Cate package files ...
+	mkdir -p $package_name
+	echo "__version__ = 0.0.1" >> $package_name/__init__.py
+	create_view -f $TEMPLATE_DIR/package/package.py -v $project_name > $package_name/$package_name.py
+	create_view -f $TEMPLATE_DIR/package/data.py -v $project_name > $package_name/data.py
+	create_view -f $TEMPLATE_DIR/package/model.py -v $project_name > $package_name/model.py
 }
 
 c_busybox()

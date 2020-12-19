@@ -11,7 +11,6 @@
 #
 
 import os
-import math
 import torch
 from PIL import Image
 import torch.utils.data as data
@@ -22,23 +21,18 @@ import torchvision.utils as utils
 train_dataset_rootdir = "dataset/train/"
 test_dataset_rootdir = "dataset/test/"
 
-def multiple_crop(data, multiple=32):
-    # Crop image to a multiple
-    C, H, W = data.shape
-    Hnew = int(H/multiple)*multiple
-    Wnew = int(W/multiple)*multiple
-    h = (H - Hnew)//2
-    w = (W - Wnew)//2
-    return data[:, h:h+Hnew, w:w+Wnew]
-
-
 def multiple_scale(data, multiple=32):
-    # Scale image to a multiple
+    '''
+    Scale image to a multiple.
+    input data is tensor, with CxHxW format.
+    '''
+
     C, H, W = data.shape
-    Hnew = int(multiple * math.ceil(H/multiple))
-    Wnew = int(multiple * math.ceil(W/multiple))
+    Hnew = ((H - 1) // multiple + 1)*multiple
+    Wnew = ((W - 1) // multiple + 1)*multiple
     temp = data.new_zeros(C, Hnew, Wnew)
     temp[:, 0:H, 0:W] = data
+
     return temp
 
 
@@ -62,27 +56,27 @@ class {{ . }}Dataset(data.Dataset):
         self.transforms = transforms
 
         # load all images, sorting for alignment
-        # xxxx--modify here
         self.images = list(sorted(os.listdir(root)))
 
     def __getitem__(self, idx):
         """Load images."""
+
         img_path = os.path.join(self.root, self.images[idx])
         img = Image.open(img_path).convert("RGB")
-
-        if self.transforms is not None:
-            img = self.transforms(img)
+        img = self.transforms(img)
 
         return img
 
     def __len__(self):
-        """Return total numbers of images."""
+        """Return total numbers."""
+
         return len(self.images)
 
     def __repr__(self):
         """
         Return printable representation of the dataset object.
         """
+
         fmt_str = 'Dataset ' + self.__class__.__name__ + '\n'
         fmt_str += '    Number of samples: {}\n'.format(self.__len__())
         fmt_str += '    Root Location: {}\n'.format(self.root)
@@ -130,7 +124,7 @@ def {{ . }}DatasetTest():
 
     ds = {{ . }}Dataset(train_dataset_rootdir)
     print(ds)
-    # src, tgt = ds[10]
+    # src, tgt = ds[0]
     # grid = utils.make_grid(torch.cat([src.unsqueeze(0), tgt.unsqueeze(0)], dim=0), nrow=2)
     # ndarr = grid.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
     # image = Image.fromarray(ndarr)

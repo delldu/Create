@@ -10,33 +10,39 @@
 # ************************************************************************************/
 #
 
+import math
 import os
 import sys
-import math
+
 import torch
 import torch.nn as nn
-from tqdm import tqdm
 from apex import amp
+from tqdm import tqdm
 
-class {{ . }}Model(nn.Module):
+
+class {{.}}Model(nn.Module):
     """{{ . }} Model."""
 
     def __init__(self):
         """Init model."""
-        super({{ . }}Model, self).__init__()
+
+        super({{.}}Model, self).__init__()
 
     def forward(self, x):
         """Forward."""
+
         return x
 
-def model_load(model, path):
+
+def model_load(self, path):
     """Load model."""
+
     if not os.path.exists(path):
         print("Model '{}' does not exist.".format(path))
         return
 
     state_dict = torch.load(path, map_location=lambda storage, loc: storage)
-    target_state_dict = model.state_dict()
+    target_state_dict = self.model.state_dict()
     for n, p in state_dict.items():
         if n in target_state_dict.keys():
             target_state_dict[n].copy_(p)
@@ -46,9 +52,11 @@ def model_load(model, path):
 
 def model_save(model, path):
     """Save model."""
-    torch.save(model.state_dict(), path)
 
-def export_onnx_model():
+    torch.save(self.model.state_dict(), path)
+
+
+def export_onnx(model):
     """Export onnx model."""
 
     import onnx
@@ -59,8 +67,7 @@ def export_onnx_model():
 
     # 1. Load model
     print("Loading model ...")
-    model = get_model()
-    model_load(model, weight_file)
+    model, device = get_model(weight_file)
     model.eval()
 
     # 2. Model export
@@ -68,10 +75,9 @@ def export_onnx_model():
     dummy_input = torch.randn(1, 3, 512, 512)
 
     input_names = ["input"]
-    output_names = ["noise_level", "output"]
+    output_names = ["output"]
     # variable lenght axes
     dynamic_axes = {'input': {0: 'batch_size', 1: 'channel', 2: "height", 3: 'width'},
-                    'noise_level': {0: 'batch_size', 1: 'channel', 2: "height", 3: 'width'},
                     'output': {0: 'batch_size', 1: 'channel', 2: "height", 3: 'width'}}
     torch.onnx.export(model, dummy_input, onnx_file,
                       input_names=input_names,
@@ -97,7 +103,7 @@ def export_onnx_model():
     # python -c "import netron; netron.start('image_clean.onnx')"
 
 
-def export_torch_model():
+def export_script(model):
     """Export torch model."""
 
     script_file = "output/model.pt"
@@ -105,8 +111,7 @@ def export_torch_model():
 
     # 1. Load model
     print("Loading model ...")
-    model = get_model()
-    model_load(model, weight_file)
+    model, device = get_model(weight_file)
     model.eval()
 
     # 2. Model export
@@ -116,11 +121,16 @@ def export_torch_model():
     traced_script_module.save(script_file)
 
 
-def get_model():
+def get_model(checkpoint):
     """Create model."""
+
     model_setenv()
-    model = {{ . }}Model()
-    return model
+    model = {{.}}Model()
+    model_load(model, checkpoint)
+    device = model_device()
+    model.to(device)
+
+    return model, device
 
 
 class Counter(object):
@@ -128,10 +138,12 @@ class Counter(object):
 
     def __init__(self):
         """Init average."""
+
         self.reset()
 
     def reset(self):
         """Reset average."""
+
         self.val = 0
         self.avg = 0
         self.sum = 0
@@ -139,6 +151,7 @@ class Counter(object):
 
     def update(self, val, n=1):
         """Update average."""
+
         self.val = val
         self.sum += val * n
         self.count += n
@@ -216,7 +229,8 @@ def valid_epoch(loader, model, device, tag=''):
 
 
 def model_device():
-    """First call model_setenv. """
+    """Please call after model_setenv. """
+
     return torch.device(os.environ["DEVICE"])
 
 
@@ -265,20 +279,19 @@ def model_setenv():
 
 
 def enable_amp(x):
-    """Init Automatic Mixed Precision(AMP)."""
+    """Automatic Mixed Precision(AMP)."""
+
     if os.environ["ENABLE_APEX"] == "YES":
         x = amp.initialize(x, opt_level="O1")
 
 
 def infer_perform():
-    """Model infer performance ..."""
+    """Test model infer performance ..."""
 
     model_setenv()
-    device = model_device()
-
-    model = {{ . }}Model()
+    model, device = get_model()
     model.eval()
-    model = model.to(device)
+
     enable_amp(model)
 
     progress_bar = tqdm(total=100)
@@ -301,7 +314,7 @@ if __name__ == '__main__':
     model = get_model()
     print(model)
 
-    export_torch_model()
-    export_onnx_model()
+    # export_script()
+    # export_onnx()
 
-    infer_perform()
+    # infer_perform()

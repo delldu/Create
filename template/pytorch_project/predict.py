@@ -9,14 +9,15 @@
 # ***
 # ************************************************************************************/
 #
-import os
-import glob
 import argparse
+import glob
+import os
+
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from model import get_model, model_load, enable_amp, model_device
 from tqdm import tqdm
+from {{ . }}.model import enable_amp, get_model
 
 if __name__ == "__main__":
     """Predict."""
@@ -26,10 +27,7 @@ if __name__ == "__main__":
     parser.add_argument('--input', type=str, required=True, help="input image")
     args = parser.parse_args()
 
-    model = get_model()
-    device = model_device()
-    model_load(model, args.checkpoint)
-    model.to(device)
+    model, device = get_model(args.checkpoint)
     model.eval()
 
     enable_amp(model)
