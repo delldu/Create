@@ -24,8 +24,8 @@ class {{.}}(nn.Module):
     def __init__(self, weight_file="{{ . }}.pth"):
         """Init model."""
         super({{.}}, self).__init__()
-        checkpoint = os.path.join(inspect.getfile(
-            self.__init__), '..', 'weights/%s' % (weight_file))
+	dir = os.path.dirname(inspect.getfile(self.__init__))
+        checkpoint = os.path.join(dir, '/weights/%s' % (weight_file))
         model, device = get_model(checkpoint)
 
         self.model = model

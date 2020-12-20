@@ -34,7 +34,7 @@ class {{.}}Model(nn.Module):
         return x
 
 
-def model_load(self, path):
+def model_load(model, path):
     """Load model."""
 
     if not os.path.exists(path):
@@ -42,7 +42,7 @@ def model_load(self, path):
         return
 
     state_dict = torch.load(path, map_location=lambda storage, loc: storage)
-    target_state_dict = self.model.state_dict()
+    target_state_dict = model.state_dict()
     for n, p in state_dict.items():
         if n in target_state_dict.keys():
             target_state_dict[n].copy_(p)
