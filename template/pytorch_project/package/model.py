@@ -53,7 +53,7 @@ def model_load(model, path):
 def model_save(model, path):
     """Save model."""
 
-    torch.save(self.model.state_dict(), path)
+    torch.save(model.state_dict(), path)
 
 
 def export_onnx(model):
