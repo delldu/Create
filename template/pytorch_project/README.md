@@ -15,20 +15,13 @@
 `pillow: 7.2.0` 
 `torchvision: 0.6.1`
 
-#### 2.2 Env
-
-`export USE_ONLY_CPU=YES | NO`
-Default is **NO**, use **GPU** with high priority.
-`export ENABLE_APEX=YES | NO`
-Default is **YES**.
-
-#### 2.3 Train
+#### 2.2 Train
 `python train.py --help`
 
-#### 2.4 Test
+#### 2.3 Test
 `python test.py --help`
 
-#### 2.5 Predict
+#### 2.4 Predict
 `python predict.py --help`
 
 

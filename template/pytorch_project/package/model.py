@@ -16,7 +16,6 @@ import sys
 
 import torch
 import torch.nn as nn
-from apex import amp
 from tqdm import tqdm
 
 
@@ -242,47 +241,18 @@ def model_setenv():
     random.seed(42)
     torch.manual_seed(42)
 
-    # Set default environment variables to avoid exceptions
-    if os.environ.get("ONLY_USE_CPU") != "YES" and os.environ.get("ONLY_USE_CPU") != "NO":
-        os.environ["ONLY_USE_CPU"] = "NO"
-
-    if os.environ.get("ENABLE_APEX") != "YES" and os.environ.get("ENABLE_APEX") != "NO":
-        os.environ["ENABLE_APEX"] = "YES"
-
+    # Set default device to avoid exceptions
     if os.environ.get("DEVICE") != "YES" and os.environ.get("DEVICE") != "NO":
         os.environ["DEVICE"] = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-   # Is there GPU ?
-    if not torch.cuda.is_available():
-        os.environ["ONLY_USE_CPU"] = "YES"
-
-    # export ONLY_USE_CPU=YES ?
-    if os.environ.get("ONLY_USE_CPU") == "YES":
-        os.environ["ENABLE_APEX"] = "NO"
-    else:
-        os.environ["ENABLE_APEX"] = "YES"
-
-    # Running on GPU if available
-    if os.environ.get("ONLY_USE_CPU") == "YES":
-        os.environ["DEVICE"] = 'cpu'
-    else:
-        if torch.cuda.is_available():
-            torch.backends.cudnn.enabled = True
-            torch.backends.cudnn.benchmark = True
+    if os.environ["DEVICE"] == 'cuda':
+        torch.backends.cudnn.enabled = True
+        torch.backends.cudnn.benchmark = True
 
     print("Running Environment:")
     print("----------------------------------------------")
     print("  PWD: ", os.environ["PWD"])
     print("  DEVICE: ", os.environ["DEVICE"])
-    print("  ONLY_USE_CPU: ", os.environ["ONLY_USE_CPU"])
-    print("  ENABLE_APEX: ", os.environ["ENABLE_APEX"])
-
-
-def enable_amp(x):
-    """Automatic Mixed Precision(AMP)."""
-
-    if os.environ["ENABLE_APEX"] == "YES":
-        x = amp.initialize(x, opt_level="O1")
 
 
 def infer_perform():
@@ -291,8 +261,6 @@ def infer_perform():
     model_setenv()
     model, device = get_model()
     model.eval()
-
-    enable_amp(model)
 
     progress_bar = tqdm(total=100)
     progress_bar.set_description("Test Inference Performance ...")

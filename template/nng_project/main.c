@@ -155,7 +155,7 @@ IMAGE *call_pix2pix_service(nng_socket socket, IMAGE *send_image)
 	CHECK_IMAGE(send_image);
 
 	// Send ...
-    fast_send_image(socket, send_image);
+	fast_send_image(socket, send_image);
 
 	// Receive ...
 	if ((ret = nng_recv(socket, &recv_buf, &recv_size, NNG_FLAG_ALLOC)) != 0) {
@@ -233,7 +233,7 @@ int main(int argc, char **argv)
 
 	struct option long_opts[] = {
 		{ "help", 0, 0, 'h'},
-		{ "start_pix2pix_server", 0, 0, 's'},
+		{ "start", 0, 0, 's'},
 		{ "client", 0, 0, 'c'},
 		{ "input", 1, 0, 'i'},
 		{ "execute", 1, 0, 'e'},

@@ -17,7 +17,7 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from tqdm import tqdm
-from {{ . }}.model import enable_amp, get_model
+from {{ . }}.model import get_model
 
 if __name__ == "__main__":
     """Predict."""
@@ -29,8 +29,6 @@ if __name__ == "__main__":
 
     model, device = get_model(args.checkpoint)
     model.eval()
-
-    enable_amp(model)
 
     totensor = transforms.ToTensor()
     toimage = transforms.ToPILImage()

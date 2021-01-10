@@ -15,7 +15,7 @@ import os
 
 import torch
 from {{ . }}.data import get_data
-from {{ . }}.model import enable_amp, get_model, valid_epoch
+from {{ . }}.model import get_model, valid_epoch
 
 if __name__ == "__main__":
     """Test model."""
@@ -28,8 +28,6 @@ if __name__ == "__main__":
 
     # get model
     model, device = get_model(args.checkpoint)
-
-    enable_amp(model)
 
     print("Start testing ...")
     test_dl = get_data(trainning=False, bs=args.bs)
