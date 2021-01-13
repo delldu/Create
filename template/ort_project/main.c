@@ -12,6 +12,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 
+#include "engine.h"
 
 void help(char *cmd)
 {
@@ -45,6 +46,8 @@ int main(int argc, char **argv)
 	}
 
 	printf("Hello world !\n");
+
+	test();
 
 	return 0;
 }
