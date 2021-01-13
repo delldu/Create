@@ -33,9 +33,6 @@ int main(int argc, char **argv)
 
 	};
 
-	if (argc <= 1)
-		help(argv[0]);
-
 	while ((optc = getopt_long(argc, argv, "h", long_opts, &option_index)) != EOF) {
 		switch (optc) {
 		case 'h':				// help
@@ -45,9 +42,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("Hello world !\n");
-
-	test();
+	EngineTest();
 
 	return 0;
 }

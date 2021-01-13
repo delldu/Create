@@ -25,6 +25,7 @@
 // ONNX Runtime Engine
 typedef struct {
 	DWORD magic;
+	const char *model_path;
 
 	OrtEnv *env;
 	OrtSession *session;
@@ -35,42 +36,28 @@ typedef struct {
 
 	std::vector <const char *>output_node_names;
 	std::vector < int64_t > output_node_dims;   // classical model has only 1 output node {1, 1000, 1, 1}.
-} ImageCleanEngine;
+} OrtEngine;
 
 #define CheckEngine(e) \
     do { \
-            if (! engine_valid(e)) { \
-				fprintf(stderr, "Bad ImageCleanEngine.\n"); \
+            if (! ValidEngine(e)) { \
+				fprintf(stderr, "Bad OrtEngine.\n"); \
 				exit(1); \
             } \
     } while(0)
 
+void CheckStatus(OrtStatus *status);
 
-
-void CheckStatus(OrtStatus * status);
-
-// TensorValues ?
-// CreateTensor(tensor_dims, float *data, size_t size)
-OrtValue *engine_make_input(ImageCleanEngine *t, float *data, size_t size);
-float *FloatValues(OrtValue *tensor);
+OrtValue *CreateTensor(std::vector<int64_t> &tensor_dims, float *data, size_t size);
+float *TensorValues(OrtValue *tensor);
 void ReleaseTensor(OrtValue *tensor);
 
-int engine_valid(ImageCleanEngine *engine);
-// ValidEngine()
+OrtEngine *CreateEngine(const char *model_path);
+int ValidEngine(OrtEngine *engine);
+OrtValue *SimpleForward(OrtEngine &engine, OrtValue *input_tensor);
+void ReleaseEngine(OrtEngine *engine);
 
-
-
-OrtValue *engine_forward(ImageCleanEngine *engine, OrtValue *input_tensor);
-// EngineForward()
-
-ImageCleanEngine *engine_create();
-// CreateEngine()
-
-void engine_destroy(ImageCleanEngine *engine);
-// ReleaseEngine()
-
-
-void test();
+void EngineTest();
 
 // #if defined(__cplusplus)
 // }

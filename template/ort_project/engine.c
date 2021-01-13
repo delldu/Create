@@ -17,7 +17,7 @@
 #define ENGINE_MAGIC MAKE_FOURCC('O', 'N', 'R', 'T')
 const OrtApi *onnx_runtime_api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
 
-void SetInputNodes(ImageCleanEngine *t)
+void SetInputNodes(OrtEngine *t)
 {
 	size_t num_nodes;
 	OrtAllocator *allocator;
@@ -25,7 +25,7 @@ void SetInputNodes(ImageCleanEngine *t)
 
 	CheckStatus(onnx_runtime_api->SessionGetInputCount(t->session, &num_nodes));
 
-	printf("Engine input nodes:\n");
+	printf("Input nodes:\n");
 	for (size_t i = 0; i < num_nodes; i++) {
 		char *name;
 		
@@ -45,7 +45,7 @@ void SetInputNodes(ImageCleanEngine *t)
 		CheckStatus(onnx_runtime_api->GetDimensionsCount(tensor_info, &num_dims));
 		t->input_node_dims.resize(num_dims);
 
-		printf("    NO=%zu name=\"%s\" type=%d dims=%zu: ", i, name, type, num_dims);
+		printf("    no=%zu name=\"%s\" type=%d dims=%zu: ", i, name, type, num_dims);
 
 		CheckStatus(onnx_runtime_api->GetDimensions(tensor_info, (int64_t *) t->input_node_dims.data(), num_dims));
 
@@ -61,7 +61,7 @@ void SetInputNodes(ImageCleanEngine *t)
 	// onnx_runtime_api->ReleaseAllocator(allocator); segmant fault !!!
 }
 
-void SetOutputNodes(ImageCleanEngine *t)
+void SetOutputNodes(OrtEngine *t)
 {
 	OrtAllocator *allocator;
 
@@ -70,7 +70,7 @@ void SetOutputNodes(ImageCleanEngine *t)
 	size_t num_nodes;
 	CheckStatus(onnx_runtime_api->SessionGetOutputCount(t->session, &num_nodes));
 
-	printf("Engine output nodes:\n");
+	printf("Output nodes:\n");
 	for (size_t i = 0; i < num_nodes; i++) {
 		char *name;
 
@@ -90,7 +90,7 @@ void SetOutputNodes(ImageCleanEngine *t)
 		CheckStatus(onnx_runtime_api->GetDimensionsCount(tensor_info, &num_dims));
 		t->output_node_dims.resize(num_dims);
 
-		printf("    NO=%zu name=\"%s\" type=%d dims=%zu: ", i, name, type, num_dims);
+		printf("    no=%zu name=\"%s\" type=%d dims=%zu: ", i, name, type, num_dims);
 
 		CheckStatus(onnx_runtime_api->GetDimensions(tensor_info, (int64_t *) t->output_node_dims.data(), num_dims));
 		for (size_t j = 0; j < num_dims; j++) {
@@ -115,24 +115,56 @@ void CheckStatus(OrtStatus * status)
 	}
 }
 
+OrtValue *CreateTensor(std::vector<int64_t> &tensor_dims, float *data, size_t size)
+{
+	OrtStatus *status;
+	OrtValue *tensor = NULL;
+
+	OrtMemoryInfo *memory_info;
+	CheckStatus(onnx_runtime_api->CreateCpuMemoryInfo(OrtArenaAllocator, OrtMemTypeDefault, &memory_info));
+    status = onnx_runtime_api->CreateTensorWithDataAsOrtValue(memory_info,
+    	data, size * sizeof(float), 
+    	tensor_dims.data(), tensor_dims.size(),
+    	ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, 
+    	&tensor);
+	CheckStatus(status);
+	onnx_runtime_api->ReleaseMemoryInfo(memory_info);
+
+	int is_tensor;
+	CheckStatus(onnx_runtime_api->IsTensor(tensor, &is_tensor));
+	assert(is_tensor);
+
+	return tensor;
+}
+
+float *TensorValues(OrtValue *tensor)
+{
+	float *floatarray;
+	CheckStatus(onnx_runtime_api->GetTensorMutableData(tensor, (void **) &floatarray));
+	return floatarray;
+}
+
 void ReleaseTensor(OrtValue *tensor)
 {
 	onnx_runtime_api->ReleaseValue(tensor);
 }
 
-ImageCleanEngine *engine_create()
+OrtEngine *CreateEngine(const char *model_path)
 {
-	ImageCleanEngine *t;
+	OrtEngine *t;
 
-	t = (ImageCleanEngine *) calloc((size_t) 1, sizeof(ImageCleanEngine));
+	printf("Creating ONNX Runtime Engine for model %s ...\n", model_path);
+
+	t = (OrtEngine *) calloc((size_t) 1, sizeof(OrtEngine));
 	if (! t) {
 		fprintf(stderr, "Allocate memeory.");
 		return NULL;
 	}
 	t->magic = ENGINE_MAGIC;
+	t->model_path = model_path;
 
 	// Building ...
-	CheckStatus(onnx_runtime_api->CreateEnv(ORT_LOGGING_LEVEL_WARNING, "ImageClean", &(t->env)));
+	CheckStatus(onnx_runtime_api->CreateEnv(ORT_LOGGING_LEVEL_WARNING, "OrtEngine", &(t->env)));
 
 	// initialize session options if needed
 	CheckStatus(onnx_runtime_api->CreateSessionOptions(&(t->session_options)));
@@ -146,7 +178,6 @@ ImageCleanEngine *engine_create()
 	// E.g. for CUDA include cuda_provider_factory.h and uncomment the following line:
 	// OrtSessionOptionsAppendExecutionProvider_CUDA(t->sessionOptions, 0);
 
-	const char *model_path = "squeezenet.onnx"; // "ImageClean.onnx";
 	CheckStatus(onnx_runtime_api->CreateSession(t->env, model_path, t->session_options, &(t->session)));
 
 	// Setup input_node_names;
@@ -155,40 +186,18 @@ ImageCleanEngine *engine_create()
 	// Setup output_node_names;
 	SetOutputNodes(t);
 
+	printf("Create OK.\n");
+
 	return t;
 }
 
-int engine_valid(ImageCleanEngine *engine)
+int ValidEngine(OrtEngine *t)
 {
-	return (!engine || engine->magic != ENGINE_MAGIC) ? 0 : 1;
-}
-
-// CreateFloatTensor(tensor_dims, float *data, size_t size)
-
-OrtValue *engine_make_input(ImageCleanEngine *t, float *data, size_t size)
-{
-	OrtStatus *status;
-	OrtValue *input_tensor = NULL;
-
-	OrtMemoryInfo *memory_info;
-	CheckStatus(onnx_runtime_api->CreateCpuMemoryInfo(OrtArenaAllocator, OrtMemTypeDefault, &memory_info));
-    status = onnx_runtime_api->CreateTensorWithDataAsOrtValue(memory_info,
-    	data, size * sizeof(float), 
-    	t->input_node_dims.data(), t->input_node_dims.size() /*input_node_dims.size */,
-    	ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, 
-    	&input_tensor);
-	CheckStatus(status);
-	onnx_runtime_api->ReleaseMemoryInfo(memory_info);
-
-	int is_tensor;
-	CheckStatus(onnx_runtime_api->IsTensor(input_tensor, &is_tensor));
-	assert(is_tensor);
-
-	return input_tensor;
+	return (!t || t->magic != ENGINE_MAGIC) ? 0 : 1;
 }
 
 // SimpleForward
-OrtValue *engine_forward(ImageCleanEngine *engine, OrtValue *input_tensor)
+OrtValue *SimpleForward(OrtEngine *engine, OrtValue *input_tensor)
 {
 	int is_tensor;
 	OrtStatus *status;
@@ -216,9 +225,9 @@ OrtValue *engine_forward(ImageCleanEngine *engine, OrtValue *input_tensor)
 	return output_tensor;
 }
 
-void engine_destroy(ImageCleanEngine *engine)
+void ReleaseEngine(OrtEngine *engine)
 {
-	if (! engine_valid(engine))
+	if (! ValidEngine(engine))
 		return;
 
 	// Release ...
@@ -234,18 +243,11 @@ void engine_destroy(ImageCleanEngine *engine)
 	free(engine);
 }
 
-float *FloatValues(OrtValue *tensor)
+void EngineTest()
 {
-	float *floatarr;
-	CheckStatus(onnx_runtime_api->GetTensorMutableData(tensor, (void **) &floatarr));
-	return floatarr;
-}
+	OrtEngine *engine;
 
-void test()
-{
-	ImageCleanEngine *engine;
-
-	engine = engine_create();
+	engine = CreateEngine("squeezenet.onnx");
 	CheckEngine(engine);
 
 	size_t input_tensor_size = 224 * 224 * 3;	// simplify ... using known dim values to calculate size
@@ -255,11 +257,11 @@ void test()
 	for (size_t i = 0; i < input_tensor_size; i++)
 		input_tensor_values[i] = (float) i / (input_tensor_size + 1);
 
-	OrtValue *input_tensor = engine_make_input(engine, input_tensor_values.data(), input_tensor_size);
+	OrtValue *input_tensor = CreateTensor(engine->input_node_dims, input_tensor_values.data(), input_tensor_size);
 
-	OrtValue *output_tensor = engine_forward(engine, input_tensor);
+	OrtValue *output_tensor = SimpleForward(engine, input_tensor);
 
-	float *f = FloatValues(output_tensor);
+	float *f = TensorValues(output_tensor);
 
 	for (int i = 0; i < 5; i++) {
 		printf("Score for class [%d] =  %f\n", i, f[i]);
@@ -268,5 +270,5 @@ void test()
 	ReleaseTensor(input_tensor);
 	ReleaseTensor(output_tensor);
 
-	engine_destroy(engine);	
+	ReleaseEngine(engine);	
 }
