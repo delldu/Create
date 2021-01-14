@@ -10,10 +10,6 @@
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
-// #if defined(__cplusplus)
-// extern "C" {
-// #endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <onnxruntime_c_api.h>
@@ -31,11 +27,11 @@ typedef struct {
 	OrtSession *session;
 	OrtSessionOptions *session_options;
 
-	std::vector <const char *>input_node_names;
-	std::vector < int64_t > input_node_dims;   // classical model has only 1 input node {1, 3, 224, 224}.
+	 std::vector < const char *>input_node_names;
+	 std::vector < int64_t > input_node_dims;	// classical model has only 1 input node {1, 3, 224, 224}.
 
-	std::vector <const char *>output_node_names;
-	std::vector < int64_t > output_node_dims;   // classical model has only 1 output node {1, 1000, 1, 1}.
+	 std::vector < const char *>output_node_names;
+	 std::vector < int64_t > output_node_dims;	// classical model has only 1 output node {1, 1000, 1, 1}.
 } OrtEngine;
 
 #define CheckEngine(e) \
@@ -46,21 +42,17 @@ typedef struct {
             } \
     } while(0)
 
-void CheckStatus(OrtStatus *status);
+void CheckStatus(OrtStatus * status);
 
-OrtValue *CreateTensor(std::vector<int64_t> &tensor_dims, float *data, size_t size);
-float *TensorValues(OrtValue *tensor);
-void ReleaseTensor(OrtValue *tensor);
+OrtValue *CreateTensor(std::vector < int64_t > &tensor_dims, float *data, size_t size);
+float *TensorValues(OrtValue * tensor);
+void ReleaseTensor(OrtValue * tensor);
 
 OrtEngine *CreateEngine(const char *model_path);
-int ValidEngine(OrtEngine *engine);
-OrtValue *SimpleForward(OrtEngine &engine, OrtValue *input_tensor);
-void ReleaseEngine(OrtEngine *engine);
+int ValidEngine(OrtEngine * engine);
+OrtValue *SimpleForward(OrtEngine & engine, OrtValue * input_tensor);
+void ReleaseEngine(OrtEngine * engine);
 
 void EngineTest();
 
-// #if defined(__cplusplus)
-// }
-// #endif
-
-#endif	// _ENGINE_H
+#endif							// _ENGINE_H

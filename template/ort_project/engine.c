@@ -17,7 +17,7 @@
 #define ENGINE_MAGIC MAKE_FOURCC('O', 'N', 'R', 'T')
 const OrtApi *onnx_runtime_api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
 
-void SetInputNodes(OrtEngine *t)
+void SetInputNodes(OrtEngine * t)
 {
 	size_t num_nodes;
 	OrtAllocator *allocator;
@@ -28,7 +28,7 @@ void SetInputNodes(OrtEngine *t)
 	printf("Input nodes:\n");
 	for (size_t i = 0; i < num_nodes; i++) {
 		char *name;
-		
+
 		CheckStatus(onnx_runtime_api->SessionGetInputName(t->session, i, allocator, &name));
 		t->input_node_names.push_back(name);
 
@@ -61,7 +61,7 @@ void SetInputNodes(OrtEngine *t)
 	// onnx_runtime_api->ReleaseAllocator(allocator); segmant fault !!!
 }
 
-void SetOutputNodes(OrtEngine *t)
+void SetOutputNodes(OrtEngine * t)
 {
 	OrtAllocator *allocator;
 
@@ -115,18 +115,17 @@ void CheckStatus(OrtStatus * status)
 	}
 }
 
-OrtValue *CreateTensor(std::vector<int64_t> &tensor_dims, float *data, size_t size)
+OrtValue *CreateTensor(std::vector < int64_t > &tensor_dims, float *data, size_t size)
 {
 	OrtStatus *status;
 	OrtValue *tensor = NULL;
 
 	OrtMemoryInfo *memory_info;
 	CheckStatus(onnx_runtime_api->CreateCpuMemoryInfo(OrtArenaAllocator, OrtMemTypeDefault, &memory_info));
-    status = onnx_runtime_api->CreateTensorWithDataAsOrtValue(memory_info,
-    	data, size * sizeof(float), 
-    	tensor_dims.data(), tensor_dims.size(),
-    	ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, 
-    	&tensor);
+	status = onnx_runtime_api->CreateTensorWithDataAsOrtValue(memory_info,
+															  data, size * sizeof(float),
+															  tensor_dims.data(), tensor_dims.size(),
+															  ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, &tensor);
 	CheckStatus(status);
 	onnx_runtime_api->ReleaseMemoryInfo(memory_info);
 
@@ -137,14 +136,14 @@ OrtValue *CreateTensor(std::vector<int64_t> &tensor_dims, float *data, size_t si
 	return tensor;
 }
 
-float *TensorValues(OrtValue *tensor)
+float *TensorValues(OrtValue * tensor)
 {
 	float *floatarray;
 	CheckStatus(onnx_runtime_api->GetTensorMutableData(tensor, (void **) &floatarray));
 	return floatarray;
 }
 
-void ReleaseTensor(OrtValue *tensor)
+void ReleaseTensor(OrtValue * tensor)
 {
 	onnx_runtime_api->ReleaseValue(tensor);
 }
@@ -156,7 +155,7 @@ OrtEngine *CreateEngine(const char *model_path)
 	printf("Creating ONNX Runtime Engine for model %s ...\n", model_path);
 
 	t = (OrtEngine *) calloc((size_t) 1, sizeof(OrtEngine));
-	if (! t) {
+	if (!t) {
 		fprintf(stderr, "Allocate memeory.");
 		return NULL;
 	}
@@ -168,15 +167,15 @@ OrtEngine *CreateEngine(const char *model_path)
 
 	// initialize session options if needed
 	CheckStatus(onnx_runtime_api->CreateSessionOptions(&(t->session_options)));
-	// CheckStatus(onnx_runtime_api->SetIntraOpNumThreads(t->session_options, 0));	// 0 -- for default 
+	// CheckStatus(onnx_runtime_api->SetIntraOpNumThreads(t->session_options, 0));  // 0 -- for default 
 
 	// Sets graph optimization level
-	CheckStatus(onnx_runtime_api->SetSessionGraphOptimizationLevel(t->session_options, ORT_ENABLE_BASIC));
-	// ORT_ENABLE_EXTENDED, ORT_ENABLE_ALL
+	CheckStatus(onnx_runtime_api->SetSessionGraphOptimizationLevel(t->session_options, ORT_ENABLE_ALL));
+	// ORT_ENABLE_BASIC, ORT_ENABLE_EXTENDED, ORT_ENABLE_ALL
 
 	// Optionally add more execution providers via session_options
 	// E.g. for CUDA include cuda_provider_factory.h and uncomment the following line:
-	// OrtSessionOptionsAppendExecutionProvider_CUDA(t->sessionOptions, 0);
+	// OrtSessionOptionsAppendExecutionProvider_CUDA(t->session_options, 0);
 
 	CheckStatus(onnx_runtime_api->CreateSession(t->env, model_path, t->session_options, &(t->session)));
 
@@ -191,13 +190,13 @@ OrtEngine *CreateEngine(const char *model_path)
 	return t;
 }
 
-int ValidEngine(OrtEngine *t)
+int ValidEngine(OrtEngine * t)
 {
 	return (!t || t->magic != ENGINE_MAGIC) ? 0 : 1;
 }
 
 // SimpleForward
-OrtValue *SimpleForward(OrtEngine *engine, OrtValue *input_tensor)
+OrtValue *SimpleForward(OrtEngine * engine, OrtValue * input_tensor)
 {
 	int is_tensor;
 	OrtStatus *status;
@@ -207,15 +206,15 @@ OrtValue *SimpleForward(OrtEngine *engine, OrtValue *input_tensor)
 	assert(is_tensor);
 
 	/* prototype
-	ORT_API2_STATUS(Run, _Inout_ OrtSession* sess, _In_opt_ const OrtRunOptions* run_options,
-      _In_reads_(input_len) const char* const* input_names,
-      _In_reads_(input_len) const OrtValue* const* input, size_t input_len,
-      _In_reads_(output_names_len) const char* const* output_names1, size_t output_names_len,
-      _Inout_updates_all_(output_names_len) OrtValue** output);
-	*/
-	status = onnx_runtime_api->Run(engine->session, NULL, 
-		engine->input_node_names.data(), (const OrtValue * const *) &input_tensor, 1,
-		engine->output_node_names.data(), 1, &output_tensor);
+	   ORT_API2_STATUS(Run, _Inout_ OrtSession* sess, _In_opt_ const OrtRunOptions* run_options,
+	   _In_reads_(input_len) const char* const* input_names,
+	   _In_reads_(input_len) const OrtValue* const* input, size_t input_len,
+	   _In_reads_(output_names_len) const char* const* output_names1, size_t output_names_len,
+	   _Inout_updates_all_(output_names_len) OrtValue** output);
+	 */
+	status = onnx_runtime_api->Run(engine->session, NULL,
+								   engine->input_node_names.data(), (const OrtValue * const *) &input_tensor, 1,
+								   engine->output_node_names.data(), 1, &output_tensor);
 
 	CheckStatus(status);
 
@@ -225,9 +224,9 @@ OrtValue *SimpleForward(OrtEngine *engine, OrtValue *input_tensor)
 	return output_tensor;
 }
 
-void ReleaseEngine(OrtEngine *engine)
+void ReleaseEngine(OrtEngine * engine)
 {
-	if (! ValidEngine(engine))
+	if (!ValidEngine(engine))
 		return;
 
 	// Release ...
@@ -259,16 +258,19 @@ void EngineTest()
 
 	OrtValue *input_tensor = CreateTensor(engine->input_node_dims, input_tensor_values.data(), input_tensor_size);
 
-	OrtValue *output_tensor = SimpleForward(engine, input_tensor);
+	OrtValue *output_tensor;
 
-	float *f = TensorValues(output_tensor);
+	for (int k = 0; k < 1000; k++) {
+		output_tensor = SimpleForward(engine, input_tensor);
+		float *f = TensorValues(output_tensor);
 
-	for (int i = 0; i < 5; i++) {
-		printf("Score for class [%d] =  %f\n", i, f[i]);
+		for (int i = 0; i < 5; i++) {
+			printf("Score for class [%d] =  %f\n", i, f[i]);
+		}
+		ReleaseTensor(output_tensor);
 	}
 
 	ReleaseTensor(input_tensor);
-	ReleaseTensor(output_tensor);
 
-	ReleaseEngine(engine);	
+	ReleaseEngine(engine);
 }
