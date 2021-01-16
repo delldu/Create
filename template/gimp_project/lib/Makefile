@@ -1,23 +1,22 @@
 #/************************************************************************************
 #***
-#***	Copyright 2020 Dell(18588220928g@163.com), All Rights Reserved.
+#***	Copyright 2021 Dell(18588220928g@163.com), All Rights Reserved.
 #***
-#***	File Author: Dell, 2020-11-16 11:09:15
+#***	File Author: Dell, 2021-01-16 12:41:44
 #***
 #************************************************************************************/
 #
-INSTALL_DIR := ~/snap/gimp/current/.config/GIMP/2.10/plug-ins
 
-TARGET := zoom
+LIB_NAME := libplugin
 
+INCS	:= \
+	$(shell gimptool-2.0 --cflags)
+
+	# -I$(BUILD_DIR)/include
 SOURCE :=  \
-	zoom.c
+	plugin.c
 
-INCS	:= $(shell gimptool-2.0 --cflags) -I../common
-LIBS	:= $(shell gimptool-2.0 --libs) -lnimage -ljpeg -lpng -lm
-
-DEFINES :=
-
+DEFINES := 
 CFLAGS := -O2 -fPIC -Wall -Wextra
 LDFLAGS := -fPIC
 
@@ -26,19 +25,31 @@ LDFLAGS := -fPIC
 #****************************************************************************
 CFLAGS   := ${CFLAGS} ${DEFINES}
 CXXFLAGS := ${CXXFLAGS} ${DEFINES}
-
-OBJECT := $(addsuffix .o,$(basename ${SOURCE}))
+OBJECTS := $(addsuffix .o,$(basename ${SOURCE}))
 
 #****************************************************************************
 # Compile block
 #****************************************************************************
-all: ${TARGET}
+all: staticlib
+# sharelib
+# staticlib
 
-${TARGET}: ${OBJECT}
-	${CC} ${LDFLAGS} -o ${TARGET} ${OBJECT} ${LIBS}
+sharelib: $(OBJECTS)
+	$(LD) $(LDFLAGS) -shared -soname $(LIB_NAME).so -o $(LIB_NAME).so $(OBJECTS)
+	# cp $(LIB_NAME).so ${INSTALL_DIR}/lib
+	# mv $(LIB_NAME).so ../lib
 
-install: ${TARGET}
-	install -m 755 ${TARGET} ${INSTALL_DIR}
+
+staticlib:$(OBJECTS)
+	$(AR) $(ARFLAGS) $(LIB_NAME).a $(OBJECTS)
+	# cp $(LIB_NAME).a ${INSTALL_DIR}/lib
+	# mv $(LIB_NAME).a ../lib
+
+
+#****************************************************************************
+# Depend block
+#****************************************************************************
+depend:
 
 #****************************************************************************
 # common rules
@@ -49,13 +60,12 @@ install: ${TARGET}
 %.o : %.c
 	${CC} ${CFLAGS} ${INCS} -c $< -o $@
 
-#****************************************************************************
-# Depend block
-#****************************************************************************
-depend:
-
-clear:
-	rm -f ${OBJECT} ${TARGET}
+install:
+	@echo "Nothing to do."
 
 uninstall:
-	rm -f ${INSTALL_DIR}/${TARGET}
+	@echo "Nothing to do."
+
+clean:
+	rm -rf *.a *.so *.o $(OBJECTS)
+

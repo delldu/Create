@@ -6,10 +6,9 @@
 ***
 ************************************************************************************/
 
-#include <libgimp/gimp.h>
-#include <nimage.h>
+#include "plugin.h"
 
-#define PLUG_IN_PROC "plug-in-clean"
+#define PLUG_IN_PROC "plug-in-gim_clean"
 
 static void query(void);
 static void run(const gchar * name,

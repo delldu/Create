@@ -1,24 +1,14 @@
 /************************************************************************************
 ***
-*** Copyright 2020 Dell(18588220928g@163.com), All Rights Reserved.
+***	Copyright 2021 Dell(18588220928g@163.com), All Rights Reserved.
 ***
-*** File Author: Dell, 2020-11-16 12:16:01
+***	File Author: Dell, 2021-01-16 12:41:12
 ***
 ************************************************************************************/
 
-#ifndef __COMMON_NIMAGE_H
-#define __COMMON_NIMAGE_H
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+#include "plugin.h"
 
-#include <nimage/image.h>
-#include <libgimp/gimp.h>
-
-#define CheckPoint(fmt, arg...) printf("# CheckPoint: %d(%s): " fmt "\n", (int)__LINE__, __FILE__, ##arg)
-
-// Get image from Gimp
 IMAGE *image_fromgimp(GimpDrawable * drawable, int x, int y, int width, int height)
 {
 	gint i, j;
@@ -158,11 +148,78 @@ int image_togimp(IMAGE * image, GimpDrawable * drawable, int x, int y, int width
 	return 0;
 }
 
+TENSOR *tensor_fromgimp(GimpDrawable * drawable, int x, int y, int width, int height)
+{
+	gint i, j, k;
+	gint c, channels;
+	GimpPixelRgn input_rgn;
+	TENSOR *tensor = NULL;
+	guchar *rgn_data, *s, *d;
 
-#if defined(__cplusplus)
+	channels = drawable->bpp;
+	gimp_pixel_rgn_init(&input_rgn, drawable, 0, 0, drawable->width, drawable->height, FALSE, FALSE);
+
+	tensor = tensor_create(1 /*batch*/, channels, height, width);
+	if (!tensor_valid(tensor)) {
+		g_print("Create tensor.\n");
+		return NULL;
+	}
+
+	rgn_data = g_new(guchar, height * width * channels);
+	if (!rgn_data) {
+		g_print("Memory allocate (%d bytes) failure.\n", height * width * channels);
+		tensor_destroy(tensor);
+		return NULL;
+	}
+
+	gimp_pixel_rgn_get_rect(&input_rgn, rgn_data, x, y, width, height);
+
+	s = rgn_data;		// source
+	d = tensor->base;	// destion
+	for (c = 0; i < channels; c++) {
+		for (i = 0; i < height; i++) {
+			k = i * width * channels; // start row i, for HxWxC format
+			for (j = 0; j < width; j++) {
+				*d++ = s[k + j*channels + c];
+			}
+		}
+	}
+
+	g_free(rgn_data);
+
+	return tensor;
 }
-#endif
 
-#endif	// __COMMON_NIMAGE_H
+int tensor_togimp(TENSOR * tensor, GimpDrawable * drawable, int x, int y, int width, int height)
+{
+	gint i, j, k;
+	gint c, channels;
+	GimpPixelRgn output_rgn;
+	guchar *rgn_data, *s, *d;
 
+	channels = drawable->bpp;
+	gimp_pixel_rgn_init(&output_rgn, drawable, 0, 0, drawable->width, drawable->height, TRUE, TRUE);
 
+	rgn_data = g_new(guchar, height * width * channels);
+	if (!rgn_data) {
+		g_print("Memory allocate (%d bytes) failure.\n", height * width * channels);
+		return -1;
+	}
+
+	d = rgn_data;
+	s = tensor->base;
+	for (c = 0; i < channels; c++) {
+		for (i = 0; i < height; i++) {
+			k = i * width * channels; // start row i for HxWxC
+			for (j = 0; j < width; j++) {
+				d[k + j*channels + c] = *s++;
+			}
+		}
+	}
+
+	gimp_pixel_rgn_set_rect(&output_rgn, rgn_data, x, y, width, height);
+
+	g_free(rgn_data);
+
+	return 0;
+}

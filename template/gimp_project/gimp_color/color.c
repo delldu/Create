@@ -6,10 +6,9 @@
 ***
 ************************************************************************************/
 
-#include <libgimp/gimp.h>
-#include <nimage.h>
+#include "plugin.h"
 
-#define PLUG_IN_PROC "plug-in-color"
+#define PLUG_IN_PROC "plug-in-gim_color"
 
 static void query(void);
 static void run(const gchar * name,

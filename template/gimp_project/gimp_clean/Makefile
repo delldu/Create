@@ -7,14 +7,13 @@
 #************************************************************************************/
 #
 INSTALL_DIR := ~/snap/gimp/current/.config/GIMP/2.10/plug-ins
-
-TARGET := nima
+TARGET := gimp_clean
 
 SOURCE :=  \
-	nima.c
+	clean.c
 
-INCS	:= $(shell gimptool-2.0 --cflags) -I../common
-LIBS	:= $(shell gimptool-2.0 --libs) -lnimage -ljpeg -lpng -lm
+INCS	:= -I../lib $(shell gimptool-2.0 --cflags)
+LIBS	:= -L../lib -lplugin $(shell gimptool-2.0 --libs) -lnimage -lnng -ljpeg -lpng -lpthread -lm
 
 DEFINES :=
 
@@ -54,7 +53,7 @@ install: ${TARGET}
 #****************************************************************************
 depend:
 
-clear:
+clean:
 	rm -f ${OBJECT} ${TARGET}
 
 uninstall:

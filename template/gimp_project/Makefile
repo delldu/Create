@@ -8,11 +8,12 @@
 #
 
 XSUBDIRS :=  \
-	clean \
-	zoom \
-	color \
-	patch \
-	nima
+	lib \
+	gimp_clean \
+	gimp_zoom \
+	gimp_color \
+	gimp_patch \
+	gimp_nima
 
 
 BSUBDIRS :=
@@ -39,9 +40,9 @@ uninstall:
 		fi \
 	done	
 
-clear:
+clean:
 	@for d in $(XSUBDIRS) ; do \
 		if [ -d $$d ] ; then \
-			$(MAKE) -C $$d clear || exit 1; \
+			$(MAKE) -C $$d clean || exit 1; \
 		fi \
 	done	
