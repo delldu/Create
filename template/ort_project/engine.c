@@ -17,7 +17,7 @@
 #define ENGINE_MAGIC MAKE_FOURCC('O', 'N', 'R', 'T')
 const OrtApi *onnx_runtime_api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
 
-void SetInputNodes(OrtEngine * t)
+void InitInputNodes(OrtEngine * t)
 {
 	size_t num_nodes;
 	OrtAllocator *allocator;
@@ -61,7 +61,7 @@ void SetInputNodes(OrtEngine * t)
 	// onnx_runtime_api->ReleaseAllocator(allocator); segmant fault !!!
 }
 
-void SetOutputNodes(OrtEngine * t)
+void InitOutputNodes(OrtEngine * t)
 {
 	OrtAllocator *allocator;
 
@@ -115,6 +115,17 @@ void CheckStatus(OrtStatus * status)
 	}
 }
 
+void CheckTensor(OrtValue *tensor)
+{
+	int is_tensor;
+	CheckStatus(onnx_runtime_api->IsTensor(tensor, &is_tensor));
+
+	if (! is_tensor) {
+		fprintf(stderr, "Tensor is not valid\n");
+		exit(1);
+	}
+}
+
 OrtValue *CreateTensor(std::vector < int64_t > &tensor_dims, float *data, size_t size)
 {
 	OrtStatus *status;
@@ -129,11 +140,29 @@ OrtValue *CreateTensor(std::vector < int64_t > &tensor_dims, float *data, size_t
 	CheckStatus(status);
 	onnx_runtime_api->ReleaseMemoryInfo(memory_info);
 
-	int is_tensor;
-	CheckStatus(onnx_runtime_api->IsTensor(tensor, &is_tensor));
-	assert(is_tensor);
+	CheckTensor(tensor);
 
 	return tensor;
+}
+
+std::vector <int64_t> TensorDimensions(OrtValue* tensor)
+{
+	std::vector < int64_t > dims;
+
+	struct OrtTensorTypeAndShapeInfo* shape_info;
+	CheckStatus(onnx_runtime_api->GetTensorTypeAndShape(tensor, &shape_info));
+
+	size_t dim_count;
+	CheckStatus(onnx_runtime_api->GetDimensionsCount(shape_info, &dim_count));
+	if (dim_count != 4) {
+		fprintf(stderr, "tensor must have 4 dimensions");
+		exit(-1);
+	}
+	dims.resize(dim_count);
+
+	CheckStatus(onnx_runtime_api->GetDimensions(shape_info, dims.data(), dims.size()));
+
+	return dims;
 }
 
 float *TensorValues(OrtValue * tensor)
@@ -180,10 +209,10 @@ OrtEngine *CreateEngine(const char *model_path)
 	CheckStatus(onnx_runtime_api->CreateSession(t->env, model_path, t->session_options, &(t->session)));
 
 	// Setup input_node_names;
-	SetInputNodes(t);
+	InitInputNodes(t);
 
 	// Setup output_node_names;
-	SetOutputNodes(t);
+	InitOutputNodes(t);
 
 	printf("Create OK.\n");
 
@@ -198,12 +227,12 @@ int ValidEngine(OrtEngine * t)
 // SimpleForward
 OrtValue *SimpleForward(OrtEngine * engine, OrtValue * input_tensor)
 {
-	int is_tensor;
 	OrtStatus *status;
 	OrtValue *output_tensor = NULL;
 
-	CheckStatus(status = onnx_runtime_api->IsTensor(input_tensor, &is_tensor));
-	assert(is_tensor);
+	CheckTensor(input_tensor);
+
+	CheckPoint();
 
 	/* prototype
 	   ORT_API2_STATUS(Run, _Inout_ OrtSession* sess, _In_opt_ const OrtRunOptions* run_options,
@@ -216,10 +245,13 @@ OrtValue *SimpleForward(OrtEngine * engine, OrtValue * input_tensor)
 								   engine->input_node_names.data(), (const OrtValue * const *) &input_tensor, 1,
 								   engine->output_node_names.data(), 1, &output_tensor);
 
+	CheckPoint();
+
 	CheckStatus(status);
 
-	CheckStatus(onnx_runtime_api->IsTensor(output_tensor, &is_tensor));
-	assert(is_tensor);
+	CheckTensor(output_tensor);
+
+	CheckPoint();
 
 	return output_tensor;
 }
@@ -246,10 +278,10 @@ void EngineTest()
 {
 	OrtEngine *engine;
 
-	engine = CreateEngine("squeezenet.onnx");
+	engine = CreateEngine("demo.onnx");
 	CheckEngine(engine);
 
-	size_t input_tensor_size = 224 * 224 * 3;	// simplify ... using known dim values to calculate size
+	size_t input_tensor_size = 512 * 512 * 3;	// simplify ... using known dim values to calculate size
 	// use OrtGetTensorShapeElementCount() to get official size!
 	std::vector < float >input_tensor_values(input_tensor_size);
 	// initialize input data with values in [0.0, 1.0]
@@ -260,7 +292,7 @@ void EngineTest()
 
 	OrtValue *output_tensor;
 
-	for (int k = 0; k < 1000; k++) {
+	for (int k = 0; k < 1; k++) {
 		output_tensor = SimpleForward(engine, input_tensor);
 		float *f = TensorValues(output_tensor);
 

@@ -16,9 +16,7 @@ SOURCE :=  \
 	main.c
 
 INCS	:=  -I$(ONNXRUNTIME_INSTALL_DIR)/include
-	#  -I$(BUILD_DIR)/include
-LIBS	:= -L$(ONNXRUNTIME_INSTALL_DIR)/lib -lonnxruntime
-	#-L$(BUILD_DIR)/lib -lstd... -lstdc++
+LIBS	:= -L$(ONNXRUNTIME_INSTALL_DIR)/lib -lonnxruntime -lnimage -lpng -ljpeg -lnng -lpthread
 
 DEFINES := -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++14 -std=gnu++14 
 

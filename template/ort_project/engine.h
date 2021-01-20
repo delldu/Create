@@ -13,10 +13,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <onnxruntime_c_api.h>
-// #include <cmath>
 #include <vector>
 
 #define DWORD uint32_t
+#define CheckPoint(fmt, arg...) printf("# CheckPoint: %d(%s): " fmt "\n", (int)__LINE__, __FILE__, ##arg)
 
 // ONNX Runtime Engine
 typedef struct {
@@ -43,14 +43,16 @@ typedef struct {
     } while(0)
 
 void CheckStatus(OrtStatus * status);
+void CheckTensor(OrtValue *tensor);
 
 OrtValue *CreateTensor(std::vector < int64_t > &tensor_dims, float *data, size_t size);
+std::vector <int64_t> TensorDimensions(OrtValue* tensor);
 float *TensorValues(OrtValue * tensor);
 void ReleaseTensor(OrtValue * tensor);
 
 OrtEngine *CreateEngine(const char *model_path);
 int ValidEngine(OrtEngine * engine);
-OrtValue *SimpleForward(OrtEngine & engine, OrtValue * input_tensor);
+OrtValue *SimpleForward(OrtEngine *engine, OrtValue * input_tensor);
 void ReleaseEngine(OrtEngine * engine);
 
 void EngineTest();
