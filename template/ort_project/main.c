@@ -54,7 +54,7 @@ OrtValue *ImageToTensor(IMAGE *image)
 
 	tensor = CreateTensor(dims, data, 1 * 4 * image->height * image->width);
 
-	free(data);
+	// free(data); xxxx8888
 
 	return tensor;
 }
@@ -83,9 +83,11 @@ IMAGE *TensorToImage(OrtValue *tensor)
 	// B
 	d = data + 2 * dims[2] * dims[3];
 	image_foreach(image, i, j) {
-		image->ie[i][j].g = (uint8_t)(*d * 255.0); d++;
+		image->ie[i][j].b = (uint8_t)(*d * 255.0); d++;
 	}
 	// A ?
+	CheckPoint("Channels = %d", dims[1]);
+
 	if (dims[1] > 3) {
 		// A
 		d = data + 3 * dims[2] * dims[3];
@@ -153,42 +155,23 @@ int main(int argc, char **argv)
 
 	// EngineTest();
 
+	OrtEngine *engine = CreateEngine(model_onnx); CheckEngine(engine);
 
-	CheckPoint();
-
-	OrtEngine *engine;
-	engine = CreateEngine(model_onnx);
-	CheckEngine(engine);
-
-	CheckPoint();
-
-	IMAGE *image;
-	image = image_load(input_png); check_image(image);
+	IMAGE *image = image_load(input_png); check_image(image);
 	OrtValue *input_tensor = ImageToTensor(image);
-	OrtValue *output_tensor;
+	image_destroy(image);
 
-	output_tensor = SimpleForward(engine, input_tensor);
+	OrtValue *output_tensor = SimpleForward(engine, input_tensor);
 
-	CheckPoint();
-
-	IMAGE *output_image = TensorToImage(output_tensor);
-	check_image(output_image);
-
-	CheckPoint();
-
+	IMAGE *output_image = TensorToImage(output_tensor); check_image(output_image);
 	image_save(output_image, output_file);
 	image_destroy(output_image);
-
-	CheckPoint();
 
 	ReleaseTensor(output_tensor);
 	ReleaseTensor(input_tensor);
 
 	ReleaseEngine(engine);
 
-	CheckPoint();
-
-	image_destroy(image);
 
 	return 0;
 }
