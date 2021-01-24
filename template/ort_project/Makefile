@@ -6,7 +6,8 @@
 #***
 #************************************************************************************/
 #
-
+# https://aiinfra.visualstudio.com/PublicPackages/_packaging?_a=feed&feed=ORT-Nightly
+	
 ONNXRUNTIME_INSTALL_DIR := /opt/onnxruntime
 
 TARGET := demo

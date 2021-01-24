@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include "engine.h"
+#include <cuda_provider_factory.h>
 
 // ONNX Runtime Engine
 #define MAKE_FOURCC(a,b,c,d) (((DWORD)(a) << 24) | ((DWORD)(b) << 16) | ((DWORD)(c) << 8) | ((DWORD)(d) << 0))
@@ -204,7 +205,7 @@ OrtEngine *CreateEngine(const char *model_path)
 
 	// Optionally add more execution providers via session_options
 	// E.g. for CUDA include cuda_provider_factory.h and uncomment the following line:
-	// OrtSessionOptionsAppendExecutionProvider_CUDA(t->session_options, 0);
+	OrtSessionOptionsAppendExecutionProvider_CUDA(t->session_options, 0);
 
 	CheckStatus(onnx_runtime_api->CreateSession(t->env, model_path, t->session_options, &(t->session)));
 
@@ -232,7 +233,7 @@ OrtValue *SimpleForward(OrtEngine * engine, OrtValue * input_tensor)
 
 	CheckTensor(input_tensor);
 
-	CheckPoint();
+	// CheckPoint();
 
 	/* prototype
 	   ORT_API2_STATUS(Run, _Inout_ OrtSession* sess, _In_opt_ const OrtRunOptions* run_options,
@@ -245,13 +246,13 @@ OrtValue *SimpleForward(OrtEngine * engine, OrtValue * input_tensor)
 								   engine->input_node_names.data(), (const OrtValue * const *) &input_tensor, 1,
 								   engine->output_node_names.data(), 1, &output_tensor);
 
-	CheckPoint();
+	// CheckPoint();
 
 	CheckStatus(status);
 
 	CheckTensor(output_tensor);
 
-	CheckPoint();
+	// CheckPoint();
 
 	return output_tensor;
 }

@@ -161,13 +161,23 @@ int main(int argc, char **argv)
 	OrtValue *input_tensor = ImageToTensor(image);
 	image_destroy(image);
 
-	OrtValue *output_tensor = SimpleForward(engine, input_tensor);
+	OrtValue *output_tensor;
+
+	// Test speed ...
+	int k;
+	for (k = 0; k < 10; k++) {
+		printf("%d ...\n", k);
+		output_tensor = SimpleForward(engine, input_tensor);
+		ReleaseTensor(output_tensor);
+	}
+
+	output_tensor = SimpleForward(engine, input_tensor);
 
 	IMAGE *output_image = TensorToImage(output_tensor); check_image(output_image);
 	image_save(output_image, output_file);
 	image_destroy(output_image);
-
 	ReleaseTensor(output_tensor);
+
 	ReleaseTensor(input_tensor);
 
 	ReleaseEngine(engine);
