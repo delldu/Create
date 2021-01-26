@@ -242,7 +242,7 @@ def model_setenv():
     torch.manual_seed(42)
 
     # Set default device to avoid exceptions
-    if os.environ.get("DEVICE") != "YES" and os.environ.get("DEVICE") != "NO":
+    if os.environ.get("DEVICE") != "cuda" and os.environ.get("DEVICE") != "cpu":
         os.environ["DEVICE"] = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     if os.environ["DEVICE"] == 'cuda':

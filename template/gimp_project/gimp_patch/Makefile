@@ -14,7 +14,8 @@ SOURCE :=  \
 	patch.c
 
 INCS	:= -I../lib $(shell gimptool-2.0 --cflags)
-LIBS	:= -L../lib -lplugin $(shell gimptool-2.0 --libs) -lnimage -lnng -ljpeg -lpng -lpthread -lm
+LIBS	:= -L../lib -lplugin $(shell gimptool-2.0 --libs) -lnimage -lnng -lpthread -ljpeg -lpng -lm
+
 
 DEFINES :=
 
