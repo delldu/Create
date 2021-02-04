@@ -19,8 +19,8 @@ SOURCE :=  \
 INCS	:=  -I$(ONNXRUNTIME_INSTALL_DIR)/include 
 
 LIBS	:=  -L$(ONNXRUNTIME_INSTALL_DIR)/lib -lonnxruntime \
-			-Wl,-Bstatic -lmsgpackc -lnimage \
-			-Wl,-Bdynamic -lnng -lpng -ljpeg -lpthread \
+			-Wl,-Bstatic -lmsgpackc -lnimage -lnng -lpng -ljpeg -lz \
+			-Wl,-Bdynamic -lpthread
 
 DEFINES := -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++14 -std=gnu++14 
 
