@@ -16,8 +16,11 @@ SOURCE :=  \
 	engine.c \
 	main.c
 
-INCS	:=  -I$(ONNXRUNTIME_INSTALL_DIR)/include
-LIBS	:= -L$(ONNXRUNTIME_INSTALL_DIR)/lib -lonnxruntime -lnimage -lpng -ljpeg -lnng -lpthread
+INCS	:=  -I$(ONNXRUNTIME_INSTALL_DIR)/include 
+
+LIBS	:= -L$(ONNXRUNTIME_INSTALL_DIR)/lib -lonnxruntime \
+			-lmsgpackc \
+			-lnimage -lpng -ljpeg -lnng -lpthread \
 
 DEFINES := -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++14 -std=gnu++14 
 
@@ -28,7 +31,7 @@ LDFLAGS := -fPIC -O3
 #****************************************************************************
 # Makefile code common to all platforms
 #****************************************************************************
-CXXFLAGS := ${CXXFLAGS} ${DEFINES} ${INCS}
+CXXFLAGS := ${CXXFLAGS} ${DEFINES}
 
 OBJECT := $(addsuffix .o,$(basename ${SOURCE}))
 

@@ -12,11 +12,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <onnxruntime_c_api.h>
 #include <vector>
+#include <onnxruntime_c_api.h>
+#include <msgpack.h>
 
 #define DWORD uint32_t
 #define CheckPoint(fmt, arg...) printf("# CheckPoint: %d(%s): " fmt "\n", (int)__LINE__, __FILE__, ##arg)
+#define RET_OK 0
+#define RET_ERROR (-1)
 
 // ONNX Runtime Engine
 typedef struct {
@@ -56,5 +59,11 @@ OrtValue *SimpleForward(OrtEngine *engine, OrtValue * input_tensor);
 void ReleaseEngine(OrtEngine * engine);
 
 void EngineTest();
+
+int ReqTensorEncode(int reqcode, OrtValue *tensor, float option, msgpack_sbuffer *sbuf);
+OrtValue *ReqTensorDecode(char const* buf, size_t size, int *reqcode, float *option);
+int ResTensorEncode(OrtValue *tensor, int rescode, msgpack_sbuffer *sbuf);
+OrtValue *ResTensorDecode(char const* buf, size_t size, int *rescode);
+
 
 #endif							// _ENGINE_H

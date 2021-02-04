@@ -215,7 +215,7 @@ OrtEngine *CreateEngine(const char *model_path)
 	// Setup output_node_names;
 	InitOutputNodes(t);
 
-	printf("Create OK.\n");
+	printf("Create ONNX Runtime Engine OK.\n");
 
 	return t;
 }
@@ -233,8 +233,6 @@ OrtValue *SimpleForward(OrtEngine * engine, OrtValue * input_tensor)
 
 	CheckTensor(input_tensor);
 
-	// CheckPoint();
-
 	/* prototype
 	   ORT_API2_STATUS(Run, _Inout_ OrtSession* sess, _In_opt_ const OrtRunOptions* run_options,
 	   _In_reads_(input_len) const char* const* input_names,
@@ -246,13 +244,9 @@ OrtValue *SimpleForward(OrtEngine * engine, OrtValue * input_tensor)
 								   engine->input_node_names.data(), (const OrtValue * const *) &input_tensor, 1,
 								   engine->output_node_names.data(), 1, &output_tensor);
 
-	// CheckPoint();
-
 	CheckStatus(status);
 
 	CheckTensor(output_tensor);
-
-	// CheckPoint();
 
 	return output_tensor;
 }
@@ -307,3 +301,214 @@ void EngineTest()
 
 	ReleaseEngine(engine);
 }
+
+/****************************************************************************
+* Request Tensor format:
+*	int reqcode,
+*	Tensor: int [BxCxHxW], float [d1, ..., dn]
+*	float option
+****************************************************************************/
+int ReqTensorEncode(int reqcode, OrtValue *tensor, float option, msgpack_sbuffer *sbuf)
+{
+	size_t i, n;
+	float *f;
+    msgpack_packer pk;
+	CheckTensor(tensor);
+	std::vector <int64_t> dims = TensorDimensions(tensor);
+    for (n = 1, i = 0; i < dims.size(); i++)
+	    n *= dims.at(i);
+    f = TensorValues(tensor);
+
+	// Encode start ...
+    msgpack_sbuffer_init(sbuf);
+    msgpack_packer_init(&pk, sbuf, msgpack_sbuffer_write);
+
+    // Encode reqcode
+    msgpack_pack_int(&pk, reqcode);
+
+    // Encode tensor dims
+    msgpack_pack_array(&pk, dims.size());
+    for (i = 0; i < dims.size(); i++)
+	    msgpack_pack_int(&pk, dims.at(i));
+
+    // Encode tensor data
+    msgpack_pack_array(&pk, n);
+    for (i = 0; i < n; i++)
+    	msgpack_pack_float(&pk, *f++);
+
+    // Encode option
+    msgpack_pack_float(&pk, option);
+
+	return RET_OK;
+}
+
+OrtValue *ReqTensorDecode(char const* buf, size_t size, int *reqcode, float *option)
+{
+    size_t off = 0;
+    msgpack_unpacked result;
+    msgpack_unpack_return ret;
+	OrtValue *tensor = NULL;
+	std::vector <int64_t> dims;
+	std::vector <float> data;
+
+    msgpack_unpacked_init(&result);
+
+    // Decode reqcode
+    *reqcode = 0;
+    ret = msgpack_unpack_next(&result, buf, size, &off);
+    if (ret == MSGPACK_UNPACK_SUCCESS) {
+        msgpack_object obj = result.data;
+        if (obj.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
+        	*reqcode = (int)obj.via.u64;
+        } else if (obj.type == MSGPACK_OBJECT_NEGATIVE_INTEGER) {
+        	*reqcode = (int)obj.via.i64;
+        }
+    }
+
+    // Decode tensor dims
+    ret = msgpack_unpack_next(&result, buf, size, &off);
+    if (ret == MSGPACK_UNPACK_SUCCESS) {
+        msgpack_object obj = result.data;
+        if (obj.type == MSGPACK_OBJECT_ARRAY && obj.via.array.size != 0 ) {
+	        msgpack_object* p = obj.via.array.ptr;
+	        msgpack_object* const pend = obj.via.array.ptr + obj.via.array.size;
+	        for(; p < pend; ++p)
+	        	dims.push_back((int)(p->via.i64));
+        }
+    }
+
+    // Decode tensor data
+    ret = msgpack_unpack_next(&result, buf, size, &off);
+    if (ret == MSGPACK_UNPACK_SUCCESS) {
+        msgpack_object obj = result.data;
+        if (obj.type == MSGPACK_OBJECT_ARRAY && obj.via.array.size != 0 ) {
+	        msgpack_object* p = obj.via.array.ptr;
+	        msgpack_object* const pend = obj.via.array.ptr + obj.via.array.size;
+	        for(; p < pend; ++p)
+	        	data.push_back((float)(p->via.f64));
+        }
+    }
+
+    // Decode tensor option
+    *option = 0;
+    ret = msgpack_unpack_next(&result, buf, size, &off);
+    if (ret == MSGPACK_UNPACK_SUCCESS) {
+        msgpack_object obj = result.data;
+        if (obj.type == MSGPACK_OBJECT_FLOAT) {
+        	*option = (float)obj.via.f64;
+        }
+    }
+
+    // Check buffer decode over status
+	if (ret == MSGPACK_UNPACK_PARSE_ERROR) {
+        fprintf(stderr, "The data in buf is invalid format.\n");
+	}
+    msgpack_unpacked_destroy(&result);
+
+    // Save tensor
+    tensor = CreateTensor(dims, data.data(), data.size());
+
+    dims.clear();
+    data.clear();
+
+    return tensor;
+}
+
+/****************************************************************************
+* Response Tensor format:
+*	Tensor: int [BxCxHxW], float [d1, ..., dn]
+*	int rescode
+****************************************************************************/
+int ResTensorEncode(OrtValue *tensor, int rescode, msgpack_sbuffer *sbuf)
+{
+	size_t i, n;
+	float *f;
+    msgpack_packer pk;
+	CheckTensor(tensor);
+	std::vector <int64_t> dims = TensorDimensions(tensor);
+    for (n = 1, i = 0; i < dims.size(); i++)
+	    n *= dims.at(i);
+
+	// Encode start ...
+    msgpack_sbuffer_init(sbuf);
+    msgpack_packer_init(&pk, sbuf, msgpack_sbuffer_write);
+
+    // Encode tensor dims
+    msgpack_pack_array(&pk, dims.size());
+    for (i = 0; i < dims.size(); i++)
+	    msgpack_pack_int(&pk, dims.at(i));
+
+    // Encode tensor data
+    msgpack_pack_array(&pk, n);
+    f = TensorValues(tensor);
+    for (i = 0; i < n; i++)
+    	msgpack_pack_float(&pk, *f++);
+
+    // Encode reqcode
+    msgpack_pack_int(&pk, rescode);
+
+	return RET_OK;	
+}
+
+OrtValue *ResTensorDecode(char const* buf, size_t size, int *rescode)
+{
+    size_t off = 0;
+    msgpack_unpacked result;
+    msgpack_unpack_return ret;
+	OrtValue *tensor = NULL;
+	std::vector <int64_t> dims;
+	std::vector <float> data;
+
+    msgpack_unpacked_init(&result);
+
+    // Decode tensor dims
+    ret = msgpack_unpack_next(&result, buf, size, &off);
+    if (ret == MSGPACK_UNPACK_SUCCESS) {
+        msgpack_object obj = result.data;
+        if (obj.type == MSGPACK_OBJECT_ARRAY && obj.via.array.size != 0 ) {
+	        msgpack_object* p = obj.via.array.ptr;
+	        msgpack_object* const pend = obj.via.array.ptr + obj.via.array.size;
+	        for(; p < pend; ++p)
+	        	dims.push_back((int)(p->via.i64));
+        }
+    }
+
+    // Decode tensor data
+    ret = msgpack_unpack_next(&result, buf, size, &off);
+    if (ret == MSGPACK_UNPACK_SUCCESS) {
+        msgpack_object obj = result.data;
+        if (obj.type == MSGPACK_OBJECT_ARRAY && obj.via.array.size != 0 ) {
+	        msgpack_object* p = obj.via.array.ptr;
+	        msgpack_object* const pend = obj.via.array.ptr + obj.via.array.size;
+	        for(; p < pend; ++p)
+	        	data.push_back((float)(p->via.f64));
+        }
+    }
+
+    // Decode tensor response code
+    *rescode = 0;
+    ret = msgpack_unpack_next(&result, buf, size, &off);
+    if (ret == MSGPACK_UNPACK_SUCCESS) {
+        msgpack_object obj = result.data;
+        if (obj.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
+        	*rescode = (int)obj.via.u64;
+        } else if (obj.type == MSGPACK_OBJECT_NEGATIVE_INTEGER) {
+        	*rescode = (int)obj.via.i64;
+        }
+    }
+
+    // Check buffer decode over status
+	if (ret == MSGPACK_UNPACK_PARSE_ERROR) {
+        fprintf(stderr, "The data in buf is invalid format.\n");
+	}
+    msgpack_unpacked_destroy(&result);
+
+    // Save tensor
+    tensor = CreateTensor(dims, data.data(), data.size());
+
+    dims.clear();
+    data.clear();
+
+    return tensor;
+}
+

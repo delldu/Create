@@ -86,7 +86,6 @@ IMAGE *TensorToImage(OrtValue *tensor)
 		image->ie[i][j].b = (uint8_t)(*d * 255.0); d++;
 	}
 	// A ?
-	CheckPoint("Channels = %d", dims[1]);
 
 	if (dims[1] > 3) {
 		// A
