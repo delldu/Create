@@ -21,12 +21,19 @@ import torchvision.utils as utils
 train_dataset_rootdir = "dataset/train/"
 test_dataset_rootdir = "dataset/test/"
 
+def grid_image(tensor_list, nrow=3):
+    grid = utils.make_grid(
+        torch.cat(tensor_list, dim=0), nrow=nrow)
+    ndarr = grid.mul(255).add_(0.5).clamp_(0, 255).permute(
+        1, 2, 0).to('cpu', torch.uint8).numpy()
+    image = Image.fromarray(ndarr)
+    return image
+
 def multiple_scale(data, multiple=32):
     '''
     Scale image to a multiple.
     input data is tensor, with CxHxW format.
     '''
-
     C, H, W = data.shape
     Hnew = ((H - 1) // multiple + 1)*multiple
     Wnew = ((W - 1) // multiple + 1)*multiple

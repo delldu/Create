@@ -55,58 +55,99 @@ def model_save(model, path):
     torch.save(model.state_dict(), path)
 
 
-def export_onnx(model):
+def export_onnx():
     """Export onnx model."""
 
     import onnx
+    import onnxruntime
     from onnx import optimizer
+    import numpy as np
 
-    onnx_file = "output/model.onnx"
-    weight_file = "output/model.pth"
+    onnx_file_name = "output/model.onnx"
+    model_weight_file = 'models/model.pth'
+    dummy_input = torch.randn(1, 3, 512, 512)
 
-    # 1. Load model
-    print("Loading model ...")
-    model, device = get_model(weight_file)
-    model.eval()
+    # 1. Create and load model.
+    model_setenv()
+    torch_model = get_model(model_weight_file)
+    torch_model.eval()
 
     # 2. Model export
     print("Export model ...")
-    dummy_input = torch.randn(1, 3, 512, 512)
 
     input_names = ["input"]
     output_names = ["output"]
-    # variable lenght axes
-    dynamic_axes = {'input': {0: 'batch_size', 1: 'channel', 2: "height", 3: 'width'},
-                    'output': {0: 'batch_size', 1: 'channel', 2: "height", 3: 'width'}}
-    torch.onnx.export(model, dummy_input, onnx_file,
-                      input_names=input_names,
-                      output_names=output_names,
-                      verbose=True,
-                      opset_version=11,
-                      keep_initializers_as_inputs=True,
-                      export_params=True,
-                      dynamic_axes=dynamic_axes)
+    dynamic_axes = {'input': {2: "height", 3: 'width'},
+                    'output': {2: "height", 3: 'width'}
+                    }
+
+    torch.onnx.export(torch_model, dummy_input, onnx_file_name,
+                  input_names=input_names,
+                  output_names=output_names,
+                  verbose=True,
+                  opset_version=11,
+                  keep_initializers_as_inputs=False,
+                  export_params=True,
+                  dynamic_axes=dynamic_axes)
 
     # 3. Optimize model
     print('Checking model ...')
-    model = onnx.load(onnx_file)
-    onnx.checker.check_model(model)
-
-    print("Optimizing model ...")
-    passes = ["extract_constant_to_initializer",
-              "eliminate_unused_initializer"]
-    optimized_model = optimizer.optimize(model, passes)
-    onnx.save(optimized_model, onnx_file)
+    onnx_model = onnx.load(onnx_file_name)
+    onnx.checker.check_model(onnx_model)
+    # https://github.com/onnx/optimizer
 
     # 4. Visual model
-    # python -c "import netron; netron.start('image_clean.onnx')"
+    # python -c "import netron; netron.start('output/image_zoom.onnx')"
+
+def verify_onnx():
+    """Verify onnx model."""
+
+    import onnxruntime
+    import numpy as np
+
+    model_weight_file = 'models/model.pth'
+
+    model_setenv()
+    torch_model = get_model(model_weight_file)
+    torch_model.eval()
+
+    onnx_file_name = "output/model.onnx"
+    onnxruntime_engine = onnxruntime.InferenceSession(onnx_file_name)
+
+    def to_numpy(tensor):
+        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
+    dummy_input = torch.randn(1, 3, 512, 512)
+    with torch.no_grad():
+        torch_output = torch_model(dummy_input)
+    onnxruntime_inputs = {onnxruntime_engine.get_inputs()[0].name: to_numpy(dummy_input)}
+    onnxruntime_outputs = onnxruntime_engine.run(None, onnxruntime_inputs)
+    np.testing.assert_allclose(to_numpy(torch_output), onnxruntime_outputs[0], rtol=1e-02, atol=1e-02)
+    print("Example1: Onnx model has been tested with ONNXRuntime, the result looks good !")
+
+    # Test dynamic axes
+    dummy_input = torch.randn(1, 3, 512, 511)
+    with torch.no_grad():
+        torch_output = torch_model(dummy_input)
+    onnxruntime_inputs = {onnxruntime_engine.get_inputs()[0].name: to_numpy(dummy_input)}
+    onnxruntime_outputs = onnxruntime_engine.run(None, onnxruntime_inputs)
+    np.testing.assert_allclose(to_numpy(torch_output), onnxruntime_outputs[0], rtol=1e-02, atol=1e-02)
+    print("Example2: Onnx model has been tested with ONNXRuntime, the result looks good!")
+
+    dummy_input = torch.randn(1, 3, 1024, 1024)
+    with torch.no_grad():
+        torch_output = torch_model(dummy_input)
+    onnxruntime_inputs = {onnxruntime_engine.get_inputs()[0].name: to_numpy(dummy_input)}
+    onnxruntime_outputs = onnxruntime_engine.run(None, onnxruntime_inputs)
+    np.testing.assert_allclose(to_numpy(torch_output), onnxruntime_outputs[0], rtol=1e-02, atol=1e-02)
+    print("Example3: Onnx model has been tested with ONNXRuntime, the result looks good!")
 
 
-def export_script(model):
+def export_torch():
     """Export torch model."""
 
     script_file = "output/model.pt"
-    weight_file = "output/model.pth"
+    weight_file = "models/model.pth"
 
     # 1. Load model
     print("Loading model ...")
@@ -254,35 +295,18 @@ def model_setenv():
     print("  PWD: ", os.environ["PWD"])
     print("  DEVICE: ", os.environ["DEVICE"])
 
-
-def infer_perform():
-    """Test model infer performance ..."""
-
-    model_setenv()
-    model, device = get_model()
-    model.eval()
-
-    progress_bar = tqdm(total=100)
-    progress_bar.set_description("Test Inference Performance ...")
-
-    for i in range(100):
-        # xxxx--modify here
-        input = torch.randn(64, 3, 512, 512)
-        input = input.to(device)
-
-        with torch.no_grad():
-            output = model(input)
-
-        progress_bar.update(1)
-
-
 if __name__ == '__main__':
     """Test model ..."""
+    import argparse
 
-    model = get_model()
-    print(model)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--export', help="Export onnx model", action='store_true')
+    parser.add_argument('--verify', help="Verify onnx model", action='store_true')
 
-    # export_script()
-    # export_onnx()
+    args = parser.parse_args()
 
-    # infer_perform()
+    if args.export:
+        export_onnx()
+
+    if args.verify:
+        verify_onnx()
