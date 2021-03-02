@@ -17,7 +17,7 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from tqdm import tqdm
-from {{ . }}.model import get_model
+from model import get_model, model_device
 
 if __name__ == "__main__":
     """Predict."""
@@ -27,7 +27,9 @@ if __name__ == "__main__":
     parser.add_argument('--input', type=str, required=True, help="input image")
     args = parser.parse_args()
 
-    model, device = get_model(args.checkpoint)
+    model = get_model(args.checkpoint)
+    device = model_device()
+    model = model.to(device)
     model.eval()
 
     totensor = transforms.ToTensor()

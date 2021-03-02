@@ -151,7 +151,7 @@ def export_torch():
 
     # 1. Load model
     print("Loading model ...")
-    model, device = get_model(weight_file)
+    model = get_model(weight_file)
     model.eval()
 
     # 2. Model export
@@ -170,7 +170,7 @@ def get_model(checkpoint):
     device = model_device()
     model.to(device)
 
-    return model, device
+    return model
 
 
 class Counter(object):

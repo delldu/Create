@@ -14,8 +14,8 @@ import argparse
 import os
 
 import torch
-from {{ . }}.data import get_data
-from {{ . }}.model import get_model, valid_epoch
+from data import get_data
+from model import get_model, valid_epoch, model_device
 
 if __name__ == "__main__":
     """Test model."""
@@ -27,7 +27,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # get model
-    model, device = get_model(args.checkpoint)
+    model = get_model(args.checkpoint)
+    device = model_device()
+    model = model.to(device)
 
     print("Start testing ...")
     test_dl = get_data(trainning=False, bs=args.bs)

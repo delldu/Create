@@ -16,8 +16,8 @@ import os
 
 import torch
 import torch.optim as optim
-from {{.}}.data import get_data
-from {{.}}.model import get_model, model_save, train_epoch, valid_epoch
+from data import get_data
+from model import get_model, model_device, model_save, train_epoch, valid_epoch
 
 if __name__ == "__main__":
     """Trainning model."""
@@ -37,7 +37,9 @@ if __name__ == "__main__":
         os.makedirs(args.outputdir)
 
     # get model
-    model, device = get_model(args.checkpoint)
+    model = get_model(args.checkpoint)
+    device = model_device()
+    model = model.to(device)
 
     # construct optimizer and learning rate scheduler,
     # xxxx--modify here
