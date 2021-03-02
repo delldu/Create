@@ -8,7 +8,7 @@
 
 #include "plugin.h"
 
-#define PLUG_IN_PROC "plug-in-gim_color"
+#define PLUG_IN_PROC "plug-in-gimp_color"
 
 static void query(void);
 static void run(const gchar * name,

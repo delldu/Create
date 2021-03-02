@@ -8,7 +8,7 @@
 
 #include "plugin.h"
 
-#define PLUG_IN_PROC "plug-in-gim_nima"
+#define PLUG_IN_PROC "plug-in-gimp_nima"
 
 static void query(void);
 static void run(const gchar * name,

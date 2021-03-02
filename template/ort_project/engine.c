@@ -163,6 +163,8 @@ std::vector <int64_t> TensorDimensions(OrtValue* tensor)
 
 	CheckStatus(onnx_runtime_api->GetDimensions(shape_info, dims.data(), dims.size()));
 
+	CheckStatus(onnx_runtime_api->ReleaseTensorTypeAndShapeInfo(shape_info));
+
 	return dims;
 }
 

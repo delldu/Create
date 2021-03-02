@@ -8,7 +8,7 @@
 
 #include "plugin.h"
 
-#define PLUG_IN_PROC "plug-in-gim_clean"
+#define PLUG_IN_PROC "plug-in-gimp_clean"
 
 static void query(void);
 static void run(const gchar * name,
