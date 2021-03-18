@@ -178,6 +178,7 @@ pytorch_project()
 	create_view -f $TEMPLATE_DIR/predict.py -v $package_name > predict.py
 	create_view -f $TEMPLATE_DIR/data.py -v $package_name > data.py
 	create_view -f $TEMPLATE_DIR/model.py -v $package_name > model.py
+	create_view -f $TEMPLATE_DIR/onnxtool.py -v $package_name > onnxtool.py
 }
 
 c_busybox()

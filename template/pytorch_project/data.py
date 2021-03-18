@@ -11,15 +11,25 @@
 #
 
 import os
+import pdb  # For debug
+
 import torch
-from PIL import Image
 import torch.utils.data as data
 import torchvision.transforms as T
 import torchvision.utils as utils
+from PIL import Image
 
-# xxxx--modify here
+#
+# /************************************************************************************
+# ***
+# ***    MS: Define Train/Test Dataset Root
+# ***
+# ************************************************************************************/
+#
 train_dataset_rootdir = "dataset/train/"
 test_dataset_rootdir = "dataset/test/"
+VIDEO_SEQUENCE_LENGTH = 5
+
 
 def grid_image(tensor_list, nrow=3):
     grid = utils.make_grid(
@@ -42,7 +52,6 @@ def multiple_scale(data, multiple=32):
 
     return temp
 
-
 def get_transform(train=True):
     """Transform images."""
     ts = []
@@ -51,6 +60,50 @@ def get_transform(train=True):
 
     ts.append(T.ToTensor())
     return T.Compose(ts)
+
+class Video(data.Dataset):
+    """Define Video Frames Class."""
+
+    def __init__(self, root="video_dir", seqlen=VIDEO_SEQUENCE_LENGTH, transforms=get_transform()):
+        """Init dataset."""
+        super(Video, self).__init__()
+        self.seqlen = seqlen
+        self.transforms = transforms
+        self.root = root
+        self.images = []
+
+    def reset(self, root):
+        # print("Video Reset Root: ", root)
+        self.root = root
+        self.images = list(sorted(os.listdir(root)))
+
+    def __getitem__(self, idx):
+        """Load images."""
+        n = len(self.images)
+        filelist = []
+        for k in range(-(self.seqlen//2), (self.seqlen//2) + 1):
+            if (idx + k < 0):
+                filename = self.images[0]
+            elif (idx + k >= n):
+                filename = self.images[n - 1]
+            else:
+                filename = self.images[idx + k]
+            filelist.append(os.path.join(self.root, filename))
+        # print("filelist: ", filelist)
+        sequence = []
+        for filename in filelist:
+            img = Image.open(filename).convert("RGB")
+            if self.transforms is not None:
+                img = self.transforms(img)
+            sequence.append(img)
+        if self.transforms is not None:
+            return torch.cat(sequence, dim=0)
+        return sequence
+
+    def __len__(self):
+        """Return total numbers of images."""
+        return len(self.images)
+
 
 class {{ . }}Dataset(data.Dataset):
     """Define dataset."""
@@ -97,8 +150,13 @@ def train_data(bs):
     train_ds = {{ . }}Dataset(train_dataset_rootdir, get_transform(train=True))
     print(train_ds)
 
-    # Split train_ds in train and valid set
-    # xxxx--modify here
+    #
+    # /************************************************************************************
+    # ***
+    # ***    MS: Split train_ds in train and valid set with 0.2
+    # ***
+    # ************************************************************************************/
+    #    
     valid_len = int(0.2 * len(train_ds))
     indices = [i for i in range(len(train_ds) - valid_len, len(train_ds))]
 

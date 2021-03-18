@@ -12,17 +12,19 @@
 import argparse
 import glob
 import os
+import pdb  # For debug
 
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from tqdm import tqdm
+
 from model import get_model, model_device
 
 if __name__ == "__main__":
     """Predict."""
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--checkpoint', type=str, default="output/{{ . }}.pth", help="checkpint file")
     parser.add_argument('--input', type=str, required=True, help="input image")
     args = parser.parse_args()
@@ -47,5 +49,4 @@ if __name__ == "__main__":
         with torch.no_grad():
             output_tensor = model(input_tensor).clamp(0, 1.0).squeeze()
 
-        # xxxx--modify here
         toimage(output_tensor.cpu()).show()
