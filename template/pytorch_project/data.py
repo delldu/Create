@@ -64,12 +64,12 @@ def get_transform(train=True):
 class Video(data.Dataset):
     """Define Video Frames Class."""
 
-    def __init__(self, root="video_dir", seqlen=VIDEO_SEQUENCE_LENGTH, transforms=get_transform()):
+    def __init__(self, seqlen=VIDEO_SEQUENCE_LENGTH, transforms=get_transform()):
         """Init dataset."""
         super(Video, self).__init__()
         self.seqlen = seqlen
         self.transforms = transforms
-        self.root = root
+        self.root = ""
         self.images = []
 
     def reset(self, root):
